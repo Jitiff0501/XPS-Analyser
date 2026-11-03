@@ -9,10 +9,65 @@ import numpy as np
 from scipy.optimize import least_squares
 
 LN2 = math.log(2.0)
-PARAMS = ("center", "fwhm", "area", "lor")   # lor: 洛伦兹比例 %，0=纯高斯
+# lor: 洛伦兹比例 %（0 = 纯高斯）；tail / tau：不对称峰的拖尾高度（0–1）与拖尾长度（eV），仅 shape="Asym" 时生效
+PARAMS = ("center", "fwhm", "area", "lor", "tail", "tau")
+SHAPE_PARAMS = ("tail", "tau")
+FWHM_RANGE = (1.0, 3.0)        # 默认 FWHM 范围（eV）
+SAT_FWHM_RANGE = (1.0, 8.0)    # 卫星峰默认 FWHM 范围
 
 
 # ------------------------------------------------------------------ 峰型
+def _unit_height(x, center, fwhm, lor):
+    """峰高为 1 的 GL 形状。"""
+    eta = min(max(lor / 100.0, 0.0), 1.0)
+    w = max(fwhm, 1e-6)
+    dx = x - center
+    return (1 - eta) * np.exp(-4 * LN2 * dx * dx / (w * w)) + eta * w * w / (4 * dx * dx + w * w)
+
+
+def _asym_unit(x, center, fwhm, lor, tail, tau):
+    """不对称形状（峰高 1）：低 BE 侧为 GL；高 BE 侧 u + T·(1−u)·exp(−(x−c)/τ)。在峰顶连续且光滑。"""
+    u = _unit_height(x, center, fwhm, lor)
+    d = x - center
+    t = np.where(d > 0, tail * (1 - u) * np.exp(-np.clip(d, 0, None) / max(tau, 1e-3)), 0.0)
+    return u + t
+
+
+def _asym_norm(fwhm, lor, tail, tau):
+    """峰高为 1 的不对称形状的面积（数值积分）。"""
+    w, tau = max(fwhm, 1e-3), max(tau, 1e-3)
+    lo, hi = -40 * w, 40 * w + 25 * tau
+    n = 6000
+    xx = np.linspace(lo, hi, n)
+    yy = _asym_unit(xx, 0.0, w, lor, tail, tau)
+    area = float(np.trapezoid(yy, xx)) if hasattr(np, "trapezoid") else float(np.trapz(yy, xx))
+    # 洛伦兹分量在积分区间外的部分（解析补上）：∫ w²/(4d²+w²) = (w/2)·[π/2 − atan(2|d₀|/w)]
+    eta = min(max(lor / 100.0, 0.0), 1.0)
+    if eta > 0:
+        area += eta * (w / 2) * ((np.pi / 2 - np.arctan(2 * abs(lo) / w)) + (np.pi / 2 - np.arctan(2 * hi / w)))
+    return area
+
+
+def peak_curve(x, v):
+    """按 resolve() 的参数字典计算单峰（面积 = v["area"]）。"""
+    if v.get("shape") == "Asym" and v.get("tail", 0) > 0:
+        u = _asym_unit(x, v["center"], v["fwhm"], v["lor"], v["tail"], v["tau"])
+        return v["area"] * u / _asym_norm(v["fwhm"], v["lor"], v["tail"], v["tau"])
+    return gl_peak(x, v["center"], v["fwhm"], v["area"], v["lor"])
+
+
+def ensure_peak(p):
+    """补齐旧项目/模板里缺少的字段。"""
+    p.setdefault("shape", "GL")
+    p.setdefault("link", {})
+    p.setdefault("role", "main")
+    if "tail" not in p:
+        p["tail"] = {"value": 0.3, "fixed": False, "min": 0.0, "max": 1.0}
+    if "tau" not in p:
+        p["tau"] = {"value": 1.5, "fixed": False, "min": 0.3, "max": 6.0}
+    return p
+
+
 def gl_peak(x, center, fwhm, area, lor):
     """面积归一的 Gaussian–Lorentzian 混合 (pseudo-Voigt, GL sum)。lor 为洛伦兹 %。"""
     eta = min(max(lor / 100.0, 0.0), 1.0)
@@ -117,11 +172,15 @@ def bound_center(p, window=CENTER_WINDOW):
     return p
 
 
-def new_peak(name, center, fwhm=1.2, area=1000.0, lor=30.0, role="main"):
-    p = {"name": name, "link": {}, "role": role}
-    for k, v in zip(PARAMS, (center, fwhm, area, lor)):
+def new_peak(name, center, fwhm=1.2, area=1000.0, lor=30.0, role="main", shape="GL", tail=0.3, tau=1.5):
+    p = {"name": name, "link": {}, "role": role, "shape": shape}
+    for k, v in zip(PARAMS, (center, fwhm, area, lor, tail, tau)):
         p[k] = {"value": float(v), "fixed": k == "lor", "min": None, "max": None}
-    p["fwhm"]["min"], p["fwhm"]["max"] = 0.4, 6.0
+    lo, hi = SAT_FWHM_RANGE if role == "satellite" else FWHM_RANGE
+    p["fwhm"]["min"], p["fwhm"]["max"] = lo, hi
+    p["fwhm"]["value"] = min(max(float(fwhm), lo), hi)
+    p["tail"]["min"], p["tail"]["max"] = 0.0, 1.0
+    p["tau"]["min"], p["tau"]["max"] = 0.3, 6.0
     p["area"]["min"] = 0.0
     p["lor"]["min"], p["lor"]["max"] = 0.0, 100.0
     return p
@@ -131,7 +190,9 @@ def new_peak(name, center, fwhm=1.2, area=1000.0, lor=30.0, role="main"):
 
 def resolve(peaks, free_vec=None, layout=None):
     """返回每个峰的实际参数 [(center,fwhm,area,lor)]，处理固定/绑定。"""
-    vals = [{k: p[k]["value"] for k in PARAMS} for p in peaks]
+    for p in peaks:
+        ensure_peak(p)
+    vals = [dict({k: p[k]["value"] for k in PARAMS}, shape=p.get("shape", "GL")) for p in peaks]
     lnk = [dict(p.get("link") or {}) for p in peaks]
     if free_vec is not None:
         for (i, k), v in zip(layout, free_vec):
@@ -155,8 +216,9 @@ def resolve(peaks, free_vec=None, layout=None):
                 vals[i]["area"] = vals[r]["area"] * ln["area_ratio"]
             if ln.get("fwhm_ratio") is not None:
                 vals[i]["fwhm"] = vals[r]["fwhm"] * ln["fwhm_ratio"]
-            if ln.get("lor_same"):
-                vals[i]["lor"] = vals[r]["lor"]
+            if ln.get("lor_same"):   # 峰型相同：L%、不对称形状和拖尾参数都跟随参考峰
+                for k in ("lor", "tail", "tau", "shape"):
+                    vals[i][k] = vals[r][k]
         done[i] = True
 
     for i in range(len(peaks)):
@@ -183,13 +245,13 @@ def linked_params(p):
     if ln.get("dE") is not None: s.add("center")
     if ln.get("area_ratio") is not None: s.add("area")
     if ln.get("fwhm_ratio") is not None: s.add("fwhm")
-    if ln.get("lor_same"): s.add("lor")
+    if ln.get("lor_same"): s.update(("lor", "tail", "tau"))
     return s
 
 
 def model(x, peaks, vals=None):
     vals = vals or resolve(peaks)
-    comps = [gl_peak(x, v["center"], v["fwhm"], v["area"], v["lor"]) for v in vals]
+    comps = [peak_curve(x, v) for v in vals]
     return comps, (np.sum(comps, axis=0) if comps else np.zeros_like(x))
 
 
@@ -206,7 +268,7 @@ def init_areas(x, s, peaks, w=None):
     fixed_part = np.zeros_like(s)
     cols = {i: np.zeros_like(s) for i in free}
     for i, (p, v) in enumerate(zip(peaks, vals)):
-        g = gl_peak(x, v["center"], v["fwhm"], 1.0, v["lor"])
+        g = peak_curve(x, dict(v, area=1.0))
         # 找到面积归属：沿面积绑定链找到自由面积的根
         j, ratio, guard = i, 1.0, 0
         while "area" in linked_params(peaks[j]) and guard < 20:
@@ -232,11 +294,14 @@ def fit(x, y, bg, peaks, max_nfev=4000):
     except Exception:
         pass
     layout, x0, lo, hi = [], [], [], []
+    shapes = [v["shape"] for v in resolve(peaks)]
     for i, p in enumerate(peaks):
         lk = linked_params(p)
         for k in PARAMS:
             par = p[k]
             if par["fixed"] or k in lk:
+                continue
+            if k in SHAPE_PARAMS and shapes[i] != "Asym":
                 continue
             mn = -np.inf if par["min"] is None else par["min"]
             mx = np.inf if par["max"] is None else par["max"]
@@ -351,7 +416,7 @@ class Spectrum:
     @classmethod
     def from_dict(cls, d):
         s = cls(d["name"], d["be"], d["y"], d.get("source", ""), d.get("hv", 1486.68))
-        s.shift, s.bg, s.peaks = d.get("shift", 0.0), d["bg"], d["peaks"]
+        s.shift, s.bg, s.peaks = d.get("shift", 0.0), d["bg"], [ensure_peak(p) for p in d["peaks"]]
         s.element = d.get("element", s.element)
         s.sample = d.get("sample", s.sample)
         return s
@@ -460,11 +525,11 @@ def quantify(specs, sf_table, use_fit=True, ecf_exp=0.6):
 
 # ------------------------------------------------------------------ 模板
 def doublet(name, center, split, ratio, fwhm=1.2, area=1000.0, lor=30.0, labels=None,
-            fit_split=False, fit_ratio=False):
+            fit_split=False, fit_ratio=False, shape="GL"):
     """自旋轨道双峰：返回 [主峰, 副峰]，副峰位置/面积/FWHM 绑定主峰。"""
     a, b = labels or (name + " 3/2", name + " 1/2")
-    p1 = new_peak(a, center, fwhm, area, lor)
-    p2 = new_peak(b, center + split, fwhm, area * ratio, lor)
+    p1 = new_peak(a, center, fwhm, area, lor, shape=shape)
+    p2 = new_peak(b, center + split, fwhm, area * ratio, lor, shape=shape)
     p2["link"] = {"ref": a, "dE": split, "area_ratio": ratio, "fwhm_ratio": 1.0, "lor_same": True}
     if fit_split:
         p2["link"]["dE_fit"] = True
@@ -482,7 +547,7 @@ def _same_fwhm(peaks):
 
 def builtin_templates():
     t = {}
-    t["Al2p: Al 金属 + Al2O3"] = (doublet("Al0 2p", 72.7, 0.44, 0.5, 0.8, lor=20)
+    t["Al2p: Al 金属 + Al2O3"] = (doublet("Al0 2p", 72.7, 0.44, 0.5, 1.0, lor=20, shape="Asym")
                                 + doublet("Al2O3 2p", 74.6, 0.44, 0.5, 1.6, lor=20))
     t["Al2p: 单一 Al2O3"] = doublet("Al2O3 2p", 74.6, 0.44, 0.5, 1.6, lor=20)
     t["C1s: 碳化物 + C-C / C-O / C=O / O-C=O"] = [new_peak("M-C 碳化物", 282.8, 1.0)] + _same_fwhm([
@@ -491,7 +556,7 @@ def builtin_templates():
                                                     new_peak("C=O", 287.8, 1.2), new_peak("O-C=O", 288.9, 1.2)])
     t["O1s: 晶格 / 缺陷·OH / 吸附"] = [new_peak("O lattice", 530.2, 1.2), new_peak("O defect/OH", 531.6, 1.5),
                                     new_peak("O adsorbed", 532.8, 1.6)]
-    t["Ti2p: Ti0 / Ti2+ / Ti3+ / Ti4+"] = (doublet("Ti0 2p", 454.0, 6.1, 0.5, 1.0)
+    t["Ti2p: Ti0 / Ti2+ / Ti3+ / Ti4+"] = (doublet("Ti0 2p", 454.0, 6.1, 0.5, 1.0, shape="Asym")
                                           + doublet("Ti2+ 2p", 455.5, 5.8, 0.5, 1.6)
                                           + doublet("Ti3+ 2p", 457.3, 5.7, 0.5, 1.6)
                                           + doublet("Ti4+ 2p", 458.8, 5.7, 0.5, 1.2))
@@ -501,7 +566,7 @@ def builtin_templates():
 def satellite(name, parent, dE, area_ratio=None, bind_dE=True, fwhm=None, lor=None):
     """卫星峰（shake-up 等）：位置相对主峰；ΔE 可绑定或在 ±1.5 eV 内自由；面积比可绑定或自由。"""
     c = parent["center"]["value"] + dE
-    w = fwhm or parent["fwhm"]["value"] * 1.5
+    w = fwhm or parent["fwhm"]["value"] * 2.0
     p = new_peak(name, c, w, parent["area"]["value"] * (area_ratio or 0.1),
                  parent["lor"]["value"] if lor is None else lor, role="satellite")
     ln = {"ref": parent["name"]}
@@ -523,6 +588,7 @@ def apply_template(spec, peaks):
     s = y - bg
     new = copy.deepcopy(peaks)
     for p in new:
+        ensure_peak(p)
         bound_center(p, TEMPLATE_WINDOW)
         if "area" in linked_params(p):
             continue

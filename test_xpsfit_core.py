@@ -158,6 +158,35 @@ class Core(unittest.TestCase):
             self.assertGreaterEqual(bg.min(), min(lo, y.min()) - 1e-6, kind)
             self.assertLessEqual(bg.max(), hi + 1e-6, kind)
 
+    def test_asymmetric_peak(self):
+        """不对称峰：面积归一、FWHM 默认 1–3、拟合能回收拖尾参数；双峰副峰跟随峰型。"""
+        x = np.linspace(-60, 100, 160001)
+        v = dict(center=0, fwhm=1.2, area=500, lor=30, tail=0.5, tau=2.0, shape="Asym")
+        self.assertAlmostEqual(np.trapezoid(core.peak_curve(x, v), x), 500, delta=1.0)
+        p = core.new_peak("a", 10, 0.5)
+        self.assertEqual((p["fwhm"]["min"], p["fwhm"]["max"], p["fwhm"]["value"]), (1.0, 3.0, 1.0))
+        self.assertEqual(core.new_peak("s", 10, 6, role="satellite")["fwhm"]["max"], 8.0)
+        xe = np.arange(770, 790.01, 0.05)
+        truth = [core.new_peak("m", 778.2, 1.1, 40000, 20, shape="Asym", tail=0.4, tau=2.5)]
+        y = core.model(xe, truth)[1] + 1.0
+        s = core.Spectrum("Co2p", xe, y); s.bg = {"type": "None", "lo": None, "hi": None, "navg": 3}
+        s.peaks = [core.new_peak("m", 778.0, 1.5, 1000, 20, shape="Asym", tail=0.1, tau=1.0)]
+        r = s.do_fit()
+        q = s.peaks[0]
+        self.assertAlmostEqual(q["center"]["value"], 778.2, delta=0.02)
+        self.assertAlmostEqual(q["tail"]["value"], 0.4, delta=0.05)
+        self.assertAlmostEqual(q["tau"]["value"], 2.5, delta=0.3)
+        self.assertAlmostEqual(q["area"]["value"], 40000, delta=800)
+        d = core.doublet("Co0 2p", 778.2, 15.0, 0.5, 1.1, shape="Asym")
+        d[0]["tail"]["value"] = 0.6
+        vals = core.resolve(d)
+        self.assertEqual(vals[1]["shape"], "Asym"); self.assertEqual(vals[1]["tail"], 0.6)
+        old = {"name": "o", "link": {}, "center": {"value": 1, "fixed": False, "min": None, "max": None},
+               "fwhm": {"value": 1, "fixed": False, "min": None, "max": None}, "area": {"value": 1, "fixed": False, "min": 0, "max": None},
+               "lor": {"value": 30, "fixed": True, "min": 0, "max": 100}}
+        core.model(np.linspace(0, 2, 50), [old])          # 旧项目里没有 tail/tau 的峰也能用
+        self.assertIn("tail", old)
+
 
 class Api(unittest.TestCase):
     """不开窗口，直接调用后端 API 走一遍完整流程。"""

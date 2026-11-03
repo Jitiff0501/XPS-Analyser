@@ -198,7 +198,8 @@ def api(method, a):
         j, new = int(a["j"]), a["peak"]
         old = s.peaks[j]["name"]
         clean = {"name": new["name"], "link": new.get("link") or {},
-                 "role": new.get("role", "main")}
+                 "role": new.get("role", "main"), "shape": new.get("shape", "GL")}
+        core.ensure_peak(new)
         if s.peaks[j].get("pair"):
             clean["pair"] = True
         for k in core.PARAMS:
@@ -484,6 +485,7 @@ def add_peak(s, a):
             n = "%s (%d)" % (b, k); k += 1
         return n
     lor = float(a.get("lor") or 30)
+    shape = "Asym" if a.get("shape") == "Asym" else "GL"
     n_before = len(s.peaks)
     if kind == "doublet":
         j_lab = {"p": ("3/2", "1/2"), "d": ("5/2", "3/2"), "f": ("7/2", "5/2")}.get(
@@ -496,7 +498,8 @@ def add_peak(s, a):
             nm = "%s (%d)" % (base, k); k += 1
         labels = ("%s %s" % (nm, j_lab[0]), "%s %s" % (nm, j_lab[1]))
         s.peaks.extend(core.doublet(nm, c, float(a["split"]), float(a["ratio"]), w, h * w * 1.064, lor, labels,
-                                    fit_split=not a.get("lock_split", True), fit_ratio=not a.get("lock_ratio", True)))
+                                    fit_split=not a.get("lock_split", True), fit_ratio=not a.get("lock_ratio", True),
+                                    shape=shape))
     elif kind == "satellite":
         par = s.peaks[int(a["parent"])]
         dE = float(a.get("dE", c - par["center"]["value"]))
@@ -511,7 +514,7 @@ def add_peak(s, a):
         while "P%d" % n in names: n += 1
         default = "Unknown overlap" if kind == "unknown" else "P%d" % n
         p = core.new_peak(uniq(a.get("name") or default), c, w, h * w * 1.064, lor,
-                          role="unknown" if kind == "unknown" else "main")
+                          role="unknown" if kind == "unknown" else "main", shape=shape)
         if kind == "unknown":   # 未知峰默认限制在添加位置 ±1.5 eV，避免“吃掉”主峰
             p["center"]["min"], p["center"]["max"] = c - 1.5, c + 1.5
         s.peaks.append(p)

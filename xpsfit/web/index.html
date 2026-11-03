@@ -208,6 +208,7 @@ input[type=checkbox]{accent-color:var(--accent)}
           <button data-k="single" class="on">单峰</button>
           <button data-k="doublet">双峰</button>
         </div>
+        <label class="switch" id="clickasym" hidden title="点击添加的峰使用不对称峰型（金属态）"><input type="checkbox" id="ck_asym"> 不对称</label>
         <div class="seg" id="modes">
           <button data-m="view" class="on">浏览</button>
           <button data-m="peak">点击加峰</button>
@@ -266,6 +267,7 @@ input[type=checkbox]{accent-color:var(--accent)}
 <div class="scrim" id="pe"><div class="modal">
   <h4>编辑峰</h4>
   <div class="row"><label>名称</label><input class="in" id="pe_name"></div>
+  <div class="row"><label>峰型</label><select class="in" id="pe_shape" onchange="peShape()"><option value="GL">对称 GL</option><option value="Asym">不对称（高 BE 侧拖尾，金属态）</option></select></div>
   <div class="row"><label>类型</label><select class="in" id="pe_role"><option value="main">主峰（计入面积%）</option><option value="satellite">卫星峰（计入面积%）</option><option value="unknown">未知重叠峰（不计入面积% 与定量）</option></select></div>
   <table class="ptab"><thead><tr><th></th><th>数值</th><th>固定</th><th>最小</th><th>最大</th></tr></thead><tbody id="pe_rows"></tbody></table>
   <div class="box"><div class="t">约束：绑定到另一个峰（自旋轨道双峰、等宽…）</div>
@@ -276,7 +278,7 @@ input[type=checkbox]{accent-color:var(--accent)}
       <tr><td><label class="switch"><input type="checkbox" id="pe_fwhm_ratio_on"> FWHM 比（1 = 相等）</label></td><td><input class="in num" id="pe_fwhm_ratio"></td><td style="text-align:center"><input type="checkbox" id="pe_fwhm_ratio_lock"></td><td><input class="in num" id="pe_fwhm_ratio_min"></td><td><input class="in num" id="pe_fwhm_ratio_max"></td></tr>
     </tbody></table>
     <p class="note" style="margin:4px 0 0">不锁定时，该项在最小–最大之间拟合；范围留空则用默认（ΔE ±max(0.2, 10%)，比值 ×0.5–1.5）。</p>
-    <div class="row"><label><input type="checkbox" id="pe_lor_same"> L% 相同</label></div>
+    <div class="row"><label style="min-width:0"><input type="checkbox" id="pe_lor_same"> 峰型相同（L%、不对称与拖尾跟随参考峰）</label></div>
   </div>
   <div class="foot"><button class="btn ghost" onclick="closeM('pe')">取消</button><button class="btn primary" onclick="savePeak()">保存</button></div>
 </div></div>
@@ -294,6 +296,7 @@ input[type=checkbox]{accent-color:var(--accent)}
   <div class="row" id="a_parent_row"><label>所属主峰</label><select class="in" id="a_parent" onchange="satDefaults()"></select></div>
   <div class="row"><label id="a_center_l">位置 BE (eV)</label><input class="in" id="a_center"></div>
   <div class="row"><label>FWHM (eV)</label><input class="in" id="a_fwhm" value="1.2"><label style="min-width:0;margin-left:8px">L%</label><input class="in num" id="a_lor" value="30"></div>
+  <div class="row" id="a_shape_row"><label>峰型</label><select class="in" id="a_shape"><option value="GL">对称 GL</option><option value="Asym">不对称（金属态，高 BE 侧拖尾）</option></select></div>
   <div id="a_dbl">
     <div class="row"><label>轨道</label><select class="in" id="d_type" onchange="dPreset()">
       <option value="0.5|5.7">2p（Ti 5.7 · Al 0.44 · Fe 13.6 · Cr 9.3 …）</option>
@@ -496,7 +499,7 @@ function renderPeaks(){
   S.v.peaks.forEach((p,j)=>{
     const tr=document.createElement("tr");if(j===S.sel)tr.className="on";
     const ln=p.link||{};const flags=(p.linked.length?"⛓":"")+(["dE","area_ratio","fwhm_ratio"].some(k=>ln[k+"_fit"])?"≈":"")+(["center","fwhm","area"].some(k=>p[k].fixed)?"🔒":"");
-    tr.innerHTML=`<td><span class="sw" style="background:${pcol(p,j)}"></span><span class="pn"></span>${p.role&&p.role!=="main"?`<span class="role ${p.role}">${p.role==="unknown"?"未知":"卫星"}</span>`:""}<span class="tag">${flags}</span></td><td>${p.center.value.toFixed(2)}</td><td>${p.fwhm.value.toFixed(2)}</td><td>${p.pct==null?"—":p.pct.toFixed(1)}</td><td>${p.lor.value.toFixed(0)}</td>`;
+    tr.innerHTML=`<td><span class="sw" style="background:${pcol(p,j)}"></span><span class="pn"></span>${p.role&&p.role!=="main"?`<span class="role ${p.role}">${p.role==="unknown"?"未知":"卫星"}</span>`:""}${p.shape==="Asym"&&!p.pair?`<span class="role satellite" title="不对称峰 T=${p.tail.value.toFixed(2)} τ=${p.tau.value.toFixed(2)}">不对称</span>`:""}<span class="tag">${flags}</span></td><td>${p.center.value.toFixed(2)}</td><td>${p.fwhm.value.toFixed(2)}</td><td>${p.pct==null?"—":p.pct.toFixed(1)}</td><td>${p.lor.value.toFixed(0)}</td>`;
     tr.querySelector(".pn").textContent=p.name;
     tr.onclick=()=>{S.sel=j;renderPeaks();draw()};
     tr.ondblclick=()=>{S.sel=j;editPeak()};
@@ -544,6 +547,15 @@ function resetView(){S.xr=S.yr=null;Plotly.relayout("plot",{"xaxis.autorange":"r
 function canMove(p){const l=new Set(p.linked||[]);return {x:!p.center.fixed&&!l.has("center"),h:!p.area.fixed&&!l.has("area"),w:!p.fwhm.fixed&&!l.has("fwhm")}}
 function glPeak(x,c,w,a,lor){const e=Math.min(Math.max(lor/100,0),1),L2=Math.LN2;w=Math.max(w,1e-6);
   return x.map(t=>{const d=t-c;return a*((1-e)*Math.sqrt(4*L2/Math.PI)/w*Math.exp(-4*L2*d*d/(w*w))+e*(2/Math.PI)*w/(4*d*d+w*w))})}
+function unitH(x,c,w,lor){const e=Math.min(Math.max(lor/100,0),1),d=x-c;return (1-e)*Math.exp(-4*Math.LN2*d*d/(w*w))+e*w*w/(4*d*d+w*w)}
+function asymNorm(w,lor,T,tau){const lo=-40*w,hi=40*w+25*tau,n=4000,h=(hi-lo)/n;let a=0;
+  for(let i=0;i<=n;i++){const x=lo+i*h,u=unitH(x,0,w,lor);const y=u+(x>0?T*(1-u)*Math.exp(-x/tau):0);a+=(i===0||i===n?0.5:1)*y}a*=h;
+  const e=Math.min(Math.max(lor/100,0),1);if(e>0)a+=e*(w/2)*((Math.PI/2-Math.atan(2*Math.abs(lo)/w))+(Math.PI/2-Math.atan(2*hi/w)));return a}
+function isAsym(p){return p.shape==="Asym"&&p.tail&&p.tail.value>0}
+function peakCurveJS(x,p){const c=p.center.value,w=Math.max(p.fwhm.value,1e-6),a=p.area.value,lor=p.lor.value;
+  if(!isAsym(p))return glPeak(x,c,w,a,lor);const T=p.tail.value,tau=Math.max(p.tau.value,1e-3),N=asymNorm(w,lor,T,tau);
+  return x.map(t=>{const u=unitH(t,c,w,lor);return a*(u+(t>c?T*(1-u)*Math.exp(-(t-c)/tau):0))/N})}
+function apexOf(p){return isAsym(p)?1/asymNorm(p.fwhm.value,p.lor.value,p.tail.value,Math.max(p.tau.value,1e-3)):apexFactor(p.fwhm.value,p.lor.value)}
 function apexFactor(w,lor){const e=Math.min(Math.max(lor/100,0),1);return (1-e)*Math.sqrt(4*Math.LN2/Math.PI)/w+e*2/(Math.PI*w)}
 /* ---- 拖动峰 ---- */
 let DRAG=null;
@@ -593,14 +605,14 @@ window.addEventListener("mousemove",ev=>{
     if(!DRAG.busy)bgDragSend(DRAG);return}
   const d=dataAt(ev),p=S.v.peaks[DRAG.j];DRAG.moved=true;
   if(ev.shiftKey&&DRAG.mv.w){p.fwhm.value=Math.min(Math.max(0.1,DRAG.w0*Math.exp((ev.clientX-DRAG.px0)/120)),8);
-    if(DRAG.mv.h){const h0=DRAG.a0*apexFactor(DRAG.w0,p.lor.value);p.area.value=h0/apexFactor(p.fwhm.value,p.lor.value)}}
+    if(DRAG.mv.h){const q=JSON.parse(JSON.stringify(p));q.fwhm.value=DRAG.w0;const h0=DRAG.a0*apexOf(q);p.area.value=h0/apexOf(p)}}
   else{if(DRAG.mv.x)p.center.value=Math.min(Math.max(d.x,Math.min(...S.v.x)),Math.max(...S.v.x));
-    if(DRAG.mv.h){const h=Math.max(d.y-bgAt(p.center.value),0);p.area.value=h/apexFactor(p.fwhm.value,p.lor.value)}}
-  const nc=glPeak(S.v.x,p.center.value,p.fwhm.value,p.area.value,p.lor.value);
+    if(DRAG.mv.h){const h=Math.max(d.y-bgAt(p.center.value),0);p.area.value=h/apexOf(p)}}
+  const nc=peakCurveJS(S.v.x,p);
   for(let i=0;i<nc.length;i++){const nv=S.v.bgline[i]+nc[i],dv=nv-S.v.comps[DRAG.j][i];S.v.comps[DRAG.j][i]=nv;
     if(S.v.env.length){S.v.env[i]+=dv;S.v.resid[i]-=dv}}
   const dc=gd.querySelector(".nsewdrag");if(dc)dc.style.cursor="grabbing";
-  $("hint").textContent=`${p.name}: BE ${p.center.value.toFixed(2)} eV · FWHM ${p.fwhm.value.toFixed(2)} · 高度 ${(p.area.value*apexFactor(p.fwhm.value,p.lor.value)).toFixed(0)}`;
+  $("hint").textContent=`${p.name}: BE ${p.center.value.toFixed(2)} eV · FWHM ${p.fwhm.value.toFixed(2)} · 高度 ${(p.area.value*apexOf(p)).toFixed(0)}`;
   cancelAnimationFrame(DRAG.raf);DRAG.raf=requestAnimationFrame(draw);
 });
 async function bgDragSend(D){
@@ -637,7 +649,7 @@ function dblDefaults(el){const l=(el||"").slice(-1);const ratio={p:0.5,d:0.6667,
   return ratio?{split:SPLIT[el]??{p:5.7,d:2.4,f:2.18}[l],ratio}:null}
 function setMode(m){
   if(!S.v)return;S.mode=m;S.clicks=[];
-  $("clickkind").hidden=m!=="peak";
+  $("clickkind").hidden=m!=="peak";$("clickasym").hidden=m!=="peak";
   document.querySelectorAll("#clickkind button").forEach(x=>x.classList.toggle("on",x.dataset.k===CK));
   document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
   $("hint").textContent={view:"拖峰顶圆点移动 · 上下改高度 · Shift+拖改宽度 · 双击复位",peak:CK==="doublet"?(()=>{const d=dblDefaults(S.v.element);return d?`点击添加双峰（${S.v.element}：分裂 ${d.split} eV、面积比 ${+d.ratio.toFixed(3)}，锁定；可在“编辑”中修改）；Esc 结束`:"当前谱不是 p/d/f 轨道，将使用 2p 默认值（5.7 eV / 0.5）；Esc 结束"})():"点击添加单峰，可连续添加；Esc 结束",bg:"在图上横向拖动框选背景范围，或点击两个端点",bgpts:"点击添加背景点 · 拖动移动 · 右键/双击删除 · Esc 完成"}[m];
@@ -648,8 +660,8 @@ async function onClick(ev){
   const x=ev.points[0].x;
   if(S.mode==="peak"){
     if(CK==="doublet"){const d=dblDefaults(S.v.element)||{split:5.7,ratio:0.5};
-      await act("add_peak",{kind:"doublet",center:x,split:d.split,ratio:d.ratio,lock_split:true,lock_ratio:true});S.sel=S.v.peaks.length-2}
-    else{await act("add_peak",{x});S.sel=S.v.peaks.length-1}
+      await act("add_peak",{kind:"doublet",center:x,split:d.split,ratio:d.ratio,lock_split:true,lock_ratio:true,shape:$("ck_asym").checked?"Asym":"GL"});S.sel=S.v.peaks.length-2}
+    else{await act("add_peak",{x,shape:$("ck_asym").checked?"Asym":"GL"});S.sel=S.v.peaks.length-1}
     renderPeaks();draw()}
   else if(S.mode==="bg"){S.clicks.push(x);draw();
     if(S.clicks.length===2){const[a,b]=S.clicks.sort((a,b)=>a-b);$("bglo").value=a.toFixed(2);$("bghi").value=b.toFixed(2);setMode("view");setBg()}}
@@ -671,22 +683,24 @@ function setBg(){if($("bgtype").value==="Points"){sendPts().then(()=>{if(!(S.v.b
   act("set_bg",{bg:{type:$("bgtype").value,lo:n($("bglo").value),hi:n($("bghi").value),navg:parseInt($("bgn").value)||3}})}
 
 /* ---------- peaks ---------- */
-const PL={center:"位置 BE (eV)",fwhm:"FWHM (eV)",area:"面积",lor:"洛伦兹 L%"};
+const PL={center:"位置 BE (eV)",fwhm:"FWHM (eV)",area:"面积",lor:"洛伦兹 L%",tail:"拖尾高度 T (0–1)",tau:"拖尾长度 τ (eV)"};
+function peShape(){const a=$("pe_shape").value==="Asym";document.querySelectorAll(".pe-asym").forEach(r=>r.hidden=!a)}
 function editPeak(){
   if(S.sel===null){toast("先在峰表里选中一个峰");return}
   const p=S.v.peaks[S.sel];$("pe_name").value=p.name;$("pe_role").value=p.role||"main";
-  $("pe_rows").innerHTML=Object.keys(PL).map(k=>`<tr><td>${PL[k]}</td><td><input class="in" id="pe_${k}_v" value="${+p[k].value.toPrecision(7)}"></td><td style="text-align:center"><input type="checkbox" id="pe_${k}_f" ${p[k].fixed?"checked":""}></td><td><input class="in num" id="pe_${k}_min" value="${p[k].min??""}"></td><td><input class="in num" id="pe_${k}_max" value="${p[k].max??""}"></td></tr>`).join("");
+  $("pe_shape").value=p.shape||"GL";
+  $("pe_rows").innerHTML=Object.keys(PL).map(k=>`<tr class="${k==="tail"||k==="tau"?"pe-asym":""}"><td>${PL[k]}</td><td><input class="in" id="pe_${k}_v" value="${+p[k].value.toPrecision(7)}"></td><td style="text-align:center"><input type="checkbox" id="pe_${k}_f" ${p[k].fixed?"checked":""}></td><td><input class="in num" id="pe_${k}_min" value="${p[k].min??""}"></td><td><input class="in num" id="pe_${k}_max" value="${p[k].max??""}"></td></tr>`).join("");
   const ln=p.link||{};const others=S.v.peaks.filter((_,j)=>j!==S.sel).map(q=>q.name);
   $("pe_ref").innerHTML='<option value="">（不绑定）</option>'+others.map(n=>`<option></option>`).join("");
   [...$("pe_ref").options].slice(1).forEach((o,k)=>{o.value=o.textContent=others[k]});
   $("pe_ref").value=ln.ref||"";
   for(const k of["dE","area_ratio","fwhm_ratio"]){$("pe_"+k+"_on").checked=ln[k]!=null;$("pe_"+k).value=ln[k]!=null?+(+ln[k]).toPrecision(6):(k==="dE"?"":"1");
     $("pe_"+k+"_lock").checked=!ln[k+"_fit"];$("pe_"+k+"_min").value=ln[k+"_min"]??"";$("pe_"+k+"_max").value=ln[k+"_max"]??""}
-  $("pe_lor_same").checked=!!ln.lor_same;
+  $("pe_lor_same").checked=!!ln.lor_same;peShape();
   const lk={center:"dE",area:"area_ratio",fwhm:"fwhm_ratio"};
   const upd=()=>{for(const k in lk){const on=$("pe_ref").value&&$("pe_"+lk[k]+"_on").checked;["v","f","min","max"].forEach(f=>$(`pe_${k}_${f}`).disabled=!!on);
       $(`pe_${k}_v`).title=on?"由绑定关系决定":""}
-    const lo=$("pe_ref").value&&$("pe_lor_same").checked;["v","f","min","max"].forEach(f=>$(`pe_lor_${f}`).disabled=!!lo)};
+    const lo=$("pe_ref").value&&$("pe_lor_same").checked;["lor","tail","tau"].forEach(k=>["v","f","min","max"].forEach(f=>$(`pe_${k}_${f}`).disabled=!!lo));$("pe_shape").disabled=!!lo};
   ["pe_ref","pe_dE_on","pe_area_ratio_on","pe_fwhm_ratio_on","pe_lor_same"].forEach(id=>$(id).onchange=upd);upd();
   $("pe").classList.add("open");
 }
@@ -699,7 +713,7 @@ async function savePeak(){
     for(const k of["dE","area_ratio","fwhm_ratio"])if($("pe_"+k+"_on").checked){ln[k]=Number($("pe_"+k).value);
       if(!$("pe_"+k+"_lock").checked){ln[k+"_fit"]=true;const a=num($("pe_"+k+"_min").value),b=num($("pe_"+k+"_max").value);if(a!=null)ln[k+"_min"]=a;if(b!=null)ln[k+"_max"]=b}}
     if($("pe_lor_same").checked)ln.lor_same=true}
-  p.link=ln;p.role=$("pe_role").value;closeM("pe");await act("update_peak",{j:S.sel,peak:p});
+  p.link=ln;p.role=$("pe_role").value;p.shape=$("pe_shape").value;closeM("pe");await act("update_peak",{j:S.sel,peak:p});
 }
 function openEq(){
   if(!S.v||S.v.peaks.length<2){toast("至少需要两个峰");return}
@@ -723,7 +737,7 @@ function delPeak(){if(S.sel===null)return;act("delete_peak",{j:S.sel});S.sel=nul
 let AK="single";
 document.querySelectorAll("#kinds .kind").forEach(k=>k.onclick=()=>setKind(k.dataset.k));
 function setKind(k){AK=k;document.querySelectorAll("#kinds .kind").forEach(e=>e.classList.toggle("on",e.dataset.k===k));
-  $("a_dbl").hidden=k!=="doublet";$("a_sat").hidden=k!=="satellite";$("a_parent_row").hidden=k!=="satellite";
+  $("a_dbl").hidden=k!=="doublet";$("a_shape_row").hidden=k==="satellite"||k==="unknown";$("a_sat").hidden=k!=="satellite";$("a_parent_row").hidden=k!=="satellite";
   $("a_center_l").textContent=k==="satellite"?"卫星峰 BE (eV)":k==="doublet"?"主峰 BE (eV)":"位置 BE (eV)";
   $("a_note").textContent={single:"新峰的位置、FWHM、面积都自由拟合，可在“编辑”中加约束。",
     doublet:"副峰跟随主峰。间距和面积比勾选“锁定”则拟合时保持不变；不勾选则在默认范围内拟合（之后可在“编辑”里改范围）。删除主峰时副峰一起删除。",
@@ -741,6 +755,7 @@ function openAdd(kind){
   const el=(v.element||"").slice(-2);$("d_type").selectedIndex={"2p":0,"3d":1,"4f":2,"3p":3}[el]??0;dPreset();
   if(v.element==="Al2p")$("d_split").value="0.44";
   $("kinds").querySelector('[data-k="satellite"]').style.opacity=ps.length?1:.4;
+  $("a_shape").value="GL";
   $("d_lock_split").checked=$("d_lock_ratio").checked=$("s_bind_dE").checked=true;$("s_bind_area").checked=false;
   setKind(kind||"single");$("addm").classList.add("open")}
 function satDefaults(){const j=$("a_parent").value;if(j==="")return;const p=S.v.peaks[+j];
@@ -750,7 +765,7 @@ $("a_center").oninput=()=>{if(AK==="satellite"){const j=$("a_parent").value;if(j
 function dPreset(){const[r,s]=$("d_type").value.split("|");$("d_ratio").value=r;$("d_split").value=s}
 async function addPeak(){
   if(AK==="satellite"&&$("a_parent").value===""){toast("请先添加主峰，卫星峰需要归属一个主峰");return}
-  const a={kind:AK,name:$("a_name").value.trim(),center:$("a_center").value,fwhm:$("a_fwhm").value,lor:$("a_lor").value,
+  const a={kind:AK,name:$("a_name").value.trim(),center:$("a_center").value,fwhm:$("a_fwhm").value,lor:$("a_lor").value,shape:$("a_shape").value,
     split:$("d_split").value,ratio:AK==="doublet"?$("d_ratio").value:$("s_ratio").value,
     parent:$("a_parent").value,dE:$("s_dE").value,lock_split:$("d_lock_split").checked,lock_ratio:$("d_lock_ratio").checked,bind_dE:$("s_bind_dE").checked,bind_area:$("s_bind_area").checked};
   closeM("addm");await act("add_peak",a);S.sel=S.v.peaks.length-(AK==="doublet"?2:1);renderPeaks();draw()}
