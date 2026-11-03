@@ -10,13 +10,33 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python -m pip install pyinstaller pandas openpyxl xlrd
-      - run: python -m unittest -v test_avantage_to_xpspeak.py
-      - run: python -m PyInstaller --noconfirm --onefile --windowed --name Avantage2XPSPEAK --exclude-module matplotlib --exclude-module scipy --exclude-module IPython avantage_to_xpspeak.py
+      - run: python -m pip install pyinstaller pandas openpyxl xlrd numpy scipy matplotlib pywebview
+      - name: Tests
+        run: python -m unittest -v test_avantage_to_xpspeak.py test_xpsfit_core.py
+      - name: Build Avantage2XPSPEAK.exe (converter)
+        run: python -m PyInstaller --noconfirm --onefile --windowed --name Avantage2XPSPEAK --exclude-module matplotlib --exclude-module scipy --exclude-module IPython --exclude-module webview avantage_to_xpspeak.py
+      - name: Build XPSFitStudio.exe (fitting app)
+        run: >-
+          python -m PyInstaller --noconfirm --onefile --windowed --name XPSFitStudio
+          --add-data "xpsfit/web;xpsfit/web"
+          --add-data "xpsfit/sensitivity_factors.json;xpsfit"
+          --hidden-import avantage_to_xpspeak
+          --exclude-module IPython --exclude-module PyQt5 --exclude-module PySide6 --exclude-module tkinter
+          run_xpsfit.py
+      - name: Smoke test (server starts and serves the page)
+        shell: python
+        run: |
+          import subprocess, time, urllib.request, json
+          # 直接用源码起后端，验证打包所用的同一代码路径可工作
+          from xpsfit import server
+          srv, url = server.serve()
+          assert b"XPS Fit Studio" in urllib.request.urlopen(url).read()
+          req = urllib.request.Request(url + "api/state", data=b"{}", headers={"Content-Type": "application/json"})
+          print(json.loads(urllib.request.urlopen(req).read())["templates"][:2])
       - uses: actions/upload-artifact@v4
         with:
-          name: Avantage2XPSPEAK-windows
-          path: dist/Avantage2XPSPEAK.exe
+          name: windows-exe
+          path: dist/*.exe
       - name: Publish to Releases (latest)
         if: github.ref == 'refs/heads/main'
         shell: bash
@@ -24,4 +44,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete latest --yes --cleanup-tag || true
-          gh release create latest dist/Avantage2XPSPEAK.exe --title "Avantage2XPSPEAK (Windows)" --notes "双击运行，选择 .VGD 文件即可转换为 XPSPEAK 4.1 格式。" --target "$GITHUB_SHA"
+          gh release create latest dist/XPSFitStudio.exe dist/Avantage2XPSPEAK.exe --title "XPS Fit Studio (Windows)" --target "$GITHUB_SHA" --notes "XPSFitStudio.exe：XPS 峰拟合程序（双击运行）。Avantage2XPSPEAK.exe：VGD → XPSPEAK txt 转换器。"
