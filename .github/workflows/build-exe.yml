@@ -1,5 +1,7 @@
 name: build-exe
 on: [push, workflow_dispatch]
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: windows-latest
@@ -15,3 +17,11 @@ jobs:
         with:
           name: Avantage2XPSPEAK-windows
           path: dist/Avantage2XPSPEAK.exe
+      - name: Publish to Releases (latest)
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest dist/Avantage2XPSPEAK.exe --title "Avantage2XPSPEAK (Windows)" --notes "双击运行，选择 .VGD 文件即可转换为 XPSPEAK 4.1 格式。" --target "$GITHUB_SHA"
