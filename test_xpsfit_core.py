@@ -187,6 +187,17 @@ class Core(unittest.TestCase):
         core.model(np.linspace(0, 2, 50), [old])          # 旧项目里没有 tail/tau 的峰也能用
         self.assertIn("tail", old)
 
+    def test_reference_cu(self):
+        from xpsfit import reference
+        r = reference.for_orbital("Cu2p")
+        self.assertEqual(r["split"]["median"], 19.8)
+        st = {x["formula"]: x for x in r["states"]}
+        self.assertAlmostEqual(st["Cu"]["median"], 932.61, places=2)
+        self.assertAlmostEqual(st["CuO"]["median"], 933.8, places=2)
+        a = {x["formula"]: x for x in r["auger"]["rows"]}
+        self.assertAlmostEqual(a["Cu2O"]["alpha"], 1849.2, places=1)    # 修正俄歇参数
+        self.assertIsNone(reference.for_orbital("Co2p"))                # 未导入的元素
+
 
 class Api(unittest.TestCase):
     """不开窗口，直接调用后端 API 走一遍完整流程。"""

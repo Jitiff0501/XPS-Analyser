@@ -76,6 +76,18 @@ aside.left{border-right:1px solid var(--line);padding:14px 10px;overflow:auto}
 .grp.closed .car{transform:rotate(-90deg)}
 .grp.closed .items{display:none}
 .spec{margin-left:8px}
+.rt{width:100%;border-collapse:collapse;font-size:12.5px}
+.rt td{padding:5px 4px;border-bottom:1px solid var(--sunk);font-variant-numeric:tabular-nums}
+.rt tr:hover{background:var(--sunk)}
+.rt td.f{font-weight:500}
+.rt td.r{text-align:right;color:var(--ink2)}
+.rt .near{font-size:9px;color:var(--ok);margin-left:4px;vertical-align:1px;cursor:help}
+.rt td{white-space:nowrap}
+.rt .add{border:1px solid var(--line2);background:var(--panel);border-radius:6px;padding:1px 7px;font-size:12px}
+.rt .add:hover{border-color:var(--accent);color:var(--accent)}
+.rt tr.mk td.f{color:var(--accent-h)}
+.refbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:2px 0 6px;font-size:12px;color:var(--ink2)}
+details.aug summary{cursor:pointer;color:var(--ink2);font-size:12px;margin-top:8px}
 .eqi{display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:7px;cursor:pointer}
 .eqi:hover{background:var(--sunk)}
 .eqi input:disabled+.sw{opacity:.4}
@@ -181,6 +193,8 @@ input[type=checkbox]{accent-color:var(--accent)}
     </div>
   </div>
   <button class="btn" onclick="openQuant()">定量 · 原子 %</button>
+  <button class="btn ghost" onclick="importRef()" title="导入 NIST XPS 数据库导出的 zip / csv，用于推荐峰位">导入 NIST</button>
+  <input type="file" id="reffile" multiple accept=".zip,.csv" hidden>
 </header>
 
 <main>
@@ -242,6 +256,10 @@ input[type=checkbox]{accent-color:var(--accent)}
         <div class="row"><span id="bgpts_n" class="note" style="margin:0;flex:1"></span><button class="btn sm" onclick="setMode('bgpts')">编辑点</button><button class="btn sm" onclick="if(confirm('清除全部背景点？')){S.v.bg.points=[];sendPts()}">清除</button></div>
         <p class="note" style="margin:4px 0 0">“编辑点”后在图上点击添加；拖动移动；右键或双击删除。背景范围 = 最左到最右的点。</p>
       </div>
+    </div>
+    <div class="panel" id="refpanel">
+      <h3>推荐峰位 <span class="sub" id="refsrc"></span></h3>
+      <div id="refbody" class="note" style="margin:0">打开谱后显示</div>
     </div>
     <div class="panel">
       <h3>峰 <span class="sub">双击行编辑</span></h3>
@@ -476,7 +494,7 @@ document.addEventListener("keydown",e=>{if(document.querySelector(".scrim.open")
   if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight"||S.cur===null)return;const g=S.specs[S.cur].sample;
   const ids=S.specs.map((s,i)=>s.sample===g?i:-1).filter(i=>i>=0);const k=ids.indexOf(S.cur)+(e.key==="ArrowRight"?1:-1);
   if(k>=0&&k<ids.length)select(ids[k])});
-async function select(i){S.cur=i;S.sel=null;renderSpecs();setView(await call("view",{i}))}
+async function select(i){S.cur=i;S.sel=null;renderSpecs();setView(await call("view",{i}));loadRef()}
 function showWelcome(on){$("welcome").hidden=!on;$("plothead").hidden=on;$("plot").hidden=on;if(on){$("fitinfo").textContent="";$("ptab").innerHTML=""}}
 
 /* ---------- view ---------- */
@@ -536,6 +554,7 @@ function draw(){
     marker:{size:10,symbol:"square",color:"#fff",line:{color:"#8C8A83",width:2}}})}
   if(hx.length)T.push({x:hx,y:hy,mode:"markers",name:"_h",showlegend:false,hoverinfo:"skip",
     marker:{size:11,color:"#fff",line:{color:hc,width:2.2},symbol:"circle"}});
+  const RS=refShapes(v);L.shapes=L.shapes.concat(RS.shapes);L.annotations=RS.ann;
   if(S.xr&&S.fixFor===v.i){L.xaxis.autorange=false;L.xaxis.range=S.xr;L.yaxis.autorange=false;L.yaxis.range=S.yr}
   Plotly.react("plot",T,L,{displaylogo:false,displayModeBar:false,responsive:true,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]});
   const pl=$("plot");pl.removeAllListeners&&pl.removeAllListeners("plotly_click");pl.on("plotly_click",onClick);
@@ -791,6 +810,70 @@ function closeM(id){$(id).classList.remove("open")}
 function toggleMenu(e){e.stopPropagation();$("expmenu").classList.toggle("open")}
 document.addEventListener("click",()=>$("expmenu").classList.remove("open"));
 async function exp(kind,a){if(S.cur===null){toast("请先打开数据");return}const r=await call("export_"+kind,Object.assign({i:S.cur},a));toast(r.msg,r.path)}
+
+/* ---------- 推荐峰位 (NIST) ---------- */
+let REF=null,REFALL=false;const MARKS={};   // 每个轨道勾选显示的化合物（切换样品时保留）
+function marks(){const o=REF&&REF.orbital||"";return MARKS[o]||(MARKS[o]=new Set())}
+async function loadRef(){
+  if(S.cur===null)return;REF=await call("reference",{i:S.cur});renderRef();draw()}
+function renderRef(){
+  const b=$("refbody");b.className="";const r=REF&&REF.ref;
+  if(!REF){b.innerHTML="";return}
+  if(!r){$("refsrc").textContent="";b.innerHTML=`<p class="note" style="margin:0">暂无 ${esc(REF.orbital||"该元素")} 的参考数据。已有：${REF.available.join("、")||"无"}。可点顶部“导入 NIST”导入 NIST XPS 数据库导出的文件。</p>`;return}
+  if(r.missing){$("refsrc").textContent="NIST";b.innerHTML=`<p class="note" style="margin:0">${esc(r.element)} 的参考数据里没有 ${esc(REF.orbital)}（有：${r.have.join("、")}）。</p>`;return}
+  $("refsrc").textContent=`NIST · ${r.n_records} 条 ${r.line}`;
+  const sp=r.split?`双峰间距 <b>${r.split.median}</b> eV（${r.split.n} 条，${r.split.min}–${r.split.max}）· 面积比 ${+(r.ratio||0).toFixed(3)}`:"单峰轨道";
+  const rows=r.states.filter(st=>REFALL||st.n>=6);
+  b.innerHTML=`<div class="refbar"><span>${sp}</span></div>
+   <div class="refbar" style="color:var(--ink3)"><span><span style="color:var(--ok);font-size:9px">●</span> = 数据中 ±0.3 eV 内有峰</span></div>
+   <div class="refbar"><span>勾选的化合物在图上显示</span><a style="cursor:pointer;color:var(--accent-h)" id="ref_allon">全选</a><a style="cursor:pointer;color:var(--ink3)" id="ref_alloff">清除</a>
+   <label class="switch" style="margin-left:auto"><input type="checkbox" id="ref_all" ${REFALL?"checked":""}> 含少见（n&lt;6）</label></div>
+   <table class="rt"><tbody>${rows.map((st,k)=>`<tr data-f="${esc(st.formula)}" class="${marks().has(st.formula)?"mk":""}" title="${esc(st.name)}\n中位 ${st.median} eV，四分位 ${st.q1}–${st.q3}，全部 ${st.min}–${st.max}，${st.n} 条记录">
+     <td style="width:20px"><input type="checkbox" class="mkc" ${marks().has(st.formula)?"checked":""}></td>
+     <td class="f">${esc(st.formula)}${st.near?'<span class="near" title="数据中 ±0.3 eV 内有峰">●</span>':""}</td><td class="r">${st.median.toFixed(2)}</td><td class="r" style="font-size:11px">${st.q1.toFixed(1)}–${st.q3.toFixed(1)}</td><td class="r" style="font-size:11px">n=${st.n}</td>
+     <td style="text-align:right"><button class="add" title="按此化学态添加${r.split?"双峰":"峰"}">＋</button></td></tr>`).join("")}</tbody></table>
+   ${r.satellites&&r.satellites.length?`<table class="rt" style="margin-top:4px"><tbody>${r.satellites.map(x=>`<tr data-sat="${esc(x.formula)}"><td style="width:20px"><input type="checkbox" class="mks" ${marks().has("sat:"+x.formula)?"checked":""}></td><td class="f">${esc(x.formula)} 卫星峰</td><td class="r">${x.median.toFixed(1)}</td><td class="r" style="font-size:11px">${x.min}–${x.max}</td><td class="r" style="font-size:11px">n=${x.n}</td><td></td></tr>`).join("")}</tbody></table>`:""}
+   ${r.auger&&r.auger.rows.length?`<details class="aug"><summary>俄歇 ${esc(r.auger.line)} 与修正俄歇参数 α′（区分峰位重合的化学态）</summary>
+     <table class="rt"><tbody><tr><td class="r" style="text-align:left">化合物</td><td class="r">KE (eV)</td><td class="r">α′ (eV)</td><td class="r">n</td></tr>${r.auger.rows.map(x=>`<tr><td class="f">${esc(x.formula)}</td><td class="r">${x.ke.toFixed(2)}</td><td class="r">${x.alpha?x.alpha.toFixed(2):"—"}</td><td class="r">${x.n}</td></tr>`).join("")}</tbody></table>
+     <p class="note" style="margin:4px 0 0">α′ = KE(俄歇) + BE(${esc(r.auger.rows.find(x=>x.alpha_line)?.alpha_line||"主峰")})，不受荷电影响。</p></details>`:""}
+   <p class="note" style="margin:6px 0 0">${esc(r.source)}。各文献荷电参考不同，数值为文献分布（中位数 / 四分位范围），仅作拟合起点。</p>`;
+  $("ref_all").onchange=e=>{REFALL=e.target.checked;renderRef()};
+  $("ref_allon").onclick=()=>{rows.forEach(st=>marks().add(st.formula));renderRef();draw()};
+  $("ref_alloff").onclick=()=>{marks().clear();renderRef();draw()};
+  b.querySelectorAll("tr[data-f]").forEach(tr=>{const st=r.states.find(x=>x.formula===tr.dataset.f);
+    const tog=()=>{marks().has(st.formula)?marks().delete(st.formula):marks().add(st.formula);renderRef();draw()};
+    tr.querySelector(".mkc").onclick=ev=>{ev.stopPropagation();tog()};
+    tr.onclick=ev=>{if(ev.target.closest(".add")||ev.target.classList.contains("mkc"))return;tog()};
+    tr.querySelector(".add").onclick=()=>addRef(st)});
+  b.querySelectorAll("tr[data-sat]").forEach(tr=>{const k="sat:"+tr.dataset.sat;
+    tr.onclick=ev=>{if(ev.target.classList.contains("mks"))ev.stopPropagation();marks().has(k)?marks().delete(k):marks().add(k);renderRef();draw()}});
+}
+async function addRef(st){
+  const r=REF.ref;const cmin=Math.min(st.q1,st.median-0.5),cmax=Math.max(st.q3,st.median+0.5);
+  const a={name:st.formula,center:st.median,fwhm:1.5,cmin,cmax,shape:st.formula===r.element?"Asym":"GL"};
+  if(r.split){Object.assign(a,{kind:"doublet",split:r.split.median,ratio:r.ratio,lock_split:true,lock_ratio:true})}else a.kind="single";
+  await act("add_peak",a);S.sel=S.v.peaks.length-(r.split?2:1);renderPeaks();draw();
+  toast(`已添加 ${st.formula}（${st.median} eV${r.split?`，双峰 ΔE ${r.split.median}`:""}${a.shape==="Asym"?"，金属态用不对称峰":""}）`)}
+function refShapes(v){
+  const r=REF&&REF.ref;if(!r||r.missing)return {shapes:[],ann:[]};
+  const lo=Math.min(...v.be),hi=Math.max(...v.be);const sh=[],an=[];
+  r.states.forEach(st=>{if(!marks().has(st.formula))return;
+    const pos=[st.median];if(r.split)pos.push(st.median+r.split.median);
+    pos.forEach((x,k)=>{if(x<lo||x>hi)return;
+      sh.push({type:"rect",x0:x-(st.median-st.q1),x1:x+(st.q3-st.median),yref:"paper",y0:.24,y1:1,fillcolor:"rgba(201,100,66,.07)",line:{width:0},layer:"below"});
+      sh.push({type:"line",x0:x,x1:x,yref:"paper",y0:.24,y1:1,line:{color:"rgba(201,100,66,.6)",width:1,dash:"dot"}});
+      if(k===0)an.push({x,y:0.995,yref:"paper",yanchor:"top",xanchor:"right",text:st.formula,showarrow:false,textangle:-90,bgcolor:"rgba(255,255,255,.75)",font:{size:10.5,color:"#B5573A"}})})});
+  (r.satellites||[]).forEach(st=>{if(!marks().has("sat:"+st.formula))return;const x=st.median;if(x<lo||x>hi)return;
+    sh.push({type:"line",x0:x,x1:x,yref:"paper",y0:.24,y1:1,line:{color:"rgba(140,138,131,.7)",width:1,dash:"dash"}});
+    an.push({x,y:0.995,yref:"paper",yanchor:"top",xanchor:"right",text:st.formula+" sat.",showarrow:false,textangle:-90,bgcolor:"rgba(255,255,255,.75)",font:{size:10,color:"#8C8A83"}})});
+  return {shapes:sh,ann:an}}
+async function importRef(){
+  const r=await call("import_reference",{});
+  if(r.fallback){$("reffile").click();return}afterRef(r)}
+$("reffile").onchange=async e=>{const fs=[...e.target.files];if(!fs.length)return;
+  const arr=await Promise.all(fs.map(f=>new Promise(res=>{const rd=new FileReader();rd.onload=()=>res({name:f.name,b64:rd.result.split(",")[1]});rd.readAsDataURL(f)})));
+  afterRef(await call("import_reference",{files:arr}));$("reffile").value=""};
+function afterRef(r){if(r.errors&&r.errors.length)toast("导入失败："+r.errors.join("；"));else if(r.imported&&r.imported.length)toast("已导入："+r.imported.join("、"));loadRef()}
 
 /* ---------- quant ---------- */
 let Q=null,RATIOS=[];

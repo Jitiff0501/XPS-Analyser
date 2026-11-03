@@ -24,6 +24,7 @@ else:
 sys.path.insert(0, HERE)
 
 from xpsfit import core  # noqa: E402
+from xpsfit import reference  # noqa: E402
 import avantage_to_xpspeak as conv  # noqa: E402
 
 APP = "XPS Fit Studio"
@@ -164,6 +165,31 @@ def api(method, a):
         return open_paths(paths)
     if method == "view":
         return st.view(a["i"])
+    if method == "reference":
+        return reference_for(st.S(a["i"]))
+    if method == "import_reference":
+        paths = []
+        if a.get("files"):
+            tmp = tempfile.mkdtemp(prefix="xpsfit_ref")
+            for f in a["files"]:
+                pth = os.path.join(tmp, os.path.basename(f["name"]))
+                with open(pth, "wb") as fh:
+                    fh.write(base64.b64decode(f["b64"]))
+                paths.append(pth)
+        elif WINDOW is not None:
+            import webview
+            paths = list(WINDOW.create_file_dialog(webview.OPEN_DIALOG, allow_multiple=True, file_types=(
+                "NIST 导出 (*.zip;*.csv)", "所有文件 (*.*)")) or [])
+        else:
+            return {"fallback": True}
+        done, errors = [], []
+        for pth in paths:
+            try:
+                d = reference.import_file(pth, os.path.join(user_dir(), "reference"))
+                done += ["%s（%d 条）" % (el, v["records"]) for el, v in d.items()]
+            except Exception as e:
+                errors.append("%s：%s" % (os.path.basename(pth), e))
+        return {"imported": done, "errors": errors, "available": reference.available(user_dir())}
     s = st.S(a["i"]) if "i" in a and a["i"] is not None and st.specs else None
 
     if method == "rename":
@@ -296,6 +322,27 @@ def api(method, a):
     else:
         raise ValueError("未知操作 %s" % method)
     return dict(st.view(a["i"]), specs=st.summary())
+
+
+def reference_for(s):
+    """当前谱的推荐峰位：NIST 统计 + 标出与数据中峰位接近的化学态。"""
+    ref = reference.for_orbital(s.element, user_dir())
+    out = {"orbital": s.element, "available": reference.available(user_dir()), "ref": ref}
+    if not ref or ref.get("missing"):
+        return out
+    # 数据中的峰：扣背景后的平滑曲线上找局部极大
+    from scipy.signal import find_peaks
+    x, y, bg, _, _ = s.compute()
+    sig = core.smooth(y - bg, 7)
+    if len(sig) > 10 and np.ptp(sig) > 0:
+        k, pr = find_peaks(sig, prominence=0.05 * float(np.ptp(sig)))
+        found = [float(x[j]) for j in k]
+    else:
+        found = []
+    out["data_peaks"] = found
+    for st_ in ref["states"]:
+        st_["near"] = any(abs(st_["median"] - f) <= 0.3 for f in found)
+    return out
 
 
 def folder_files(d):
@@ -518,6 +565,9 @@ def add_peak(s, a):
         if kind == "unknown":   # 未知峰默认限制在添加位置 ±1.5 eV，避免“吃掉”主峰
             p["center"]["min"], p["center"]["max"] = c - 1.5, c + 1.5
         s.peaks.append(p)
+    if a.get("cmin") is not None and a.get("cmax") is not None and len(s.peaks) > n_before:
+        q = s.peaks[n_before]
+        q["center"]["min"], q["center"]["max"] = float(a["cmin"]), float(a["cmax"])
     for p in s.peaks[n_before:]:
         core.bound_center(p)
 
@@ -574,7 +624,9 @@ def smoke(out):
     page = urllib.request.urlopen(url).read()
     js = urllib.request.urlopen(url + "plotly.min.js").read()
     assert b"XPS Fit Studio" in page and len(js) > 1000000
-    lines = ["page ok", "templates %d" % len(ST.templates), "sf %d" % len(ST.sf)]
+    lines = ["page ok", "templates %d" % len(ST.templates), "sf %d" % len(ST.sf),
+             "reference %s" % ",".join(reference.available())]
+    assert "Cu" in reference.available(), "bundled NIST reference missing"
     vgd = os.environ.get("XPSFIT_SMOKE_VGD")
     if vgd:
         r = open_paths([vgd]); assert r["added"] == 1, r
