@@ -204,6 +204,10 @@ input[type=checkbox]{accent-color:var(--accent)}
         <h2 id="title"></h2>
         <div class="etabs" id="etabs"></div>
         <button class="btn sm ghost" onclick="resetView()" title="恢复完整视图（也可双击图）">⤢ 复位</button>
+        <div class="seg" id="clickkind" hidden title="图上点击时添加的峰类型">
+          <button data-k="single" class="on">单峰</button>
+          <button data-k="doublet">双峰</button>
+        </div>
         <div class="seg" id="modes">
           <button data-m="view" class="on">浏览</button>
           <button data-m="peak">点击加峰</button>
@@ -331,7 +335,7 @@ input[type=checkbox]{accent-color:var(--accent)}
         <label class="switch"><input type="checkbox" id="e_envelope" checked> 包络</label>
         <label class="switch"><input type="checkbox" id="e_fill" checked> 峰填充</label>
       </div>
-      <div class="opt"><span>原始数据</span><select class="in" id="e_raw" style="width:120px"><option value="markers">空心点</option><option value="line">细线</option></select></div>
+      <div class="opt"><span>原始数据</span><select class="in" id="e_raw" style="width:120px"><option value="line" selected>线</option><option value="markers">空心点</option></select></div>
       <div class="egrp">尺寸与格式</div>
       <div class="opt"><span>宽 × 高 (cm)</span><input class="in num" id="e_width_cm" value="8.5"><span style="min-width:0">×</span><input class="in num" id="e_height_cm" value="7"></div>
       <div class="opt"><span>字号 / DPI</span><input class="in num" id="e_font" value="9"><input class="in num" id="e_dpi" value="600"></div>
@@ -489,7 +493,7 @@ function renderPeaks(){
 }
 function draw(){
   const v=S.v;if(!v)return;
-  const T=[{x:v.be,y:v.y,mode:"markers",name:"原始数据",marker:{size:4.5,color:"rgba(0,0,0,0)",line:{color:"#6b6a64",width:1}},hovertemplate:"%{x:.2f} eV<br>%{y:.0f}<extra></extra>"}];
+  const T=[{x:v.be,y:v.y,mode:"lines",name:"原始数据",line:{color:"#3d3c38",width:1.2},hovertemplate:"%{x:.2f} eV<br>%{y:.0f}<extra></extra>"}];
   if(v.bg.type!=="None")T.push({x:v.x,y:v.bgline,mode:"lines",name:"背景",line:{color:"#A8A59B",width:1.4,dash:"dot"},hoverinfo:"skip"});
   v.comps.forEach((c,j)=>{const p=v.peaks[j],col=pcol(p,j),on=j===S.sel,r=p.role||"main";
     T.push({x:v.x,y:v.bgline,mode:"lines",line:{width:0},showlegend:false,hoverinfo:"skip"});
@@ -566,16 +570,30 @@ function hex(c,a){const n=parseInt(c.slice(1),16);return `rgba(${n>>16},${n>>8&2
 
 /* ---------- modes ---------- */
 document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+let CK="single";
+document.querySelectorAll("#clickkind button").forEach(b=>b.onclick=()=>{CK=b.dataset.k;
+  document.querySelectorAll("#clickkind button").forEach(x=>x.classList.toggle("on",x===b));setMode("peak")});
+// 常见轨道的自旋轨道分裂 (eV)；面积比按 p/d/f 自动
+const SPLIT={Al2p:0.44,Si2p:0.61,P2p:0.87,S2p:1.18,Cl2p:1.6,K2p:2.8,Ca2p:3.55,Ti2p:5.7,V2p:7.4,Cr2p:9.3,Mn2p:11.7,Fe2p:13.6,Co2p:15.0,Ni2p:17.3,Cu2p:19.8,Zn2p:23.1,
+  Zr3d:2.43,Nb3d:2.72,Mo3d:3.13,Ag3d:6.0,Pd3d:5.26,Ru3d:4.17,Sn3d:8.41,In3d:7.54,Hf4f:1.68,Ta4f:1.91,W4f:2.18,Pt4f:3.33,Au4f:3.67,Bi4f:5.3,Pb4f:4.86};
+function dblDefaults(el){const l=(el||"").slice(-1);const ratio={p:0.5,d:0.6667,f:0.75}[l];
+  return ratio?{split:SPLIT[el]??{p:5.7,d:2.4,f:2.18}[l],ratio}:null}
 function setMode(m){
   if(!S.v)return;S.mode=m;S.clicks=[];
+  $("clickkind").hidden=m!=="peak";
+  document.querySelectorAll("#clickkind button").forEach(x=>x.classList.toggle("on",x.dataset.k===CK));
   document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
-  $("hint").textContent={view:"拖动峰顶圆点可移动峰（上下改高度，按住 Shift 往右拖变宽、往左变窄）；框选放大，双击或“复位”恢复",peak:"在图上点击要加峰的位置，可连续添加；Esc 结束",bg:"在图上横向拖动框选背景范围，或点击两个端点"}[m];
+  $("hint").textContent={view:"拖峰顶圆点移动 · 上下改高度 · Shift+拖改宽度 · 双击复位",peak:CK==="doublet"?(()=>{const d=dblDefaults(S.v.element);return d?`点击添加双峰（${S.v.element}：分裂 ${d.split} eV、面积比 ${+d.ratio.toFixed(3)}，锁定；可在“编辑”中修改）；Esc 结束`:"当前谱不是 p/d/f 轨道，将使用 2p 默认值（5.7 eV / 0.5）；Esc 结束"})():"点击添加单峰，可连续添加；Esc 结束",bg:"在图上横向拖动框选背景范围，或点击两个端点"}[m];
   draw();
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){document.querySelectorAll(".scrim.open").forEach(s=>s.classList.remove("open"));setMode("view")}});
 async function onClick(ev){
   const x=ev.points[0].x;
-  if(S.mode==="peak"){await act("add_peak",{x});S.sel=S.v.peaks.length-1;renderPeaks();draw()}
+  if(S.mode==="peak"){
+    if(CK==="doublet"){const d=dblDefaults(S.v.element)||{split:5.7,ratio:0.5};
+      await act("add_peak",{kind:"doublet",center:x,split:d.split,ratio:d.ratio,lock_split:true,lock_ratio:true});S.sel=S.v.peaks.length-2}
+    else{await act("add_peak",{x});S.sel=S.v.peaks.length-1}
+    renderPeaks();draw()}
   else if(S.mode==="bg"){S.clicks.push(x);draw();
     if(S.clicks.length===2){const[a,b]=S.clicks.sort((a,b)=>a-b);$("bglo").value=a.toFixed(2);$("bghi").value=b.toFixed(2);setMode("view");setBg()}}
 }
@@ -678,11 +696,11 @@ function yLabelAuto(){const y=$("e_ylabel");if(!$("e_ynumbers").checked&&y.value
   else if($("e_ynumbers").checked&&y.value==="Intensity (a.u.)")y.value="Intensity (CPS)"}
 let prevT;
 function openExport(){if(!S.v){toast("请先打开数据");return}
-  try{const o=JSON.parse(localStorage.getItem("xpsfit_export")||"{}");for(const k in o){const e=$("e_"+k);if(e&&!["xmin","xmax"].includes(k)){e.type==="checkbox"?e.checked=o[k]:e.value=o[k]??""}}}catch(e){}
+  try{const o=JSON.parse(localStorage.getItem("xpsfit_export2")||"{}");for(const k in o){const e=$("e_"+k);if(e&&!["xmin","xmax"].includes(k)){e.type==="checkbox"?e.checked=o[k]:e.value=o[k]??""}}}catch(e){}
   $("e_xmax").value=Math.max(...S.v.be).toFixed(1);$("e_xmin").value=Math.min(...S.v.be).toFixed(1);
   $("exm").classList.add("open");preview()}
 document.querySelectorAll("#exm input,#exm select").forEach(e=>e.addEventListener(e.type==="checkbox"||e.tagName==="SELECT"?"change":"input",()=>{clearTimeout(prevT);prevT=setTimeout(preview,350)}));
-async function preview(){const o=eopts();try{localStorage.setItem("xpsfit_export",JSON.stringify(o))}catch(e){}
+async function preview(){const o=eopts();try{localStorage.setItem("xpsfit_export2",JSON.stringify(o))}catch(e){}
   const r=await call("preview_figure",{i:S.cur,opts:o});$("exprev").innerHTML=`<img src="data:image/png;base64,${r.png}">`}
 async function doExport(){const r=await call("export_figure",{i:S.cur,opts:eopts()});closeM("exm");toast(r.msg,r.path)}
 function fillTpl(list){$("tpl").innerHTML=list.map(()=>"<option></option>").join("");[...$("tpl").options].forEach((o,k)=>o.value=o.textContent=list[k])}

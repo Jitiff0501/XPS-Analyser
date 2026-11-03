@@ -388,7 +388,7 @@ def export(kind, a):
 FIG_DEFAULTS = {"fmt": "png", "width_cm": 8.5, "height_cm": 7.0, "dpi": 600, "font": 9,
                 "xmin": None, "xmax": None, "xstep": None, "xminor": 1,
                 "ynumbers": True, "ylabel": "Intensity (CPS)", "xlabel": "Binding Energy (eV)",
-                "legend": True, "legend_loc": "best", "title": True, "background": True, "envelope": True, "raw": "markers",
+                "legend": True, "legend_loc": "best", "title": True, "background": True, "envelope": True, "raw": "line",
                 "fill": True}
 
 
@@ -407,7 +407,7 @@ def figure(s, path, opts=None, dpi=None):
     fig = Figure(figsize=(float(o["width_cm"]) / 2.54, float(o["height_cm"]) / 2.54))
     ax = fig.add_subplot(111)
     if o["raw"] == "line":
-        ax.plot(s.be, s.y, "-", color="#222", lw=0.8, label="Raw")
+        ax.plot(s.be, s.y, "-", color="#222", lw=0.9, label="Raw")
     else:
         ax.plot(s.be, s.y, "o", ms=2.4, mfc="none", mec="#333", mew=0.5, label="Raw")
     if o["background"] and s.bg["type"] != "None":
@@ -468,8 +468,16 @@ def add_peak(s, a):
         return n
     lor = float(a.get("lor") or 30)
     if kind == "doublet":
-        nm = uniq(a.get("name") or s.element or "X")
-        s.peaks.extend(core.doublet(nm, c, float(a["split"]), float(a["ratio"]), w, h * w * 1.064, lor,
+        j_lab = {"p": ("3/2", "1/2"), "d": ("5/2", "3/2"), "f": ("7/2", "5/2")}.get(
+            (s.element or "p")[-1:], ("3/2", "1/2"))
+        if not a.get("split") or float(a["ratio"] or 0) <= 0:
+            raise ValueError("双峰需要分裂和面积比")
+        base = a.get("name") or s.element or "X"
+        k, nm = 2, base
+        while ("%s %s" % (nm, j_lab[0])) in names or ("%s %s" % (nm, j_lab[1])) in names:
+            nm = "%s (%d)" % (base, k); k += 1
+        labels = ("%s %s" % (nm, j_lab[0]), "%s %s" % (nm, j_lab[1]))
+        s.peaks.extend(core.doublet(nm, c, float(a["split"]), float(a["ratio"]), w, h * w * 1.064, lor, labels,
                                     fit_split=not a.get("lock_split", True), fit_ratio=not a.get("lock_ratio", True)))
     elif kind == "satellite":
         par = s.peaks[int(a["parent"])]
