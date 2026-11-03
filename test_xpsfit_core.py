@@ -133,6 +133,31 @@ class Core(unittest.TestCase):
         m = core.background(x, y, "Shirley", ylo=120000, yhi=125000)
         self.assertAlmostEqual(m[0], 120000); self.assertAlmostEqual(m[-1], 125000)
 
+    def test_points_background(self):
+        x = np.arange(927, 963.01, 0.1)
+        y = np.full_like(x, 1000.0)
+        pts = [[928, 128000], [949, 125500], [938, 125000], [962, 130000]]
+        bg = core.background(x, y, "Points", points=pts)
+        for px, py in pts:
+            self.assertAlmostEqual(float(np.interp(px, x, bg)), py, delta=1.0)
+        self.assertLessEqual(bg.max(), 130000 + 1e-6)          # PCHIP 不过冲
+        self.assertGreaterEqual(bg[(x >= 928) & (x <= 962)].min(), 125000 - 1e-6)
+        lin = core.background(x, y, "Points", points=pts, interp="linear")
+        self.assertAlmostEqual(float(np.interp(943.5, x, lin)), (125000 + 125500) / 2, delta=1)
+        s = core.Spectrum("Cu2p", x, y); s.bg = {"type": "Points", "points": pts, "lo": None, "hi": None, "navg": 3}
+        xr = s.be[s.region()]
+        self.assertAlmostEqual(xr.min(), 928, delta=0.05); self.assertAlmostEqual(xr.max(), 962, delta=0.05)
+
+    def test_shirley_robust_when_low_end_higher(self):
+        """低 BE 端落在相邻峰的上升沿（低端高于高端、中间数据低于背景）：背景必须保持在两端点之间。"""
+        x = np.arange(68, 80.01, 0.1)
+        y = 16000 + 12000 * np.exp(-((x - 75) / 1.0) ** 2) + 9000 * np.exp(-((x - 66.5) / 1.5) ** 2) - 2500 * np.exp(-((x - 71) / 1.2) ** 2)
+        for kind in ("Shirley", "Smart"):
+            bg = core.background(x, y, kind)
+            lo, hi = sorted((bg[0], bg[-1]))
+            self.assertGreaterEqual(bg.min(), min(lo, y.min()) - 1e-6, kind)
+            self.assertLessEqual(bg.max(), hi + 1e-6, kind)
+
 
 class Api(unittest.TestCase):
     """不开窗口，直接调用后端 API 走一遍完整流程。"""

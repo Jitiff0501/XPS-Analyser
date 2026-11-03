@@ -228,11 +228,19 @@ input[type=checkbox]{accent-color:var(--accent)}
     <div class="panel">
       <h3>背景</h3>
       <div class="row"><label>类型</label>
-        <select class="in" id="bgtype" onchange="setBg()"><option>Shirley</option><option value="Smart">Smart（Shirley，不高于数据）</option><option>Linear</option><option>Tougaard</option><option>None</option></select></div>
+        <select class="in" id="bgtype" onchange="setBg()"><option>Shirley</option><option value="Smart">Smart（Shirley，不高于数据）</option><option value="Points">自定义点（在图上点选）</option><option>Linear</option><option>Tougaard</option><option>None</option></select></div>
       <div class="row"><label>BE 范围</label><input class="in num" id="bglo"><span style="color:var(--ink3)">–</span><input class="in num" id="bghi"></div>
       <div class="row"><label>端点平均</label><input class="in num" id="bgn"><button class="btn sm" onclick="setBg()">应用</button></div>
+      <div id="bgauto_box">
       <div class="row"><label>端点强度</label><span id="bgends" class="note" style="margin:0;flex:1"></span><button class="btn sm" id="bgauto" onclick="bgAuto()">恢复自动</button></div>
       <p class="note" style="margin:4px 0 0">图上背景两端的方块可拖动：左右改范围，上下改端点强度。</p>
+      </div>
+      <div id="bgpts_box" hidden>
+        <div class="row"><label>曲线</label><select class="in" id="bginterp" onchange="sendPts()"><option value="smooth">平滑（不过冲）</option><option value="linear">折线</option></select></div>
+        <div class="row"><label>点选</label><label class="switch" style="min-width:0"><input type="checkbox" id="bgsnap" checked> 吸附到数据曲线</label></div>
+        <div class="row"><span id="bgpts_n" class="note" style="margin:0;flex:1"></span><button class="btn sm" onclick="setMode('bgpts')">编辑点</button><button class="btn sm" onclick="if(confirm('清除全部背景点？')){S.v.bg.points=[];sendPts()}">清除</button></div>
+        <p class="note" style="margin:4px 0 0">“编辑点”后在图上点击添加；拖动移动；右键或双击删除。背景范围 = 最左到最右的点。</p>
+      </div>
     </div>
     <div class="panel">
       <h3>峰 <span class="sub">双击行编辑</span></h3>
@@ -475,6 +483,8 @@ function setView(v){
   $("shift").value=+v.shift.toFixed(4);
   $("hvinfo").textContent="hν "+v.hv+" eV";
   $("bgtype").value=v.bg.type;
+  const isP=v.bg.type==="Points";$("bgpts_box").hidden=!isP;$("bgauto_box").hidden=isP;
+  if(isP){$("bginterp").value=v.bg.interp||"smooth";$("bgpts_n").textContent=`${(v.bg.points||[]).length} 个点`+((v.bg.points||[]).length<2?"（至少 2 个）":"")}
   const man=v.bg.ylo!=null||v.bg.yhi!=null;$("bgends").textContent=man?`手动（低 BE 端 ${v.bgline[0]?.toFixed(0)} · 高 BE 端 ${v.bgline[v.bgline.length-1]?.toFixed(0)}）`:"自动（端点平均）";$("bgauto").disabled=!man;$("bglo").value=v.region[0].toFixed(2);$("bghi").value=v.region[1].toFixed(2);$("bgn").value=v.bg.navg||3;
   const f=v.fit;$("fitinfo").textContent=f?`χ² ${fmt(f.chi2,4)}   约化 χ² ${fmt(f.rchi2,3)}   自由参数 ${f.nfree}${f.success?"":"   ⚠ "+f.message}`:"";
   if(S.sel!==null&&S.sel>=v.peaks.length)S.sel=null;
@@ -511,13 +521,15 @@ function draw(){
     yaxis:{domain:[.24,1],title:{text:"Intensity (CPS)"},gridcolor:"#F1EFE8",zeroline:false,linecolor:"#D9D5C8"},
     yaxis2:{domain:[0,.17],title:{text:"残差",font:{size:11}},gridcolor:"#F1EFE8",zeroline:true,zerolinecolor:"#D9D5C8",linecolor:"#D9D5C8"},
     legend:{traceorder:"normal",orientation:"h",x:0,y:1.02,yanchor:"bottom",font:{size:11.5},bgcolor:"rgba(0,0,0,0)"},
-    hovermode:"x",dragmode:S.mode==="view"?"zoom":S.mode==="bg"?"select":false,selectdirection:"h",shapes,showlegend:true,uirevision:v.i};
+    hovermode:S.mode==="bgpts"?false:"x",dragmode:S.mode==="view"?"zoom":S.mode==="bg"?"select":false,selectdirection:"h",shapes,showlegend:true,uirevision:v.i};
   // 峰顶拖动手柄
   const hx=[],hy=[],hc=[],hj=[];
   v.peaks.forEach((p,j)=>{if(!canMove(p).x&&!canMove(p).h)return;const c=v.comps[j];let k=0;for(let i=1;i<c.length;i++)if(c[i]-v.bgline[i]>c[k]-v.bgline[k])k=i;
     hx.push(p.center.value);hy.push(c[k]);hc.push(pcol(p,j));hj.push(j)});
   S.handles=hj;
-  if(v.bg.type!=="None"&&v.x.length){T.push({x:[v.x[0],v.x[v.x.length-1]],y:[v.bgline[0],v.bgline[v.bgline.length-1]],mode:"markers",name:"_b",showlegend:false,hoverinfo:"skip",
+  if(v.bg.type==="Points"&&(v.bg.points||[]).length){T.push({x:v.bg.points.map(p=>p[0]),y:v.bg.points.map(p=>p[1]),mode:"markers",name:"_p",showlegend:false,hoverinfo:"skip",
+    marker:{size:11,symbol:"diamond",color:S.mode==="bgpts"?"#C96442":"#fff",line:{color:"#C96442",width:2}}})}
+  else if(v.bg.type!=="None"&&v.x.length){T.push({x:[v.x[0],v.x[v.x.length-1]],y:[v.bgline[0],v.bgline[v.bgline.length-1]],mode:"markers",name:"_b",showlegend:false,hoverinfo:"skip",
     marker:{size:10,symbol:"square",color:"#fff",line:{color:"#8C8A83",width:2}}})}
   if(hx.length)T.push({x:hx,y:hy,mode:"markers",name:"_h",showlegend:false,hoverinfo:"skip",
     marker:{size:11,color:"#fff",line:{color:hc,width:2.2},symbol:"circle"}});
@@ -555,6 +567,13 @@ function dataAt(ev){const A=axes();return {x:A.xa.p2l(ev.clientX-A.r.left-A.xa._
 function bgAt(x){const X=S.v.x,B=S.v.bgline;if(x<=X[0])return B[0];if(x>=X[X.length-1])return B[B.length-1];
   let i=1;while(X[i]<x)i++;const t=(x-X[i-1])/(X[i]-X[i-1]);return B[i-1]+t*(B[i]-B[i-1])}
 $("plot").addEventListener("mousedown",ev=>{
+  if(ev.button===0&&S.v&&S.v.bg.type==="Points"&&(S.mode==="view"||S.mode==="bgpts")){
+    const k=hitPt(ev);
+    if(k!==null){ev.stopPropagation();ev.preventDefault();freezeAxes();DRAG={pt:k,moved:false,busy:false};return}
+    if(S.mode==="bgpts"){const A=axes();const px=ev.clientX-A.r.left-A.xa._offset,py=ev.clientY-A.r.top-A.ya._offset;
+      if(px<0||py<0||px>A.xa._length||py>A.ya._length)return;
+      ev.stopPropagation();ev.preventDefault();freezeAxes();const d=dataAt(ev);
+      S.v.bg.points=(S.v.bg.points||[]).concat([[d.x,snapY(d.x,d.y)]]).sort((a,b)=>a[0]-b[0]);sendPts();return}}
   if(ev.button!==0||S.mode!=="view")return;
   const e=hitBg(ev);
   if(e){ev.stopPropagation();ev.preventDefault();freezeAxes();DRAG={bg:e,moved:false,busy:false};return}
@@ -566,6 +585,9 @@ $("plot").addEventListener("mousedown",ev=>{
 window.addEventListener("mousemove",ev=>{
   const gd=$("plot");
   if(!DRAG){if(S.mode==="view"&&S.v&&ev.target.closest&&ev.target.closest("#plot")){const b=hitBg(ev),h=b?null:hitHandle(ev);const dc=gd.querySelector(".nsewdrag");if(dc)dc.style.cursor=b?"move":h!==null?"grab":""}return}
+  if(DRAG.pt!=null){DRAG.moved=true;const d=dataAt(ev);const be=S.v.be;const x=Math.min(Math.max(d.x,Math.min(...be)),Math.max(...be));
+    S.v.bg.points[DRAG.pt]=[x,ev.altKey?d.y:snapY(x,d.y)];$("hint").textContent=`背景点：${x.toFixed(2)} eV · ${S.v.bg.points[DRAG.pt][1].toFixed(0)}（按住 Alt 不吸附）`;
+    if(!DRAG.busy){const D=DRAG;D.busy=true;sendPts().finally(()=>{D.busy=false})}return}
   if(DRAG.bg){DRAG.moved=true;DRAG.last=dataAt(ev);const dc=gd.querySelector(".nsewdrag");if(dc)dc.style.cursor="move";
     $("hint").textContent=`背景${DRAG.bg==="lo"?"低":"高"} BE 端：${DRAG.last.x.toFixed(2)} eV · 强度 ${DRAG.last.y.toFixed(0)}`;
     if(!DRAG.busy)bgDragSend(DRAG);return}
@@ -589,10 +611,13 @@ async function bgDragSend(D){
   const keep=(D.bg==="lo")?{yhi:S.v.bg.yhi}:{ylo:S.v.bg.ylo};
   try{await act("set_bg",{bg:Object.assign(f,keep)})}finally{D.busy=false}
   if(D.last!==d)bgDragSend(D)}
-$("plot").addEventListener("dblclick",ev=>{const e=hitBg(ev);if(!e)return;ev.stopPropagation();ev.preventDefault();
+function delPt(ev){const k=hitPt(ev);if(k===null)return false;ev.stopPropagation();ev.preventDefault();S.v.bg.points.splice(k,1);sendPts();return true}
+$("plot").addEventListener("contextmenu",ev=>{delPt(ev)},true);
+$("plot").addEventListener("dblclick",ev=>{if(delPt(ev))return;const e=hitBg(ev);if(!e)return;ev.stopPropagation();ev.preventDefault();
   act("set_bg",{bg:Object.assign(bgFields(),e==="lo"?{ylo:null}:{yhi:null})})},true);
 window.addEventListener("mouseup",async()=>{
   if(!DRAG)return;const D=DRAG;DRAG=null;$("hint").textContent="";
+  if(D.pt!=null){if(D.moved){S.v.bg.points.sort((a,b)=>a[0]-b[0]);await sendPts()}return}
   if(D.bg){if(D.moved&&!D.busy)bgDragSend(D);return}
   if(!D.moved)return;
   await act("update_peak",{j:D.j,peak:S.v.peaks[D.j]});
@@ -615,7 +640,7 @@ function setMode(m){
   $("clickkind").hidden=m!=="peak";
   document.querySelectorAll("#clickkind button").forEach(x=>x.classList.toggle("on",x.dataset.k===CK));
   document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
-  $("hint").textContent={view:"拖峰顶圆点移动 · 上下改高度 · Shift+拖改宽度 · 双击复位",peak:CK==="doublet"?(()=>{const d=dblDefaults(S.v.element);return d?`点击添加双峰（${S.v.element}：分裂 ${d.split} eV、面积比 ${+d.ratio.toFixed(3)}，锁定；可在“编辑”中修改）；Esc 结束`:"当前谱不是 p/d/f 轨道，将使用 2p 默认值（5.7 eV / 0.5）；Esc 结束"})():"点击添加单峰，可连续添加；Esc 结束",bg:"在图上横向拖动框选背景范围，或点击两个端点"}[m];
+  $("hint").textContent={view:"拖峰顶圆点移动 · 上下改高度 · Shift+拖改宽度 · 双击复位",peak:CK==="doublet"?(()=>{const d=dblDefaults(S.v.element);return d?`点击添加双峰（${S.v.element}：分裂 ${d.split} eV、面积比 ${+d.ratio.toFixed(3)}，锁定；可在“编辑”中修改）；Esc 结束`:"当前谱不是 p/d/f 轨道，将使用 2p 默认值（5.7 eV / 0.5）；Esc 结束"})():"点击添加单峰，可连续添加；Esc 结束",bg:"在图上横向拖动框选背景范围，或点击两个端点",bgpts:"点击添加背景点 · 拖动移动 · 右键/双击删除 · Esc 完成"}[m];
   draw();
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){document.querySelectorAll(".scrim.open").forEach(s=>s.classList.remove("open"));setMode("view")}});
@@ -636,7 +661,13 @@ function calib(){if(S.sel===null){toast("先在峰表里选中 C1s 的 C-C 峰")
   if(confirm("把选中的峰定到 284.8 eV，并对同一样品的所有谱做同样平移？"))act("calib_c1s",{j:S.sel})}
 function bgAuto(){act("set_bg",{bg:Object.assign({},bgFields(),{ylo:null,yhi:null})})}
 function bgFields(){const n=s=>s.trim()===""?null:parseFloat(s);return {type:$("bgtype").value,lo:n($("bglo").value),hi:n($("bghi").value),navg:parseInt($("bgn").value)||3}}
-function setBg(){const n=s=>s.trim()===""?null:parseFloat(s);
+function sendPts(){const f=bgFields();f.type="Points";f.points=(S.v.bg.points||[]);f.interp=$("bginterp").value;return act("set_bg",{bg:f})}
+function snapY(x,y){if(!$("bgsnap").checked)return y;const be=S.v.be,Y=S.v.y;let k=0;for(let i=1;i<be.length;i++)if(Math.abs(be[i]-x)<Math.abs(be[k]-x))k=i;
+  let a=0,n=0;for(let i=Math.max(0,k-2);i<=Math.min(be.length-1,k+2);i++){a+=Y[i];n++}return a/n}
+function hitPt(ev){const A=axes(),v=S.v;if(!A||!v||v.bg.type!=="Points")return null;const px=ev.clientX-A.r.left,py=ev.clientY-A.r.top;
+  let best=null,bd=121;(v.bg.points||[]).forEach(([x,y],k)=>{const hx=A.xa._offset+A.xa.l2p(x),hy=A.ya._offset+A.ya.l2p(y);const d=(hx-px)**2+(hy-py)**2;if(d<bd){bd=d;best=k}});return best}
+function setBg(){if($("bgtype").value==="Points"){sendPts().then(()=>{if(!(S.v.bg.points||[]).length)setMode("bgpts")});return}
+  const n=s=>s.trim()===""?null:parseFloat(s);
   act("set_bg",{bg:{type:$("bgtype").value,lo:n($("bglo").value),hi:n($("bghi").value),navg:parseInt($("bgn").value)||3}})}
 
 /* ---------- peaks ---------- */

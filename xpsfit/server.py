@@ -61,7 +61,7 @@ class State:
         return self.specs[int(i)]
 
     def out_dir(self, s):
-        src = os.path.dirname(s.source) if s.source and not s.source.startswith(tempfile.gettempdir()) else ""
+        src = os.path.dirname(s.source) if s.source and "xpsfit_up" not in s.source else ""
         d = os.path.join(src, "xpsfit_output") if src else os.path.join(user_dir(), "output")
         os.makedirs(d, exist_ok=True)
         return d
@@ -188,6 +188,10 @@ def api(method, a):
         for k in ("ylo", "yhi"):
             if k in b:
                 s.bg[k] = None if b[k] is None else float(b[k])
+        if "points" in b:
+            s.bg["points"] = sorted([float(px), float(py)] for px, py in (b["points"] or []))
+        if "interp" in b:
+            s.bg["interp"] = b["interp"]
     elif method == "add_peak":
         add_peak(s, a)
     elif method == "update_peak":
@@ -326,6 +330,8 @@ def shift_spec(s, d):
     for k in ("lo", "hi"):
         if s.bg.get(k) is not None:
             s.bg[k] += d
+    for pt in s.bg.get("points") or []:
+        pt[0] += d
     for p in s.peaks:
         p["center"]["value"] += d
         for b in ("min", "max"):
@@ -366,7 +372,8 @@ def export(kind, a):
                 pd.DataFrame(curves(s)).iloc[::-1].to_excel(w, sheet_name=nm, index=False)
         return p
     s = st.S(a["i"])
-    base = os.path.join(st.out_dir(s), conv.safe_name(s.name))
+    nm = s.name if not s.sample or s.sample.startswith(("单独", "(")) else "%s_%s" % (s.sample, s.name)
+    base = os.path.join(st.out_dir(s), conv.safe_name(nm))
     if kind == "csv":
         p = base + "_curves.csv"
         cols = curves(s); keys = list(cols)
@@ -403,7 +410,9 @@ def figure(s, path, opts=None, dpi=None):
     from matplotlib.ticker import MultipleLocator, AutoMinorLocator, NullLocator
     o = dict(FIG_DEFAULTS); o.update({k: v for k, v in (opts or {}).items() if v is not None and v != ""})
     matplotlib.rcParams.update({"font.family": "sans-serif", "font.size": float(o["font"]),
-                                "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"],
+                                # 西文用 Arial；中文峰名逐字回退到雅黑/黑体等
+                                "font.sans-serif": ["Arial", "Helvetica", "Microsoft YaHei", "SimHei",
+                                                    "Noto Sans CJK SC", "WenQuanYi Zen Hei", "DejaVu Sans"],
                                 "xtick.direction": "in", "ytick.direction": "in"})
     cols = ["#3B6EA8", "#C4553A", "#4E9A6A", "#8A63B8", "#D08A2E", "#7A5C4F", "#C76B9E", "#3A9AA8"]
     x, y, bg, comps, env = s.compute()
@@ -431,6 +440,11 @@ def figure(s, path, opts=None, dpi=None):
     m = (s.be >= min(xmin, xmax)) & (s.be <= max(xmin, xmax))
     if m.sum() > 2:
         lo, hi = float(s.y[m].min()), float(s.y[m].max())
+        mr = (x >= min(xmin, xmax)) & (x <= max(xmin, xmax))   # 背景/峰也要完整显示
+        if mr.any() and (o["background"] or s.peaks):
+            lo = min(lo, float(bg[mr].min()))
+            if s.peaks and o["envelope"]:
+                hi = max(hi, float((bg + env)[mr].max()))
         pad = 0.06 * (hi - lo or 1)
         ax.set_ylim(lo - pad, hi + pad * (3 if o["legend"] and o["legend_loc"] != "outside" else 1.5))
     if o["xstep"]:
@@ -470,6 +484,7 @@ def add_peak(s, a):
             n = "%s (%d)" % (b, k); k += 1
         return n
     lor = float(a.get("lor") or 30)
+    n_before = len(s.peaks)
     if kind == "doublet":
         j_lab = {"p": ("3/2", "1/2"), "d": ("5/2", "3/2"), "f": ("7/2", "5/2")}.get(
             (s.element or "p")[-1:], ("3/2", "1/2"))
@@ -500,6 +515,8 @@ def add_peak(s, a):
         if kind == "unknown":   # 未知峰默认限制在添加位置 ±1.5 eV，避免“吃掉”主峰
             p["center"]["min"], p["center"]["max"] = c - 1.5, c + 1.5
         s.peaks.append(p)
+    for p in s.peaks[n_before:]:
+        core.bound_center(p)
 
 
 # ============================================================== HTTP
