@@ -1,0 +1,17 @@
+name: build-exe
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install pyinstaller pandas openpyxl xlrd
+      - run: python -m unittest -v test_avantage_to_xpspeak.py
+      - run: python -m PyInstaller --noconfirm --onefile --windowed --name Avantage2XPSPEAK --exclude-module matplotlib --exclude-module scipy --exclude-module IPython avantage_to_xpspeak.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Avantage2XPSPEAK-windows
+          path: dist/Avantage2XPSPEAK.exe
