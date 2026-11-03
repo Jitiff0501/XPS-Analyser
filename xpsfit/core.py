@@ -30,22 +30,37 @@ def _ends(x, y, navg):
     return float(np.mean(y[:n])), float(np.mean(y[-n:]))
 
 
-def background(x, y, kind="Shirley", navg=3, tougaard_B=2866.0, tougaard_C=1643.0):
-    """x 为升序 BE。返回与 y 同长的背景。"""
+def smooth(y, n=5):
+    if len(y) < n:
+        return y.copy()
+    k = np.ones(n) / n
+    ys = np.convolve(np.pad(y, n // 2, mode="edge"), k, mode="valid")
+    return ys[:len(y)]
+
+
+def background(x, y, kind="Shirley", navg=3, tougaard_B=2866.0, tougaard_C=1643.0, ylo=None, yhi=None):
+    """x 为升序 BE。返回与 y 同长的背景。
+    ylo / yhi：手动指定低 BE 端 / 高 BE 端的背景强度（None = 端点若干点平均）。
+    Smart：Shirley，但任何位置都不高于（平滑后的）数据。"""
     x = np.asarray(x, float); y = np.asarray(y, float)
     if kind in (None, "", "None", "无"):
         return np.zeros_like(y)
     yl, yh = _ends(x, y, navg)          # 低 BE 端、高 BE 端
+    if ylo is not None: yl = float(ylo)
+    if yhi is not None: yh = float(yhi)
     if kind in ("Linear", "线性"):
         return yl + (yh - yl) * (x - x[0]) / (x[-1] - x[0] or 1)
-    if kind == "Shirley":
+    if kind in ("Shirley", "Smart"):
+        ys = smooth(y) if kind == "Smart" else None
         bg = np.full_like(y, yl)
-        for _ in range(100):
+        for _ in range(200):
             s = y - bg
             # 累积面积：从低 BE 端积到 x 处
             cum = np.concatenate([[0.0], np.cumsum(0.5 * (s[1:] + s[:-1]) * np.diff(x))])
             tot = cum[-1]
             new = yl + (yh - yl) * (cum / tot if tot else 0)
+            if ys is not None:
+                new = np.minimum(new, ys)
             if np.max(np.abs(new - bg)) < 1e-6 * max(1.0, abs(yh)):
                 bg = new; break
             bg = new
@@ -238,14 +253,16 @@ class Spectrum:
         """返回 (x, y, bg, comps, envelope) —— 仅背景区间内。"""
         m = self.region()
         x, y = self.be[m], self.y[m]
-        bg = background(x, y, self.bg["type"], int(self.bg.get("navg", 3)))
+        bg = background(x, y, self.bg["type"], int(self.bg.get("navg", 3)),
+                        ylo=self.bg.get("ylo"), yhi=self.bg.get("yhi"))
         comps, env = model(x, self.peaks)
         return x, y, bg, comps, env
 
     def do_fit(self):
         m = self.region()
         x, y = self.be[m], self.y[m]
-        bg = background(x, y, self.bg["type"], int(self.bg.get("navg", 3)))
+        bg = background(x, y, self.bg["type"], int(self.bg.get("navg", 3)),
+                        ylo=self.bg.get("ylo"), yhi=self.bg.get("yhi"))
         self.last_fit = fit(x, y, bg, self.peaks)
         return self.last_fit
 

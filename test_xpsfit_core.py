@@ -120,6 +120,19 @@ class Core(unittest.TestCase):
         r1, r2 = (r["elements"]["O1s"] / r["elements"]["Al2p"] for r in res)
         self.assertGreater(r2, r1 * 1.5)                          # S2 的 O 信号是 2 倍
 
+    def test_smart_and_manual_endpoints(self):
+        """两峰间数据低于端点（仪器本底下倾）：Shirley 会高于数据，Smart 不会。"""
+        x = np.arange(927, 963.01, 0.1)
+        pk = [core.new_peak("a", 932.4, 1.2, 60000, 30), core.new_peak("b", 952.2, 1.4, 25000, 30)]
+        dip = -5000 * np.exp(-((x - 943) / 6) ** 2)
+        y = 128000 + core.model(x, pk)[1] + dip + 2000 * (x > 955)
+        sh = core.background(x, y, "Shirley")
+        sm = core.background(x, y, "Smart")
+        self.assertGreater(np.max(sh - y), 1000)
+        self.assertLessEqual(np.max(sm - core.smooth(y)), 1e-6)
+        m = core.background(x, y, "Shirley", ylo=120000, yhi=125000)
+        self.assertAlmostEqual(m[0], 120000); self.assertAlmostEqual(m[-1], 125000)
+
 
 class Api(unittest.TestCase):
     """不开窗口，直接调用后端 API 走一遍完整流程。"""

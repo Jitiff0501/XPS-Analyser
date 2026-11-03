@@ -228,9 +228,11 @@ input[type=checkbox]{accent-color:var(--accent)}
     <div class="panel">
       <h3>背景</h3>
       <div class="row"><label>类型</label>
-        <select class="in" id="bgtype" onchange="setBg()"><option>Shirley</option><option>Linear</option><option>Tougaard</option><option>None</option></select></div>
+        <select class="in" id="bgtype" onchange="setBg()"><option>Shirley</option><option value="Smart">Smart（Shirley，不高于数据）</option><option>Linear</option><option>Tougaard</option><option>None</option></select></div>
       <div class="row"><label>BE 范围</label><input class="in num" id="bglo"><span style="color:var(--ink3)">–</span><input class="in num" id="bghi"></div>
       <div class="row"><label>端点平均</label><input class="in num" id="bgn"><button class="btn sm" onclick="setBg()">应用</button></div>
+      <div class="row"><label>端点强度</label><span id="bgends" class="note" style="margin:0;flex:1"></span><button class="btn sm" id="bgauto" onclick="bgAuto()">恢复自动</button></div>
+      <p class="note" style="margin:4px 0 0">图上背景两端的方块可拖动：左右改范围，上下改端点强度。</p>
     </div>
     <div class="panel">
       <h3>峰 <span class="sub">双击行编辑</span></h3>
@@ -472,7 +474,8 @@ function setView(v){
   $("title").textContent=v.sample;$("title").title=v.sample+" / "+v.name;
   $("shift").value=+v.shift.toFixed(4);
   $("hvinfo").textContent="hν "+v.hv+" eV";
-  $("bgtype").value=v.bg.type;$("bglo").value=v.region[0].toFixed(2);$("bghi").value=v.region[1].toFixed(2);$("bgn").value=v.bg.navg||3;
+  $("bgtype").value=v.bg.type;
+  const man=v.bg.ylo!=null||v.bg.yhi!=null;$("bgends").textContent=man?`手动（低 BE 端 ${v.bgline[0]?.toFixed(0)} · 高 BE 端 ${v.bgline[v.bgline.length-1]?.toFixed(0)}）`:"自动（端点平均）";$("bgauto").disabled=!man;$("bglo").value=v.region[0].toFixed(2);$("bghi").value=v.region[1].toFixed(2);$("bgn").value=v.bg.navg||3;
   const f=v.fit;$("fitinfo").textContent=f?`χ² ${fmt(f.chi2,4)}   约化 χ² ${fmt(f.rchi2,3)}   自由参数 ${f.nfree}${f.success?"":"   ⚠ "+f.message}`:"";
   if(S.sel!==null&&S.sel>=v.peaks.length)S.sel=null;
   renderPeaks();draw();
@@ -514,15 +517,18 @@ function draw(){
   v.peaks.forEach((p,j)=>{if(!canMove(p).x&&!canMove(p).h)return;const c=v.comps[j];let k=0;for(let i=1;i<c.length;i++)if(c[i]-v.bgline[i]>c[k]-v.bgline[k])k=i;
     hx.push(p.center.value);hy.push(c[k]);hc.push(pcol(p,j));hj.push(j)});
   S.handles=hj;
+  if(v.bg.type!=="None"&&v.x.length){T.push({x:[v.x[0],v.x[v.x.length-1]],y:[v.bgline[0],v.bgline[v.bgline.length-1]],mode:"markers",name:"_b",showlegend:false,hoverinfo:"skip",
+    marker:{size:10,symbol:"square",color:"#fff",line:{color:"#8C8A83",width:2}}})}
   if(hx.length)T.push({x:hx,y:hy,mode:"markers",name:"_h",showlegend:false,hoverinfo:"skip",
     marker:{size:11,color:"#fff",line:{color:hc,width:2.2},symbol:"circle"}});
+  if(S.xr&&S.fixFor===v.i){L.xaxis.autorange=false;L.xaxis.range=S.xr;L.yaxis.autorange=false;L.yaxis.range=S.yr}
   Plotly.react("plot",T,L,{displaylogo:false,displayModeBar:false,responsive:true,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]});
   const pl=$("plot");pl.removeAllListeners&&pl.removeAllListeners("plotly_click");pl.on("plotly_click",onClick);
   pl.removeAllListeners&&pl.removeAllListeners("plotly_selected");
   pl.on("plotly_selected",ev=>{if(S.mode!=="bg"||!ev||!ev.range||!ev.range.x)return;const[a,b]=ev.range.x.slice().sort((a,b)=>a-b);
     $("bglo").value=a.toFixed(2);$("bghi").value=b.toFixed(2);setMode("view");setBg()});
 }
-function resetView(){Plotly.relayout("plot",{"xaxis.autorange":"reversed","yaxis.autorange":true,"yaxis2.autorange":true})}
+function resetView(){S.xr=S.yr=null;Plotly.relayout("plot",{"xaxis.autorange":"reversed","yaxis.autorange":true,"yaxis2.autorange":true})}
 function canMove(p){const l=new Set(p.linked||[]);return {x:!p.center.fixed&&!l.has("center"),h:!p.area.fixed&&!l.has("area"),w:!p.fwhm.fixed&&!l.has("fwhm")}}
 function glPeak(x,c,w,a,lor){const e=Math.min(Math.max(lor/100,0),1),L2=Math.LN2;w=Math.max(w,1e-6);
   return x.map(t=>{const d=t-c;return a*((1-e)*Math.sqrt(4*L2/Math.PI)/w*Math.exp(-4*L2*d*d/(w*w))+e*(2/Math.PI)*w/(4*d*d+w*w))})}
@@ -536,18 +542,33 @@ function hitHandle(ev){
   S.handles.forEach(j=>{const p=S.v.peaks[j],c=S.v.comps[j];let k=0;for(let i=1;i<c.length;i++)if(c[i]-S.v.bgline[i]>c[k]-S.v.bgline[k])k=i;
     const hx=A.xa._offset+A.xa.l2p(p.center.value),hy=A.ya._offset+A.ya.l2p(c[k]);const d=(hx-px)**2+(hy-py)**2;if(d<bd){bd=d;best=j}});
   return best}
+function freezeAxes(){const fl=$("plot")._fullLayout;if(!fl)return;
+  // 拖动时固定坐标范围，避免自动缩放导致鼠标与手柄错位；“复位”可恢复自动
+  S.xr=fl.xaxis.range.slice();S.yr=fl.yaxis.range.slice();S.fixFor=S.cur;
+  Plotly.relayout("plot",{"xaxis.range":S.xr,"yaxis.range":S.yr})}
+function hitBg(ev){
+  const A=axes(),v=S.v;if(!A||!v||v.bg.type==="None"||!v.x.length)return null;const px=ev.clientX-A.r.left,py=ev.clientY-A.r.top;
+  const pts=[["lo",v.x[0],v.bgline[0]],["hi",v.x[v.x.length-1],v.bgline[v.bgline.length-1]]];
+  for(const[e,x,y]of pts){const hx=A.xa._offset+A.xa.l2p(x),hy=A.ya._offset+A.ya.l2p(y);if((hx-px)**2+(hy-py)**2<121)return e}
+  return null}
 function dataAt(ev){const A=axes();return {x:A.xa.p2l(ev.clientX-A.r.left-A.xa._offset),y:A.ya.p2l(ev.clientY-A.r.top-A.ya._offset)}}
 function bgAt(x){const X=S.v.x,B=S.v.bgline;if(x<=X[0])return B[0];if(x>=X[X.length-1])return B[B.length-1];
   let i=1;while(X[i]<x)i++;const t=(x-X[i-1])/(X[i]-X[i-1]);return B[i-1]+t*(B[i]-B[i-1])}
 $("plot").addEventListener("mousedown",ev=>{
-  if(ev.button!==0||S.mode!=="view")return;const j=hitHandle(ev);if(j===null)return;
-  ev.stopPropagation();ev.preventDefault();
+  if(ev.button!==0||S.mode!=="view")return;
+  const e=hitBg(ev);
+  if(e){ev.stopPropagation();ev.preventDefault();freezeAxes();DRAG={bg:e,moved:false,busy:false};return}
+  const j=hitHandle(ev);if(j===null)return;
+  ev.stopPropagation();ev.preventDefault();freezeAxes();
   const p=S.v.peaks[j];DRAG={j,start:dataAt(ev),px0:ev.clientX,c0:p.center.value,w0:p.fwhm.value,a0:p.area.value,mv:canMove(p),moved:false};
   S.sel=j;renderPeaks();
 },true);
 window.addEventListener("mousemove",ev=>{
   const gd=$("plot");
-  if(!DRAG){if(S.mode==="view"&&S.v&&ev.target.closest&&ev.target.closest("#plot")){const h=hitHandle(ev);const dc=gd.querySelector(".nsewdrag");if(dc)dc.style.cursor=h!==null?"grab":""}return}
+  if(!DRAG){if(S.mode==="view"&&S.v&&ev.target.closest&&ev.target.closest("#plot")){const b=hitBg(ev),h=b?null:hitHandle(ev);const dc=gd.querySelector(".nsewdrag");if(dc)dc.style.cursor=b?"move":h!==null?"grab":""}return}
+  if(DRAG.bg){DRAG.moved=true;DRAG.last=dataAt(ev);const dc=gd.querySelector(".nsewdrag");if(dc)dc.style.cursor="move";
+    $("hint").textContent=`背景${DRAG.bg==="lo"?"低":"高"} BE 端：${DRAG.last.x.toFixed(2)} eV · 强度 ${DRAG.last.y.toFixed(0)}`;
+    if(!DRAG.busy)bgDragSend(DRAG);return}
   const d=dataAt(ev),p=S.v.peaks[DRAG.j];DRAG.moved=true;
   if(ev.shiftKey&&DRAG.mv.w){p.fwhm.value=Math.min(Math.max(0.1,DRAG.w0*Math.exp((ev.clientX-DRAG.px0)/120)),8);
     if(DRAG.mv.h){const h0=DRAG.a0*apexFactor(DRAG.w0,p.lor.value);p.area.value=h0/apexFactor(p.fwhm.value,p.lor.value)}}
@@ -560,8 +581,19 @@ window.addEventListener("mousemove",ev=>{
   $("hint").textContent=`${p.name}: BE ${p.center.value.toFixed(2)} eV · FWHM ${p.fwhm.value.toFixed(2)} · 高度 ${(p.area.value*apexFactor(p.fwhm.value,p.lor.value)).toFixed(0)}`;
   cancelAnimationFrame(DRAG.raf);DRAG.raf=requestAnimationFrame(draw);
 });
+async function bgDragSend(D){
+  if(!D||!D.last)return;D.busy=true;const d=D.last;
+  const be=S.v.be,mn=Math.min(...be),mx=Math.max(...be);const x=Math.min(Math.max(d.x,mn),mx);
+  const f=bgFields();
+  if(D.bg==="lo"){f.lo=Math.min(x,(f.hi??mx)-0.5);f.ylo=d.y}else{f.hi=Math.max(x,(f.lo??mn)+0.5);f.yhi=d.y}
+  const keep=(D.bg==="lo")?{yhi:S.v.bg.yhi}:{ylo:S.v.bg.ylo};
+  try{await act("set_bg",{bg:Object.assign(f,keep)})}finally{D.busy=false}
+  if(D.last!==d)bgDragSend(D)}
+$("plot").addEventListener("dblclick",ev=>{const e=hitBg(ev);if(!e)return;ev.stopPropagation();ev.preventDefault();
+  act("set_bg",{bg:Object.assign(bgFields(),e==="lo"?{ylo:null}:{yhi:null})})},true);
 window.addEventListener("mouseup",async()=>{
   if(!DRAG)return;const D=DRAG;DRAG=null;$("hint").textContent="";
+  if(D.bg){if(D.moved&&!D.busy)bgDragSend(D);return}
   if(!D.moved)return;
   await act("update_peak",{j:D.j,peak:S.v.peaks[D.j]});
 });
@@ -602,6 +634,8 @@ async function onClick(ev){
 function setShift(){act("set_shift",{shift:parseFloat($("shift").value)||0})}
 function calib(){if(S.sel===null){toast("先在峰表里选中 C1s 的 C-C 峰");return}
   if(confirm("把选中的峰定到 284.8 eV，并对同一样品的所有谱做同样平移？"))act("calib_c1s",{j:S.sel})}
+function bgAuto(){act("set_bg",{bg:Object.assign({},bgFields(),{ylo:null,yhi:null})})}
+function bgFields(){const n=s=>s.trim()===""?null:parseFloat(s);return {type:$("bgtype").value,lo:n($("bglo").value),hi:n($("bghi").value),navg:parseInt($("bgn").value)||3}}
 function setBg(){const n=s=>s.trim()===""?null:parseFloat(s);
   act("set_bg",{bg:{type:$("bgtype").value,lo:n($("bglo").value),hi:n($("bghi").value),navg:parseInt($("bgn").value)||3}})}
 

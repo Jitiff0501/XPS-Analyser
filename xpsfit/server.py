@@ -185,6 +185,9 @@ def api(method, a):
     elif method == "set_bg":
         b = a["bg"]
         s.bg.update({"type": b["type"], "lo": b.get("lo"), "hi": b.get("hi"), "navg": max(1, int(b.get("navg", 3)))})
+        for k in ("ylo", "yhi"):
+            if k in b:
+                s.bg[k] = None if b[k] is None else float(b[k])
     elif method == "add_peak":
         add_peak(s, a)
     elif method == "update_peak":
