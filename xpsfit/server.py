@@ -213,16 +213,31 @@ def api(method, a):
         buf = io.BytesIO()
         figure(s, buf, dict(a.get("opts") or {}, fmt="png"), dpi=110)
         return {"png": base64.b64encode(buf.getvalue()).decode()}
-    elif method == "equal_fwhm":
+    elif method == "equal_param":
+        # 多选绑定：members 中的峰与参考峰 j 的 FWHM（或 L%）相等；其余原先绑到参考峰的解除
         ref = s.peaks[int(a["j"])]
+        param = a.get("param", "fwhm")
+        key = "fwhm_ratio" if param == "fwhm" else "lor_same"
+        members = {int(m) for m in a.get("members", [])} - {int(a["j"])}
         n = 0
-        for q in s.peaks:
-            if q is ref or q.get("pair") or q.get("role") == "unknown":
+        for k, q in enumerate(s.peaks):
+            if q is ref or q.get("pair"):
                 continue
-            q["link"] = dict(q.get("link") or {}, ref=ref["name"], fwhm_ratio=1.0)
-            q["link"].pop("fwhm_ratio_fit", None)
-            n += 1
-        return dict(st.view(a["i"]), specs=st.summary(), msg="%d 个峰的 FWHM 已与 “%s” 绑定相等" % (n, ref["name"]))
+            ln = dict(q.get("link") or {})
+            if k in members:
+                if ln.get("ref") not in (None, ref["name"]) and any(ln.get(x) is not None for x in core.LINK_KEYS + ("lor_same",)):
+                    # 已绑定到别的峰：保留原绑定项，但改参考会破坏它们，因此跳过
+                    continue
+                ln["ref"] = ref["name"]
+                ln[key] = 1.0 if key == "fwhm_ratio" else True
+                ln.pop("fwhm_ratio_fit", None)
+                q[param]["fixed"] = False
+                n += 1
+            elif ln.get("ref") == ref["name"] and ln.get(key) is not None:
+                ln.pop(key, None); ln.pop(key + "_fit", None)
+            q["link"] = ln
+        nm = "FWHM" if param == "fwhm" else "L%"
+        return dict(st.view(a["i"]), specs=st.summary(), msg="%d 个峰的 %s 与 “%s” 相等" % (n, nm, ref["name"]))
     elif method == "clear_peaks":
         s.peaks, s.last_fit = [], None
     elif method == "apply_template":
@@ -292,6 +307,9 @@ def open_paths(paths):
     for p in paths:
         try:
             new = ST.load_path(p)
+            for t in new:   # 浏览器上传的单个文件：临时目录名没有意义
+                if t.sample.startswith("xpsfit_up"):
+                    t.sample = "单独打开的文件"
             if not new:
                 raise RuntimeError("没有识别到谱数据")
             ST.specs.extend(new); added += len(new)

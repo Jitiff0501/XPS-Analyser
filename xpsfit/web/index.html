@@ -76,6 +76,9 @@ aside.left{border-right:1px solid var(--line);padding:14px 10px;overflow:auto}
 .grp.closed .car{transform:rotate(-90deg)}
 .grp.closed .items{display:none}
 .spec{margin-left:8px}
+.eqi{display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:7px;cursor:pointer}
+.eqi:hover{background:var(--sunk)}
+.eqi input:disabled+.sw{opacity:.4}
 .ratio{display:flex;align-items:center;gap:8px;margin:12px 0 6px;flex-wrap:wrap}
 .ratio select{width:auto;min-width:150px}
 .qsec{font:500 15px/1.2 var(--serif);margin:16px 0 6px}
@@ -200,6 +203,7 @@ input[type=checkbox]{accent-color:var(--accent)}
       <div class="plothead" id="plothead" hidden>
         <h2 id="title"></h2>
         <div class="etabs" id="etabs"></div>
+        <button class="btn sm ghost" onclick="resetView()" title="恢复完整视图（也可双击图）">⤢ 复位</button>
         <div class="seg" id="modes">
           <button data-m="view" class="on">浏览</button>
           <button data-m="peak">点击加峰</button>
@@ -232,7 +236,7 @@ input[type=checkbox]{accent-color:var(--accent)}
         <button class="btn sm" onclick="delPeak()">－ 删除峰</button>
         <button class="btn sm" onclick="editPeak()">编辑</button>
         <button class="btn sm" onclick="setMode('peak')">图上点击加</button>
-        <button class="btn sm" onclick="eqFwhm()" title="把其他主峰的 FWHM 绑定为与选中峰相等">FWHM 相等</button>
+        <button class="btn sm" onclick="openEq()" title="多选峰，让 FWHM 或 L% 相等">参数相等…</button>
         <button class="btn sm" onclick="if(confirm('删除全部峰？'))act('clear_peaks')">清空</button>
         <button class="btn sm" onclick="saveTpl()">存为模板</button>
       </div>
@@ -291,6 +295,18 @@ input[type=checkbox]{accent-color:var(--accent)}
   </div>
   <p class="note" id="a_note"></p>
   <div class="foot"><button class="btn ghost" onclick="closeM('addm')">取消</button><button class="btn primary" onclick="addPeak()">添加</button></div>
+</div></div>
+
+<!-- equal params -->
+<div class="scrim" id="eqm"><div class="modal" style="width:min(520px,94vw)">
+  <h4>参数相等绑定</h4>
+  <div class="row"><label>参数</label><select class="in" id="eq_param" onchange="eqList()"><option value="fwhm">FWHM（半高峰宽）</option><option value="lor">L%（洛伦兹比例）</option></select></div>
+  <div class="row"><label>参考峰</label><select class="in" id="eq_ref" onchange="eqList()"></select></div>
+  <div class="row" style="justify-content:space-between"><span class="note" style="margin:0">勾选要与参考峰相等的峰（可多选）；取消勾选即解除</span>
+    <span><button class="btn sm ghost" onclick="eqAll(true)">全选</button><button class="btn sm ghost" onclick="eqAll(false)">全不选</button></span></div>
+  <div id="eq_list" class="box" style="display:flex;flex-direction:column;gap:2px;max-height:300px;overflow:auto"></div>
+  <p class="note">相等后拟合时这些峰一起变化。要把数值锁死：编辑参考峰，勾选 FWHM 的“固定”。双峰副峰自动跟随自己的主峰。</p>
+  <div class="foot"><button class="btn ghost" onclick="closeM('eqm')">取消</button><button class="btn primary" onclick="saveEq()">应用</button></div>
 </div></div>
 
 <!-- export -->
@@ -489,12 +505,62 @@ function draw(){
     yaxis2:{domain:[0,.17],title:{text:"残差",font:{size:11}},gridcolor:"#F1EFE8",zeroline:true,zerolinecolor:"#D9D5C8",linecolor:"#D9D5C8"},
     legend:{traceorder:"normal",orientation:"h",x:0,y:1.02,yanchor:"bottom",font:{size:11.5},bgcolor:"rgba(0,0,0,0)"},
     hovermode:"x",dragmode:S.mode==="view"?"zoom":S.mode==="bg"?"select":false,selectdirection:"h",shapes,showlegend:true,uirevision:v.i};
-  Plotly.react("plot",T,L,{displaylogo:false,responsive:true,modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]});
+  // 峰顶拖动手柄
+  const hx=[],hy=[],hc=[],hj=[];
+  v.peaks.forEach((p,j)=>{if(!canMove(p).x&&!canMove(p).h)return;const c=v.comps[j];let k=0;for(let i=1;i<c.length;i++)if(c[i]-v.bgline[i]>c[k]-v.bgline[k])k=i;
+    hx.push(p.center.value);hy.push(c[k]);hc.push(pcol(p,j));hj.push(j)});
+  S.handles=hj;
+  if(hx.length)T.push({x:hx,y:hy,mode:"markers",name:"_h",showlegend:false,hoverinfo:"skip",
+    marker:{size:11,color:"#fff",line:{color:hc,width:2.2},symbol:"circle"}});
+  Plotly.react("plot",T,L,{displaylogo:false,displayModeBar:false,responsive:true,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]});
   const pl=$("plot");pl.removeAllListeners&&pl.removeAllListeners("plotly_click");pl.on("plotly_click",onClick);
   pl.removeAllListeners&&pl.removeAllListeners("plotly_selected");
   pl.on("plotly_selected",ev=>{if(S.mode!=="bg"||!ev||!ev.range||!ev.range.x)return;const[a,b]=ev.range.x.slice().sort((a,b)=>a-b);
     $("bglo").value=a.toFixed(2);$("bghi").value=b.toFixed(2);setMode("view");setBg()});
 }
+function resetView(){Plotly.relayout("plot",{"xaxis.autorange":"reversed","yaxis.autorange":true,"yaxis2.autorange":true})}
+function canMove(p){const l=new Set(p.linked||[]);return {x:!p.center.fixed&&!l.has("center"),h:!p.area.fixed&&!l.has("area"),w:!p.fwhm.fixed&&!l.has("fwhm")}}
+function glPeak(x,c,w,a,lor){const e=Math.min(Math.max(lor/100,0),1),L2=Math.LN2;w=Math.max(w,1e-6);
+  return x.map(t=>{const d=t-c;return a*((1-e)*Math.sqrt(4*L2/Math.PI)/w*Math.exp(-4*L2*d*d/(w*w))+e*(2/Math.PI)*w/(4*d*d+w*w))})}
+function apexFactor(w,lor){const e=Math.min(Math.max(lor/100,0),1);return (1-e)*Math.sqrt(4*Math.LN2/Math.PI)/w+e*2/(Math.PI*w)}
+/* ---- 拖动峰 ---- */
+let DRAG=null;
+function axes(){const gd=$("plot"),fl=gd._fullLayout;return fl?{xa:fl.xaxis,ya:fl.yaxis,r:gd.getBoundingClientRect()}:null}
+function hitHandle(ev){
+  const A=axes();if(!A||!S.v||!S.handles)return null;const px=ev.clientX-A.r.left,py=ev.clientY-A.r.top;
+  let best=null,bd=144;
+  S.handles.forEach(j=>{const p=S.v.peaks[j],c=S.v.comps[j];let k=0;for(let i=1;i<c.length;i++)if(c[i]-S.v.bgline[i]>c[k]-S.v.bgline[k])k=i;
+    const hx=A.xa._offset+A.xa.l2p(p.center.value),hy=A.ya._offset+A.ya.l2p(c[k]);const d=(hx-px)**2+(hy-py)**2;if(d<bd){bd=d;best=j}});
+  return best}
+function dataAt(ev){const A=axes();return {x:A.xa.p2l(ev.clientX-A.r.left-A.xa._offset),y:A.ya.p2l(ev.clientY-A.r.top-A.ya._offset)}}
+function bgAt(x){const X=S.v.x,B=S.v.bgline;if(x<=X[0])return B[0];if(x>=X[X.length-1])return B[B.length-1];
+  let i=1;while(X[i]<x)i++;const t=(x-X[i-1])/(X[i]-X[i-1]);return B[i-1]+t*(B[i]-B[i-1])}
+$("plot").addEventListener("mousedown",ev=>{
+  if(ev.button!==0||S.mode!=="view")return;const j=hitHandle(ev);if(j===null)return;
+  ev.stopPropagation();ev.preventDefault();
+  const p=S.v.peaks[j];DRAG={j,start:dataAt(ev),px0:ev.clientX,c0:p.center.value,w0:p.fwhm.value,a0:p.area.value,mv:canMove(p),moved:false};
+  S.sel=j;renderPeaks();
+},true);
+window.addEventListener("mousemove",ev=>{
+  const gd=$("plot");
+  if(!DRAG){if(S.mode==="view"&&S.v&&ev.target.closest&&ev.target.closest("#plot")){const h=hitHandle(ev);const dc=gd.querySelector(".nsewdrag");if(dc)dc.style.cursor=h!==null?"grab":""}return}
+  const d=dataAt(ev),p=S.v.peaks[DRAG.j];DRAG.moved=true;
+  if(ev.shiftKey&&DRAG.mv.w){p.fwhm.value=Math.min(Math.max(0.1,DRAG.w0*Math.exp((ev.clientX-DRAG.px0)/120)),8);
+    if(DRAG.mv.h){const h0=DRAG.a0*apexFactor(DRAG.w0,p.lor.value);p.area.value=h0/apexFactor(p.fwhm.value,p.lor.value)}}
+  else{if(DRAG.mv.x)p.center.value=Math.min(Math.max(d.x,Math.min(...S.v.x)),Math.max(...S.v.x));
+    if(DRAG.mv.h){const h=Math.max(d.y-bgAt(p.center.value),0);p.area.value=h/apexFactor(p.fwhm.value,p.lor.value)}}
+  const nc=glPeak(S.v.x,p.center.value,p.fwhm.value,p.area.value,p.lor.value);
+  for(let i=0;i<nc.length;i++){const nv=S.v.bgline[i]+nc[i],dv=nv-S.v.comps[DRAG.j][i];S.v.comps[DRAG.j][i]=nv;
+    if(S.v.env.length){S.v.env[i]+=dv;S.v.resid[i]-=dv}}
+  const dc=gd.querySelector(".nsewdrag");if(dc)dc.style.cursor="grabbing";
+  $("hint").textContent=`${p.name}: BE ${p.center.value.toFixed(2)} eV · FWHM ${p.fwhm.value.toFixed(2)} · 高度 ${(p.area.value*apexFactor(p.fwhm.value,p.lor.value)).toFixed(0)}`;
+  cancelAnimationFrame(DRAG.raf);DRAG.raf=requestAnimationFrame(draw);
+});
+window.addEventListener("mouseup",async()=>{
+  if(!DRAG)return;const D=DRAG;DRAG=null;$("hint").textContent="";
+  if(!D.moved)return;
+  await act("update_peak",{j:D.j,peak:S.v.peaks[D.j]});
+});
 function pcol(p,j){return (p.role==="unknown")?"#9A9891":COLORS[j%8]}
 function hex(c,a){const n=parseInt(c.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`}
 
@@ -503,7 +569,7 @@ document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>setMode(b.da
 function setMode(m){
   if(!S.v)return;S.mode=m;S.clicks=[];
   document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
-  $("hint").textContent={view:"",peak:"在图上点击要加峰的位置，可连续添加；Esc 结束",bg:"在图上横向拖动框选背景范围，或点击两个端点"}[m];
+  $("hint").textContent={view:"拖动峰顶圆点可移动峰（上下改高度，按住 Shift 往右拖变宽、往左变窄）；框选放大，双击或“复位”恢复",peak:"在图上点击要加峰的位置，可连续添加；Esc 结束",bg:"在图上横向拖动框选背景范围，或点击两个端点"}[m];
   draw();
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){document.querySelectorAll(".scrim.open").forEach(s=>s.classList.remove("open"));setMode("view")}});
@@ -552,8 +618,24 @@ async function savePeak(){
     if($("pe_lor_same").checked)ln.lor_same=true}
   p.link=ln;p.role=$("pe_role").value;closeM("pe");await act("update_peak",{j:S.sel,peak:p});
 }
-function eqFwhm(){if(S.sel===null){toast("先选中一个峰作为参考");return}
-  if(confirm(`把其他主峰/卫星峰的 FWHM 绑定为与 “${S.v.peaks[S.sel].name}” 相等？\n（双峰副峰已跟随自己的主峰；要锁定数值，请编辑参考峰并勾选 FWHM “固定”）`))act("equal_fwhm",{j:S.sel})}
+function openEq(){
+  if(!S.v||S.v.peaks.length<2){toast("至少需要两个峰");return}
+  const ps=S.v.peaks;$("eq_ref").innerHTML="";
+  ps.forEach((p,j)=>{if(p.pair)return;const o=document.createElement("option");o.value=j;o.textContent=p.name;$("eq_ref").append(o)});
+  if(S.sel!==null&&!ps[S.sel].pair)$("eq_ref").value=S.sel;
+  eqList();$("eqm").classList.add("open")}
+function eqList(){
+  const ps=S.v.peaks,ref=+$("eq_ref").value,param=$("eq_param").value,key=param==="fwhm"?"fwhm_ratio":"lor_same",box=$("eq_list");box.innerHTML="";
+  ps.forEach((p,j)=>{if(j===ref)return;const ln=p.link||{};const d=document.createElement("label");d.className="eqi";
+    const on=ln.ref===ps[ref].name&&ln[key]!=null;
+    const other=ln.ref&&ln.ref!==ps[ref].name&&["dE","area_ratio","fwhm_ratio","lor_same"].some(k=>ln[k]!=null);
+    d.innerHTML=`<input type="checkbox" value="${j}" ${on?"checked":""} ${p.pair||other?"disabled":""}><span class="sw" style="background:${pcol(p,j)}"></span><span></span><span class="note" style="margin:0 0 0 auto"></span>`;
+    d.children[2].textContent=p.name;
+    d.children[3].textContent=p.pair?"双峰副峰，跟随 "+ln.ref:other?"已绑定到 "+ln.ref:(param==="fwhm"?p.fwhm.value.toFixed(2)+" eV":p.lor.value.toFixed(0)+"%");
+    box.append(d)})}
+function eqAll(v){$("eq_list").querySelectorAll("input:not(:disabled)").forEach(c=>c.checked=v)}
+async function saveEq(){const m=[...$("eq_list").querySelectorAll("input:checked")].map(c=>+c.value);
+  closeM("eqm");await act("equal_param",{j:+$("eq_ref").value,param:$("eq_param").value,members:m})}
 function delPeak(){if(S.sel===null)return;act("delete_peak",{j:S.sel});S.sel=null}
 let AK="single";
 document.querySelectorAll("#kinds .kind").forEach(k=>k.onclick=()=>setKind(k.dataset.k));
