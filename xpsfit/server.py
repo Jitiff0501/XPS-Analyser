@@ -103,11 +103,11 @@ class State:
             for k in core.PARAMS:
                 p[k]["value"] = float(v[k])
         x, y, bg, comps, env = s.compute()
-        tot = sum(p["area"]["value"] for p in s.peaks) or 1.0
         peaks = []
-        for p in s.peaks:
+        for p, pct in zip(s.peaks, core.area_percents(s.peaks)):
             q = copy.deepcopy(p)
-            q["pct"] = 100.0 * p["area"]["value"] / tot
+            q["pct"] = pct
+            q.setdefault("role", "main")
             q["linked"] = sorted(core.linked_params(p))
             peaks.append(q)
         return {"i": int(i), "name": s.name, "element": s.element, "source": s.source, "hv": s.hv,
@@ -165,21 +165,14 @@ def api(method, a):
         b = a["bg"]
         s.bg.update({"type": b["type"], "lo": b.get("lo"), "hi": b.get("hi"), "navg": max(1, int(b.get("navg", 3)))})
     elif method == "add_peak":
-        x, y, bg, comps, env = s.compute()
-        c = float(a["x"]); w = float(a.get("fwhm", 1.2))
-        h = max(float(np.interp(c, x, y - bg - env)), 0.05 * float(np.max(y - bg)))
-        n = 1
-        while any(p["name"] == "P%d" % n for p in s.peaks): n += 1
-        s.peaks.append(core.new_peak(a.get("name") or "P%d" % n, c, w, h * w * 1.064))
-    elif method == "add_doublet":
-        x, y, bg, _, _ = s.compute()
-        c, w = float(a["center"]), float(a["fwhm"])
-        h = max(float(np.interp(c, x, y - bg)), 1.0)
-        s.peaks.extend(core.doublet(a["name"], c, float(a["split"]), float(a["ratio"]), w, h * w * 1.064))
+        add_peak(s, a)
     elif method == "update_peak":
         j, new = int(a["j"]), a["peak"]
         old = s.peaks[j]["name"]
-        clean = {"name": new["name"], "link": new.get("link") or {}}
+        clean = {"name": new["name"], "link": new.get("link") or {},
+                 "role": new.get("role", "main")}
+        if s.peaks[j].get("pair"):
+            clean["pair"] = True
         for k in core.PARAMS:
             clean[k] = {f: new[k][f] for f in ("value", "fixed", "min", "max")}
         s.peaks[j] = clean
@@ -189,9 +182,26 @@ def api(method, a):
                     q["link"]["ref"] = clean["name"]
     elif method == "delete_peak":
         p = s.peaks.pop(int(a["j"]))
+        # 双峰副峰随主峰一起删除；卫星峰等解除绑定
+        s.peaks = [q for q in s.peaks if not ((q.get("link") or {}).get("ref") == p["name"] and q.get("pair"))]
         for q in s.peaks:
             if (q.get("link") or {}).get("ref") == p["name"]:
                 q["link"] = {}
+    elif method == "preview_figure":
+        import io
+        buf = io.BytesIO()
+        figure(s, buf, dict(a.get("opts") or {}, fmt="png"), dpi=110)
+        return {"png": base64.b64encode(buf.getvalue()).decode()}
+    elif method == "equal_fwhm":
+        ref = s.peaks[int(a["j"])]
+        n = 0
+        for q in s.peaks:
+            if q is ref or q.get("pair") or q.get("role") == "unknown":
+                continue
+            q["link"] = dict(q.get("link") or {}, ref=ref["name"], fwhm_ratio=1.0)
+            q["link"].pop("fwhm_ratio_fit", None)
+            n += 1
+        return dict(st.view(a["i"]), specs=st.summary(), msg="%d 个峰的 FWHM 已与 “%s” 绑定相等" % (n, ref["name"]))
     elif method == "clear_peaks":
         s.peaks, s.last_fit = [], None
     elif method == "apply_template":
@@ -315,37 +325,118 @@ def export(kind, a):
         conv.write_xpspeak(p, list(zip(s.be[::-1], s.y[::-1])))
         return p
     if kind == "figure":
-        fmt = a.get("fmt", "png")
+        o = a.get("opts") or {}
+        fmt = o.get("fmt", "png")
         p = base + "_fit." + fmt
-        figure(s, p)
+        figure(s, p, o)
         return p
     raise ValueError(kind)
 
 
-def figure(s, path):
+FIG_DEFAULTS = {"fmt": "png", "width_cm": 8.5, "height_cm": 7.0, "dpi": 600, "font": 9,
+                "xmin": None, "xmax": None, "xstep": None, "xminor": 1,
+                "ynumbers": True, "ylabel": "Intensity (CPS)", "xlabel": "Binding Energy (eV)",
+                "legend": True, "legend_loc": "best", "title": True, "background": True, "envelope": True, "raw": "markers",
+                "fill": True}
+
+
+def figure(s, path, opts=None, dpi=None):
+    """论文图。opts 见 FIG_DEFAULTS：x 范围/主刻度间距/次刻度数、y 轴数字开关等。"""
     import matplotlib
     matplotlib.use("Agg")
     from matplotlib.figure import Figure
-    matplotlib.rcParams.update({"font.family": "sans-serif", "font.size": 10,
-                                "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"]})
+    from matplotlib.ticker import MultipleLocator, AutoMinorLocator, NullLocator
+    o = dict(FIG_DEFAULTS); o.update({k: v for k, v in (opts or {}).items() if v is not None and v != ""})
+    matplotlib.rcParams.update({"font.family": "sans-serif", "font.size": float(o["font"]),
+                                "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"],
+                                "xtick.direction": "in", "ytick.direction": "in"})
     cols = ["#3B6EA8", "#C4553A", "#4E9A6A", "#8A63B8", "#D08A2E", "#7A5C4F", "#C76B9E", "#3A9AA8"]
     x, y, bg, comps, env = s.compute()
-    fig = Figure(figsize=(4.2, 3.6), dpi=600)
+    fig = Figure(figsize=(float(o["width_cm"]) / 2.54, float(o["height_cm"]) / 2.54))
     ax = fig.add_subplot(111)
-    ax.plot(s.be, s.y, "o", ms=2.6, mfc="none", mec="#333", mew=0.6, label="Raw")
-    if s.bg["type"] != "None":
-        ax.plot(x, bg, "-", color="#888", lw=0.9, label="Background")
+    if o["raw"] == "line":
+        ax.plot(s.be, s.y, "-", color="#222", lw=0.8, label="Raw")
+    else:
+        ax.plot(s.be, s.y, "o", ms=2.4, mfc="none", mec="#333", mew=0.5, label="Raw")
+    if o["background"] and s.bg["type"] != "None":
+        ax.plot(x, bg, "-", color="#888", lw=0.8, label="Background")
     for i, (p, c) in enumerate(zip(s.peaks, comps)):
-        col = cols[i % len(cols)]
-        ax.fill_between(x, bg, bg + c, color=col, alpha=0.3, lw=0)
-        ax.plot(x, bg + c, color=col, lw=1.0, label=p["name"])
-    if s.peaks:
-        ax.plot(x, bg + env, color="#C00000", lw=1.3, label="Envelope")
-    ax.set_xlim(s.be.max(), s.be.min())
-    ax.set_xlabel("Binding Energy (eV)"); ax.set_ylabel("Intensity (CPS)")
-    ax.set_title(s.name, fontsize=10)
-    ax.legend(fontsize=7, frameon=False)
-    fig.tight_layout(); fig.savefig(path, dpi=600)
+        role = p.get("role", "main")
+        col = "#9A9A9A" if role == "unknown" else cols[i % len(cols)]
+        ls = "--" if role == "unknown" else (":" if role == "satellite" else "-")
+        if o["fill"]:
+            ax.fill_between(x, bg, bg + c, color=col, alpha=0.18 if role != "main" else 0.3, lw=0)
+        ax.plot(x, bg + c, color=col, lw=0.9, ls=ls, label=p["name"])
+    if o["envelope"] and s.peaks:
+        ax.plot(x, bg + env, color="#C00000", lw=1.1, label="Envelope")
+    xmax = float(o["xmax"]) if o["xmax"] is not None else float(s.be.max())
+    xmin = float(o["xmin"]) if o["xmin"] is not None else float(s.be.min())
+    ax.set_xlim(max(xmin, xmax), min(xmin, xmax))
+    # y 范围按可见 x 区间自动
+    m = (s.be >= min(xmin, xmax)) & (s.be <= max(xmin, xmax))
+    if m.sum() > 2:
+        lo, hi = float(s.y[m].min()), float(s.y[m].max())
+        pad = 0.06 * (hi - lo or 1)
+        ax.set_ylim(lo - pad, hi + pad * (3 if o["legend"] and o["legend_loc"] != "outside" else 1.5))
+    if o["xstep"]:
+        ax.xaxis.set_major_locator(MultipleLocator(float(o["xstep"])))
+    n = int(o["xminor"] or 0)
+    ax.xaxis.set_minor_locator(AutoMinorLocator(n + 1) if n > 0 else NullLocator())
+    if not o["ynumbers"]:
+        ax.set_yticks([]); ax.yaxis.set_minor_locator(NullLocator())
+        ax.tick_params(axis="y", which="both", left=False, right=False, labelleft=False)
+    ax.tick_params(axis="both", which="both", top=False, right=False)
+    ax.set_xlabel(o["xlabel"]); ax.set_ylabel(o["ylabel"])
+    if o["title"]:
+        ax.set_title(s.name, fontsize=float(o["font"]))
+    if o["legend"]:
+        fs = float(o["font"]) * 0.75
+        if o["legend_loc"] == "outside":
+            ax.legend(fontsize=fs, frameon=False, loc="upper left", bbox_to_anchor=(1.02, 1.0))
+        else:
+            ax.legend(fontsize=fs, frameon=False, loc=o["legend_loc"])
+    fig.tight_layout()
+    fmt = o["fmt"] if o["fmt"] != "tif" else "tiff"
+    fig.savefig(path, dpi=dpi or float(o["dpi"]), format=fmt)
+
+
+def add_peak(s, a):
+    """kind: single / doublet / satellite / unknown"""
+    x, y, bg, comps, env = s.compute()
+    kind = a.get("kind", "single")
+    c = float(a.get("center", a.get("x")))
+    w = float(a.get("fwhm") or 1.2)
+    h = max(float(np.interp(c, x, y - bg - env)), 0.05 * float(np.max(y - bg)), 1.0)
+    names = {p["name"] for p in s.peaks}
+
+    def uniq(n):
+        b, k = n, 2
+        while n in names:
+            n = "%s (%d)" % (b, k); k += 1
+        return n
+    lor = float(a.get("lor") or 30)
+    if kind == "doublet":
+        nm = uniq(a.get("name") or s.element or "X")
+        s.peaks.extend(core.doublet(nm, c, float(a["split"]), float(a["ratio"]), w, h * w * 1.064, lor,
+                                    fit_split=not a.get("lock_split", True), fit_ratio=not a.get("lock_ratio", True)))
+    elif kind == "satellite":
+        par = s.peaks[int(a["parent"])]
+        dE = float(a.get("dE", c - par["center"]["value"]))
+        ratio = float(a["ratio"]) if a.get("bind_area") else None
+        p = core.satellite(uniq(a.get("name") or par["name"] + " sat."), par, dE, ratio,
+                           bool(a.get("bind_dE", True)), w, lor)
+        if ratio is None:
+            p["area"]["value"] = h * w * 1.064
+        s.peaks.append(p)
+    else:
+        n = 1
+        while "P%d" % n in names: n += 1
+        default = "Unknown overlap" if kind == "unknown" else "P%d" % n
+        p = core.new_peak(uniq(a.get("name") or default), c, w, h * w * 1.064, lor,
+                          role="unknown" if kind == "unknown" else "main")
+        if kind == "unknown":   # 未知峰默认限制在添加位置 ±1.5 eV，避免“吃掉”主峰
+            p["center"]["min"], p["center"]["max"] = c - 1.5, c + 1.5
+        s.peaks.append(p)
 
 
 # ============================================================== HTTP
@@ -393,8 +484,35 @@ def serve(port=0):
     return srv, "http://127.0.0.1:%d/" % srv.server_address[1]
 
 
+def smoke(out):
+    """CI 自检：不开窗口，验证打包后的网页资源、读取、拟合、导出都可用。"""
+    import urllib.request
+    srv, url = serve()
+    page = urllib.request.urlopen(url).read()
+    js = urllib.request.urlopen(url + "plotly.min.js").read()
+    assert b"XPS Fit Studio" in page and len(js) > 1000000
+    lines = ["page ok", "templates %d" % len(ST.templates), "sf %d" % len(ST.sf)]
+    vgd = os.environ.get("XPSFIT_SMOKE_VGD")
+    if vgd:
+        r = open_paths([vgd]); assert r["added"] == 1, r
+        api("apply_template", {"i": 0, "name": "Al2p: Al 金属 + Al2O3"})
+        v = api("fit", {"i": 0}); assert v["fit"]["success"]
+        ST.specs[0].source = os.path.join(os.path.dirname(out), "x.vgd")
+        for k in ("figure", "excel"):
+            lines.append("export %s %s" % (k, os.path.getsize(api("export_" + k, {"i": 0})["path"])))
+    with open(out, "w") as f:
+        f.write("\n".join(lines) + "\nOK\n")
+
+
 def main():
     global WINDOW
+    if os.environ.get("XPSFIT_SMOKE"):
+        try:
+            smoke(os.environ["XPSFIT_SMOKE"])
+        except Exception:
+            with open(os.environ["XPSFIT_SMOKE"], "w") as f:
+                f.write(traceback.format_exc())
+        return
     files = [a for a in sys.argv[1:] if os.path.exists(a)]
     if files:
         open_paths(files)

@@ -45,7 +45,7 @@ header{display:flex;align-items:center;gap:10px;padding:0 18px;border-bottom:1px
 .pop button{display:block;width:100%;text-align:left;border:0;background:none;padding:7px 10px;border-radius:7px}
 .pop button:hover{background:var(--sunk)}
 /* ---------- layout ---------- */
-main{display:grid;grid-template-columns:236px 1fr 360px;min-height:0}
+main{display:grid;grid-template-columns:220px 1fr 400px;min-height:0}
 aside.left{border-right:1px solid var(--line);padding:14px 10px;overflow:auto}
 .sec-title{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:2px 8px 8px}
 .spec{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;cursor:pointer;color:var(--ink2)}
@@ -79,12 +79,14 @@ aside.right{border-left:1px solid var(--line);overflow:auto;padding:14px 14px 20
 .row{display:flex;align-items:center;gap:8px;margin:6px 0}
 .row label{color:var(--ink2);min-width:84px;font-size:12.5px}
 .in{border:1px solid var(--line2);background:var(--panel);border-radius:7px;padding:5px 8px;width:100%;min-width:0;outline:none}
+.in:disabled{background:var(--sunk);color:var(--ink3)}
 .in:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 .in.num{width:84px}
 select.in{padding:5px 6px}
 .peaks{width:100%;border-collapse:collapse;font-size:12.5px}
-.peaks th{font-weight:500;color:var(--ink3);text-align:right;padding:4px 4px;border-bottom:1px solid var(--line);font-size:11.5px}
+.peaks th{white-space:nowrap;font-weight:500;color:var(--ink3);text-align:right;padding:4px 4px;border-bottom:1px solid var(--line);font-size:11.5px}
 .peaks th:first-child,.peaks td:first-child{text-align:left}
+.peaks td:first-child{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .peaks td{padding:6px 4px;text-align:right;border-bottom:1px solid var(--sunk);font-variant-numeric:tabular-nums}
 .peaks tr{cursor:pointer}
 .peaks tbody tr:hover{background:var(--sunk)}
@@ -94,6 +96,24 @@ select.in{padding:5px 6px}
 .fitbtn{width:100%;justify-content:center;padding:10px;font-size:14px;font-weight:600;border-radius:10px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
 .grid3 .btn{justify-content:center}
+.btn.primary-soft{background:var(--accent-soft);border-color:#EBCDBF;color:var(--accent-h);font-weight:600}
+.btn.primary-soft:hover{background:#F1DACF}
+.kinds{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.kind{border:1px solid var(--line2);border-radius:10px;padding:10px 8px;text-align:center;background:var(--panel);cursor:pointer}
+.kind b{display:block;font-weight:600;margin-bottom:2px}
+.kind span{font-size:11.5px;color:var(--ink3)}
+.kind.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px rgba(201,100,66,.12)}
+.exgrid{display:grid;grid-template-columns:300px 1fr;gap:18px}
+.exprev{background:var(--bg);border:1px solid var(--line);border-radius:10px;display:grid;place-items:center;min-height:360px;padding:8px}
+.exprev img{max-width:100%;max-height:440px}
+.opt{display:flex;align-items:center;gap:8px;margin:7px 0}
+.opt>span:first-child{min-width:92px;color:var(--ink2);font-size:12.5px}
+.opt .in.num{width:72px}
+.grp{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:12px 0 2px}
+.switch{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px}
+.role{white-space:nowrap;font-size:10.5px;padding:0 5px;border-radius:5px;margin-left:5px;border:1px solid var(--line)}
+.role.satellite{color:#7A5C4F;background:#F4EEE9}
+.role.unknown{color:#76746D;background:#F1F0EC}
 /* modal */
 .scrim{position:fixed;inset:0;background:rgba(31,30,27,.28);display:none;align-items:center;justify-content:center;z-index:50}
 .scrim.open{display:flex}
@@ -133,9 +153,7 @@ input[type=checkbox]{accent-color:var(--accent)}
   <div class="menu" id="expmenu">
     <button class="btn" onclick="toggleMenu(event)">导出 ▾</button>
     <div class="pop">
-      <button onclick="exp('figure',{fmt:'png'})">拟合图 PNG（600 dpi）</button>
-      <button onclick="exp('figure',{fmt:'svg'})">拟合图 SVG（矢量）</button>
-      <button onclick="exp('figure',{fmt:'tif'})">拟合图 TIFF</button>
+      <button onclick="openExport()">拟合图…（PNG / SVG / TIFF / PDF）</button>
       <button onclick="exp('excel',{})">全部峰参数 + 曲线 → Excel</button>
       <button onclick="exp('csv',{})">当前谱曲线 CSV（Origin）</button>
       <button onclick="exp('txt',{})">当前谱 XPSPEAK txt</button>
@@ -190,10 +208,11 @@ input[type=checkbox]{accent-color:var(--accent)}
       <h3>峰 <span class="sub">双击行编辑</span></h3>
       <table class="peaks"><thead><tr><th>名称</th><th>BE</th><th>FWHM</th><th>面积 %</th><th>L%</th></tr></thead><tbody id="ptab"></tbody></table>
       <div class="grid3">
-        <button class="btn sm" onclick="setMode('peak')">＋ 单峰</button>
-        <button class="btn sm" onclick="openDoublet()">＋ 双峰</button>
+        <button class="btn sm primary-soft" onclick="openAdd()">＋ 添加峰</button>
+        <button class="btn sm" onclick="delPeak()">－ 删除峰</button>
         <button class="btn sm" onclick="editPeak()">编辑</button>
-        <button class="btn sm" onclick="delPeak()">删除</button>
+        <button class="btn sm" onclick="setMode('peak')">图上点击加</button>
+        <button class="btn sm" onclick="eqFwhm()" title="把其他主峰的 FWHM 绑定为与选中峰相等">FWHM 相等</button>
         <button class="btn sm" onclick="if(confirm('删除全部峰？'))act('clear_peaks')">清空</button>
         <button class="btn sm" onclick="saveTpl()">存为模板</button>
       </div>
@@ -209,32 +228,82 @@ input[type=checkbox]{accent-color:var(--accent)}
 <div class="scrim" id="pe"><div class="modal">
   <h4>编辑峰</h4>
   <div class="row"><label>名称</label><input class="in" id="pe_name"></div>
+  <div class="row"><label>类型</label><select class="in" id="pe_role"><option value="main">主峰（计入面积%）</option><option value="satellite">卫星峰（计入面积%）</option><option value="unknown">未知重叠峰（不计入面积% 与定量）</option></select></div>
   <table class="ptab"><thead><tr><th></th><th>数值</th><th>固定</th><th>最小</th><th>最大</th></tr></thead><tbody id="pe_rows"></tbody></table>
   <div class="box"><div class="t">约束：绑定到另一个峰（自旋轨道双峰、等宽…）</div>
     <div class="row"><label>参考峰</label><select class="in" id="pe_ref"></select></div>
-    <div class="row"><label><input type="checkbox" id="pe_dE_on"> 位置差 ΔE</label><input class="in num" id="pe_dE"><span class="note" style="margin:0">本峰 = 参考 + ΔE</span></div>
-    <div class="row"><label><input type="checkbox" id="pe_area_ratio_on"> 面积比</label><input class="in num" id="pe_area_ratio"><span class="note" style="margin:0">本峰 / 参考</span></div>
-    <div class="row"><label><input type="checkbox" id="pe_fwhm_ratio_on"> FWHM 比</label><input class="in num" id="pe_fwhm_ratio"></div>
+    <table class="ptab" style="margin-top:4px"><thead><tr><th>绑定项</th><th>数值</th><th>拟合时锁定</th><th>最小</th><th>最大</th></tr></thead><tbody>
+      <tr><td><label class="switch"><input type="checkbox" id="pe_dE_on"> 位置差 ΔE (eV)</label></td><td><input class="in num" id="pe_dE"></td><td style="text-align:center"><input type="checkbox" id="pe_dE_lock"></td><td><input class="in num" id="pe_dE_min"></td><td><input class="in num" id="pe_dE_max"></td></tr>
+      <tr><td><label class="switch"><input type="checkbox" id="pe_area_ratio_on"> 面积比 本/参考</label></td><td><input class="in num" id="pe_area_ratio"></td><td style="text-align:center"><input type="checkbox" id="pe_area_ratio_lock"></td><td><input class="in num" id="pe_area_ratio_min"></td><td><input class="in num" id="pe_area_ratio_max"></td></tr>
+      <tr><td><label class="switch"><input type="checkbox" id="pe_fwhm_ratio_on"> FWHM 比（1 = 相等）</label></td><td><input class="in num" id="pe_fwhm_ratio"></td><td style="text-align:center"><input type="checkbox" id="pe_fwhm_ratio_lock"></td><td><input class="in num" id="pe_fwhm_ratio_min"></td><td><input class="in num" id="pe_fwhm_ratio_max"></td></tr>
+    </tbody></table>
+    <p class="note" style="margin:4px 0 0">不锁定时，该项在最小–最大之间拟合；范围留空则用默认（ΔE ±max(0.2, 10%)，比值 ×0.5–1.5）。</p>
     <div class="row"><label><input type="checkbox" id="pe_lor_same"> L% 相同</label></div>
   </div>
   <div class="foot"><button class="btn ghost" onclick="closeM('pe')">取消</button><button class="btn primary" onclick="savePeak()">保存</button></div>
 </div></div>
 
-<!-- doublet -->
-<div class="scrim" id="dbl"><div class="modal">
-  <h4>添加自旋轨道双峰</h4>
-  <div class="row"><label>轨道</label><select class="in" id="d_type" onchange="dPreset()">
-    <option value="0.5|5.7">2p（Ti 5.7 · Al 0.44 · Fe 13.6 …）</option>
-    <option value="0.6667|2.4">3d（Zr 2.4 · Mo 3.13 · Nb 2.72 …）</option>
-    <option value="0.75|2.18">4f（W 2.18 · Ta 1.9 · Hf 1.7 · Au 3.67）</option>
-    <option value="0.5|1.0">3p</option></select></div>
-  <div class="row"><label>名称</label><input class="in" id="d_name"></div>
-  <div class="row"><label>主峰 BE (eV)</label><input class="in" id="d_center"></div>
-  <div class="row"><label>分裂 ΔE (eV)</label><input class="in" id="d_split"></div>
-  <div class="row"><label>面积比 副/主</label><input class="in" id="d_ratio"></div>
-  <div class="row"><label>FWHM (eV)</label><input class="in" id="d_fwhm" value="1.2"></div>
-  <p class="note">副峰的位置、面积、FWHM、L% 会绑定到主峰，拟合时一起变化，比例保持不变。</p>
-  <div class="foot"><button class="btn ghost" onclick="closeM('dbl')">取消</button><button class="btn primary" onclick="addDoublet()">添加</button></div>
+<!-- add peak -->
+<div class="scrim" id="addm"><div class="modal" style="width:min(600px,94vw)">
+  <h4>添加峰</h4>
+  <div class="kinds" id="kinds">
+    <div class="kind on" data-k="single"><b>单峰</b><span>一个独立组分</span></div>
+    <div class="kind" data-k="doublet"><b>双峰</b><span>自旋轨道 p / d / f</span></div>
+    <div class="kind" data-k="satellite"><b>卫星峰</b><span>shake-up 等，归属主峰</span></div>
+    <div class="kind" data-k="unknown"><b>未知重叠峰</b><span>不计入面积% 和定量</span></div>
+  </div>
+  <div class="row"><label>名称</label><input class="in" id="a_name" placeholder="留空自动命名"></div>
+  <div class="row" id="a_parent_row"><label>所属主峰</label><select class="in" id="a_parent" onchange="satDefaults()"></select></div>
+  <div class="row"><label id="a_center_l">位置 BE (eV)</label><input class="in" id="a_center"></div>
+  <div class="row"><label>FWHM (eV)</label><input class="in" id="a_fwhm" value="1.2"><label style="min-width:0;margin-left:8px">L%</label><input class="in num" id="a_lor" value="30"></div>
+  <div id="a_dbl">
+    <div class="row"><label>轨道</label><select class="in" id="d_type" onchange="dPreset()">
+      <option value="0.5|5.7">2p（Ti 5.7 · Al 0.44 · Fe 13.6 · Cr 9.3 …）</option>
+      <option value="0.6667|2.4">3d（Zr 2.4 · Mo 3.13 · Nb 2.72 …）</option>
+      <option value="0.75|2.18">4f（W 2.18 · Ta 1.9 · Hf 1.7 · Au 3.67）</option>
+      <option value="0.5|1.0">3p</option></select></div>
+    <div class="row"><label>分裂 ΔE (eV)</label><input class="in num" id="d_split"><label class="switch" style="min-width:0"><input type="checkbox" id="d_lock_split" checked> 拟合时锁定</label></div>
+    <div class="row"><label>面积比 副/主</label><input class="in num" id="d_ratio"><label class="switch" style="min-width:0"><input type="checkbox" id="d_lock_ratio" checked> 拟合时锁定</label></div>
+  </div>
+  <div id="a_sat">
+    <div class="row"><label>相对主峰 ΔE</label><input class="in num" id="s_dE" value="6"><label class="switch" style="min-width:0"><input type="checkbox" id="s_bind_dE" checked> 固定 ΔE（否则在 ±1.5 eV 内拟合）</label></div>
+    <div class="row"><label>面积比 卫星/主</label><input class="in num" id="s_ratio" value="0.1"><label class="switch" style="min-width:0"><input type="checkbox" id="s_bind_area"> 固定面积比（否则自由拟合）</label></div>
+  </div>
+  <p class="note" id="a_note"></p>
+  <div class="foot"><button class="btn ghost" onclick="closeM('addm')">取消</button><button class="btn primary" onclick="addPeak()">添加</button></div>
+</div></div>
+
+<!-- export -->
+<div class="scrim" id="exm"><div class="modal" style="width:min(980px,96vw)">
+  <h4>导出拟合图</h4>
+  <div class="exgrid">
+    <div>
+      <div class="grp">X 轴（结合能）</div>
+      <div class="opt"><span>范围 (eV)</span><input class="in num" id="e_xmax" placeholder="高"><span style="min-width:0;color:var(--ink3)">→</span><input class="in num" id="e_xmin" placeholder="低"></div>
+      <div class="opt"><span>主刻度间距</span><input class="in num" id="e_xstep" placeholder="自动"><span style="min-width:0;color:var(--ink3)">eV</span></div>
+      <div class="opt"><span>次刻度</span><select class="in num" id="e_xminor" style="width:120px"><option value="0">无</option><option value="1" selected>每格 1 条</option><option value="4">每格 4 条</option></select></div>
+      <div class="opt"><span>标题</span><input class="in" id="e_xlabel" value="Binding Energy (eV)"></div>
+      <div class="grp">Y 轴（强度）</div>
+      <div class="opt"><span>数字与刻度</span><label class="switch"><input type="checkbox" id="e_ynumbers" checked onchange="yLabelAuto()"> 显示（关闭则只留标题，无刻度短线）</label></div>
+      <div class="opt"><span>标题</span><input class="in" id="e_ylabel" value="Intensity (CPS)"></div>
+      <div class="grp">内容</div>
+      <div class="opt" style="flex-wrap:wrap;gap:10px 14px">
+        <label class="switch"><input type="checkbox" id="e_legend" checked> 图例</label>
+        <select class="in" id="e_legend_loc" style="width:96px;padding:3px 4px"><option value="best">自动位置</option><option value="upper left">左上</option><option value="upper right">右上</option><option value="outside">图外右侧</option></select>
+        <label class="switch"><input type="checkbox" id="e_title" checked> 图名</label>
+        <label class="switch"><input type="checkbox" id="e_background" checked> 背景</label>
+        <label class="switch"><input type="checkbox" id="e_envelope" checked> 包络</label>
+        <label class="switch"><input type="checkbox" id="e_fill" checked> 峰填充</label>
+      </div>
+      <div class="opt"><span>原始数据</span><select class="in" id="e_raw" style="width:120px"><option value="markers">空心点</option><option value="line">细线</option></select></div>
+      <div class="grp">尺寸与格式</div>
+      <div class="opt"><span>宽 × 高 (cm)</span><input class="in num" id="e_width_cm" value="8.5"><span style="min-width:0">×</span><input class="in num" id="e_height_cm" value="7"></div>
+      <div class="opt"><span>字号 / DPI</span><input class="in num" id="e_font" value="9"><input class="in num" id="e_dpi" value="600"></div>
+      <div class="opt"><span>格式</span><select class="in" id="e_fmt" style="width:120px"><option value="png">PNG</option><option value="tif">TIFF</option><option value="svg">SVG（矢量）</option><option value="pdf">PDF（矢量）</option></select></div>
+    </div>
+    <div class="exprev" id="exprev"><span class="note">预览生成中…</span></div>
+  </div>
+  <div class="foot"><button class="btn ghost" onclick="closeM('exm')">取消</button><button class="btn primary" onclick="doExport()">导出</button></div>
 </div></div>
 
 <!-- quant -->
@@ -334,8 +403,8 @@ function renderPeaks(){
   const tb=$("ptab");tb.innerHTML="";
   S.v.peaks.forEach((p,j)=>{
     const tr=document.createElement("tr");if(j===S.sel)tr.className="on";
-    const flags=(p.linked.length?"⛓":"")+(["center","fwhm","area"].some(k=>p[k].fixed)?"🔒":"");
-    tr.innerHTML=`<td><span class="sw" style="background:${COLORS[j%8]}"></span><span class="pn"></span><span class="tag">${flags}</span></td><td>${p.center.value.toFixed(2)}</td><td>${p.fwhm.value.toFixed(2)}</td><td>${p.pct.toFixed(1)}</td><td>${p.lor.value.toFixed(0)}</td>`;
+    const ln=p.link||{};const flags=(p.linked.length?"⛓":"")+(["dE","area_ratio","fwhm_ratio"].some(k=>ln[k+"_fit"])?"≈":"")+(["center","fwhm","area"].some(k=>p[k].fixed)?"🔒":"");
+    tr.innerHTML=`<td><span class="sw" style="background:${pcol(p,j)}"></span><span class="pn"></span>${p.role&&p.role!=="main"?`<span class="role ${p.role}">${p.role==="unknown"?"未知":"卫星"}</span>`:""}<span class="tag">${flags}</span></td><td>${p.center.value.toFixed(2)}</td><td>${p.fwhm.value.toFixed(2)}</td><td>${p.pct==null?"—":p.pct.toFixed(1)}</td><td>${p.lor.value.toFixed(0)}</td>`;
     tr.querySelector(".pn").textContent=p.name;
     tr.onclick=()=>{S.sel=j;renderPeaks();draw()};
     tr.ondblclick=()=>{S.sel=j;editPeak()};
@@ -347,9 +416,9 @@ function draw(){
   const v=S.v;if(!v)return;
   const T=[{x:v.be,y:v.y,mode:"markers",name:"原始数据",marker:{size:4.5,color:"rgba(0,0,0,0)",line:{color:"#6b6a64",width:1}},hovertemplate:"%{x:.2f} eV<br>%{y:.0f}<extra></extra>"}];
   if(v.bg.type!=="None")T.push({x:v.x,y:v.bgline,mode:"lines",name:"背景",line:{color:"#A8A59B",width:1.4,dash:"dot"},hoverinfo:"skip"});
-  v.comps.forEach((c,j)=>{const col=COLORS[j%8],on=j===S.sel;
+  v.comps.forEach((c,j)=>{const p=v.peaks[j],col=pcol(p,j),on=j===S.sel,r=p.role||"main";
     T.push({x:v.x,y:v.bgline,mode:"lines",line:{width:0},showlegend:false,hoverinfo:"skip"});
-    T.push({x:v.x,y:c,mode:"lines",name:v.peaks[j].name,fill:"tonexty",fillcolor:hex(col,on?.38:.2),line:{color:col,width:on?2.6:1.4},hoverinfo:"skip"});});
+    T.push({x:v.x,y:c,mode:"lines",name:p.name,fill:"tonexty",fillcolor:hex(col,(on?.38:.2)*(r==="main"?1:.6)),line:{color:col,width:on?2.6:1.4,dash:r==="unknown"?"dash":r==="satellite"?"dot":"solid"},hoverinfo:"skip"});});
   if(v.env.length){T.push({x:v.x,y:v.env,mode:"lines",name:"包络",line:{color:"#C96442",width:2},hoverinfo:"skip"});
     T.push({x:v.x,y:v.resid,mode:"lines",name:"残差",yaxis:"y2",line:{color:"#8C8A83",width:1},showlegend:false,hoverinfo:"skip"});}
   const shapes=[[v.region[0]],[v.region[1]]].map(([x])=>({type:"line",x0:x,x1:x,yref:"paper",y0:.22,y1:1,line:{color:"#C9C5B8",width:1,dash:"dot"}}));
@@ -360,10 +429,14 @@ function draw(){
     yaxis:{domain:[.24,1],title:{text:"Intensity (CPS)"},gridcolor:"#F1EFE8",zeroline:false,linecolor:"#D9D5C8"},
     yaxis2:{domain:[0,.17],title:{text:"残差",font:{size:11}},gridcolor:"#F1EFE8",zeroline:true,zerolinecolor:"#D9D5C8",linecolor:"#D9D5C8"},
     legend:{traceorder:"normal",orientation:"h",x:0,y:1.02,yanchor:"bottom",font:{size:11.5},bgcolor:"rgba(0,0,0,0)"},
-    hovermode:"x",dragmode:S.mode==="view"?"zoom":false,shapes,showlegend:true,uirevision:v.i};
+    hovermode:"x",dragmode:S.mode==="view"?"zoom":S.mode==="bg"?"select":false,selectdirection:"h",shapes,showlegend:true,uirevision:v.i};
   Plotly.react("plot",T,L,{displaylogo:false,responsive:true,modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]});
   const pl=$("plot");pl.removeAllListeners&&pl.removeAllListeners("plotly_click");pl.on("plotly_click",onClick);
+  pl.removeAllListeners&&pl.removeAllListeners("plotly_selected");
+  pl.on("plotly_selected",ev=>{if(S.mode!=="bg"||!ev||!ev.range||!ev.range.x)return;const[a,b]=ev.range.x.slice().sort((a,b)=>a-b);
+    $("bglo").value=a.toFixed(2);$("bghi").value=b.toFixed(2);setMode("view");setBg()});
 }
+function pcol(p,j){return (p.role==="unknown")?"#9A9891":COLORS[j%8]}
 function hex(c,a){const n=parseInt(c.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`}
 
 /* ---------- modes ---------- */
@@ -371,7 +444,7 @@ document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>setMode(b.da
 function setMode(m){
   if(!S.v)return;S.mode=m;S.clicks=[];
   document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
-  $("hint").textContent={view:"",peak:"在图上点击要加峰的位置，可连续添加；Esc 结束",bg:"在图上点击背景的两个端点"}[m];
+  $("hint").textContent={view:"",peak:"在图上点击要加峰的位置，可连续添加；Esc 结束",bg:"在图上横向拖动框选背景范围，或点击两个端点"}[m];
   draw();
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){document.querySelectorAll(".scrim.open").forEach(s=>s.classList.remove("open"));setMode("view")}});
@@ -393,14 +466,20 @@ function setBg(){const n=s=>s.trim()===""?null:parseFloat(s);
 const PL={center:"位置 BE (eV)",fwhm:"FWHM (eV)",area:"面积",lor:"洛伦兹 L%"};
 function editPeak(){
   if(S.sel===null){toast("先在峰表里选中一个峰");return}
-  const p=S.v.peaks[S.sel];$("pe_name").value=p.name;
+  const p=S.v.peaks[S.sel];$("pe_name").value=p.name;$("pe_role").value=p.role||"main";
   $("pe_rows").innerHTML=Object.keys(PL).map(k=>`<tr><td>${PL[k]}</td><td><input class="in" id="pe_${k}_v" value="${+p[k].value.toPrecision(7)}"></td><td style="text-align:center"><input type="checkbox" id="pe_${k}_f" ${p[k].fixed?"checked":""}></td><td><input class="in num" id="pe_${k}_min" value="${p[k].min??""}"></td><td><input class="in num" id="pe_${k}_max" value="${p[k].max??""}"></td></tr>`).join("");
   const ln=p.link||{};const others=S.v.peaks.filter((_,j)=>j!==S.sel).map(q=>q.name);
   $("pe_ref").innerHTML='<option value="">（不绑定）</option>'+others.map(n=>`<option></option>`).join("");
   [...$("pe_ref").options].slice(1).forEach((o,k)=>{o.value=o.textContent=others[k]});
   $("pe_ref").value=ln.ref||"";
-  for(const k of["dE","area_ratio","fwhm_ratio"]){$("pe_"+k+"_on").checked=ln[k]!=null;$("pe_"+k).value=ln[k]??(k==="dE"?"":"1")}
+  for(const k of["dE","area_ratio","fwhm_ratio"]){$("pe_"+k+"_on").checked=ln[k]!=null;$("pe_"+k).value=ln[k]!=null?+(+ln[k]).toPrecision(6):(k==="dE"?"":"1");
+    $("pe_"+k+"_lock").checked=!ln[k+"_fit"];$("pe_"+k+"_min").value=ln[k+"_min"]??"";$("pe_"+k+"_max").value=ln[k+"_max"]??""}
   $("pe_lor_same").checked=!!ln.lor_same;
+  const lk={center:"dE",area:"area_ratio",fwhm:"fwhm_ratio"};
+  const upd=()=>{for(const k in lk){const on=$("pe_ref").value&&$("pe_"+lk[k]+"_on").checked;["v","f","min","max"].forEach(f=>$(`pe_${k}_${f}`).disabled=!!on);
+      $(`pe_${k}_v`).title=on?"由绑定关系决定":""}
+    const lo=$("pe_ref").value&&$("pe_lor_same").checked;["v","f","min","max"].forEach(f=>$(`pe_lor_${f}`).disabled=!!lo)};
+  ["pe_ref","pe_dE_on","pe_area_ratio_on","pe_fwhm_ratio_on","pe_lor_same"].forEach(id=>$(id).onchange=upd);upd();
   $("pe").classList.add("open");
 }
 async function savePeak(){
@@ -409,17 +488,62 @@ async function savePeak(){
   for(const k of Object.keys(PL)){p[k].value=Number($(`pe_${k}_v`).value);p[k].fixed=$(`pe_${k}_f`).checked;p[k].min=num($(`pe_${k}_min`).value);p[k].max=num($(`pe_${k}_max`).value);
     if(isNaN(p[k].value)){toast(PL[k]+" 不是数字");return}}
   const ln={};if($("pe_ref").value){ln.ref=$("pe_ref").value;
-    for(const k of["dE","area_ratio","fwhm_ratio"])if($("pe_"+k+"_on").checked)ln[k]=Number($("pe_"+k).value);
+    for(const k of["dE","area_ratio","fwhm_ratio"])if($("pe_"+k+"_on").checked){ln[k]=Number($("pe_"+k).value);
+      if(!$("pe_"+k+"_lock").checked){ln[k+"_fit"]=true;const a=num($("pe_"+k+"_min").value),b=num($("pe_"+k+"_max").value);if(a!=null)ln[k+"_min"]=a;if(b!=null)ln[k+"_max"]=b}}
     if($("pe_lor_same").checked)ln.lor_same=true}
-  p.link=ln;closeM("pe");await act("update_peak",{j:S.sel,peak:p});
+  p.link=ln;p.role=$("pe_role").value;closeM("pe");await act("update_peak",{j:S.sel,peak:p});
 }
+function eqFwhm(){if(S.sel===null){toast("先选中一个峰作为参考");return}
+  if(confirm(`把其他主峰/卫星峰的 FWHM 绑定为与 “${S.v.peaks[S.sel].name}” 相等？\n（双峰副峰已跟随自己的主峰；要锁定数值，请编辑参考峰并勾选 FWHM “固定”）`))act("equal_fwhm",{j:S.sel})}
 function delPeak(){if(S.sel===null)return;act("delete_peak",{j:S.sel});S.sel=null}
-function openDoublet(){if(!S.v)return;const v=S.v;let k=0;v.y.forEach((y,j)=>{if(y>v.y[k])k=j});
-  $("d_name").value=v.element||"X";$("d_center").value=v.be[k].toFixed(2);
+let AK="single";
+document.querySelectorAll("#kinds .kind").forEach(k=>k.onclick=()=>setKind(k.dataset.k));
+function setKind(k){AK=k;document.querySelectorAll("#kinds .kind").forEach(e=>e.classList.toggle("on",e.dataset.k===k));
+  $("a_dbl").hidden=k!=="doublet";$("a_sat").hidden=k!=="satellite";$("a_parent_row").hidden=k!=="satellite";
+  $("a_center_l").textContent=k==="satellite"?"卫星峰 BE (eV)":k==="doublet"?"主峰 BE (eV)":"位置 BE (eV)";
+  $("a_note").textContent={single:"新峰的位置、FWHM、面积都自由拟合，可在“编辑”中加约束。",
+    doublet:"副峰跟随主峰。间距和面积比勾选“锁定”则拟合时保持不变；不勾选则在默认范围内拟合（之后可在“编辑”里改范围）。删除主峰时副峰一起删除。",
+    satellite:"卫星峰归属所选主峰，计入面积%。ΔE 和面积比可固定，也可自由拟合。",
+    unknown:"用于描述来源不明、但会影响拟合的重叠信号。它参与拟合，但不计入面积% 和原子% 定量。"}[k];
+  if(k==="satellite")satDefaults()}
+function openAdd(kind){
+  if(!S.v){toast("请先打开数据");return}
+  const v=S.v;let k=0;v.y.forEach((y,j)=>{if(y>v.y[k])k=j});
+  $("a_name").value="";$("a_center").value=v.be[k].toFixed(2);
+  const ps=v.peaks.map((p,j)=>[j,p]).filter(([j,p])=>(p.role||"main")==="main");
+  $("a_parent").innerHTML=ps.map(()=>"<option></option>").join("");
+  [...$("a_parent").options].forEach((o,n)=>{o.value=ps[n][0];o.textContent=ps[n][1].name});
+  if(S.sel!==null&&ps.some(([j])=>j===S.sel))$("a_parent").value=S.sel;
   const el=(v.element||"").slice(-2);$("d_type").selectedIndex={"2p":0,"3d":1,"4f":2,"3p":3}[el]??0;dPreset();
-  if(v.element==="Al2p")$("d_split").value="0.44";$("dbl").classList.add("open")}
+  if(v.element==="Al2p")$("d_split").value="0.44";
+  $("kinds").querySelector('[data-k="satellite"]').style.opacity=ps.length?1:.4;
+  $("d_lock_split").checked=$("d_lock_ratio").checked=$("s_bind_dE").checked=true;$("s_bind_area").checked=false;
+  setKind(kind||"single");$("addm").classList.add("open")}
+function satDefaults(){const j=$("a_parent").value;if(j==="")return;const p=S.v.peaks[+j];
+  $("a_center").value=(p.center.value+parseFloat($("s_dE").value||6)).toFixed(2)}
+$("s_dE").oninput=()=>satDefaults();
+$("a_center").oninput=()=>{if(AK==="satellite"){const j=$("a_parent").value;if(j!=="")$("s_dE").value=(parseFloat($("a_center").value)-S.v.peaks[+j].center.value).toFixed(2)}};
 function dPreset(){const[r,s]=$("d_type").value.split("|");$("d_ratio").value=r;$("d_split").value=s}
-async function addDoublet(){closeM("dbl");await act("add_doublet",{name:$("d_name").value,center:$("d_center").value,split:$("d_split").value,ratio:$("d_ratio").value,fwhm:$("d_fwhm").value})}
+async function addPeak(){
+  if(AK==="satellite"&&$("a_parent").value===""){toast("请先添加主峰，卫星峰需要归属一个主峰");return}
+  const a={kind:AK,name:$("a_name").value.trim(),center:$("a_center").value,fwhm:$("a_fwhm").value,lor:$("a_lor").value,
+    split:$("d_split").value,ratio:AK==="doublet"?$("d_ratio").value:$("s_ratio").value,
+    parent:$("a_parent").value,dE:$("s_dE").value,lock_split:$("d_lock_split").checked,lock_ratio:$("d_lock_ratio").checked,bind_dE:$("s_bind_dE").checked,bind_area:$("s_bind_area").checked};
+  closeM("addm");await act("add_peak",a);S.sel=S.v.peaks.length-(AK==="doublet"?2:1);renderPeaks();draw()}
+/* ---------- export ---------- */
+const EOPTS=["xmin","xmax","xstep","xminor","xlabel","ynumbers","ylabel","legend","legend_loc","title","background","envelope","fill","raw","width_cm","height_cm","font","dpi","fmt"];
+function eopts(){const o={};for(const k of EOPTS){const e=$("e_"+k);o[k]=e.type==="checkbox"?e.checked:(e.value.trim()===""?null:(isNaN(+e.value)||["fmt","raw","xlabel","ylabel","legend_loc"].includes(k)?e.value:+e.value))}return o}
+function yLabelAuto(){const y=$("e_ylabel");if(!$("e_ynumbers").checked&&y.value==="Intensity (CPS)")y.value="Intensity (a.u.)";
+  else if($("e_ynumbers").checked&&y.value==="Intensity (a.u.)")y.value="Intensity (CPS)"}
+let prevT;
+function openExport(){if(!S.v){toast("请先打开数据");return}
+  try{const o=JSON.parse(localStorage.getItem("xpsfit_export")||"{}");for(const k in o){const e=$("e_"+k);if(e&&!["xmin","xmax"].includes(k)){e.type==="checkbox"?e.checked=o[k]:e.value=o[k]??""}}}catch(e){}
+  $("e_xmax").value=Math.max(...S.v.be).toFixed(1);$("e_xmin").value=Math.min(...S.v.be).toFixed(1);
+  $("exm").classList.add("open");preview()}
+document.querySelectorAll("#exm input,#exm select").forEach(e=>e.addEventListener(e.type==="checkbox"||e.tagName==="SELECT"?"change":"input",()=>{clearTimeout(prevT);prevT=setTimeout(preview,350)}));
+async function preview(){const o=eopts();try{localStorage.setItem("xpsfit_export",JSON.stringify(o))}catch(e){}
+  const r=await call("preview_figure",{i:S.cur,opts:o});$("exprev").innerHTML=`<img src="data:image/png;base64,${r.png}">`}
+async function doExport(){const r=await call("export_figure",{i:S.cur,opts:eopts()});closeM("exm");toast(r.msg,r.path)}
 function fillTpl(list){$("tpl").innerHTML=list.map(()=>"<option></option>").join("");[...$("tpl").options].forEach((o,k)=>o.value=o.textContent=list[k])}
 async function useTpl(){if(S.v&&S.v.peaks.length&&!confirm("替换当前的峰？"))return;S.sel=null;await act("apply_template",{name:$("tpl").value})}
 function saveTpl(){if(!S.v||!S.v.peaks.length)return;const n=prompt("模板名称",(S.v.element||"")+" 我的模板");if(n)act("save_template",{name:n})}

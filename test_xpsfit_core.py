@@ -83,6 +83,22 @@ class Core(unittest.TestCase):
         self.assertTrue(r["success"])
         print("\nreal VGD fit:", [(p["name"], round(p["center"]["value"], 2), round(p["fwhm"]["value"], 2), round(p["area"]["value"])) for p in s.peaks], "rchi2=%.2f" % r["rchi2"])
 
+    def test_doublet_free_split(self):
+        """双峰间距/比例不锁定时在范围内拟合。真值 0.44/0.5，初值 0.6/0.7。"""
+        x, y, _ = synth()
+        s = core.Spectrum("Al2p", x, y)
+        pk = core.doublet("Al0 2p", 72.7, 0.6, 0.7, 0.9, lor=20, fit_split=True, fit_ratio=True) + \
+             core.doublet("Al2O3 2p", 74.6, 0.44, 0.5, 1.7, lor=20)
+        pk[1]["link"]["dE_min"], pk[1]["link"]["dE_max"] = 0.3, 0.8
+        core.apply_template(s, pk)
+        r = s.do_fit()
+        ln = s.peaks[1]["link"]
+        self.assertTrue(0.3 <= ln["dE"] <= 0.8)
+        self.assertAlmostEqual(ln["dE"], 0.44, delta=0.12)
+        self.assertNotEqual(ln["area_ratio"], 0.7)
+        self.assertAlmostEqual(s.peaks[1]["center"]["value"] - s.peaks[0]["center"]["value"], ln["dE"], places=9)
+        self.assertEqual(s.peaks[3]["link"]["dE"], 0.44)   # 锁定的不变
+
 
 class Api(unittest.TestCase):
     """不开窗口，直接调用后端 API 走一遍完整流程。"""

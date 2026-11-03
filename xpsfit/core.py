@@ -66,8 +66,11 @@ def background(x, y, kind="Shirley", navg=3, tougaard_B=2866.0, tougaard_C=1643.
 
 
 # ------------------------------------------------------------------ 模型数据结构
-def new_peak(name, center, fwhm=1.2, area=1000.0, lor=30.0):
-    p = {"name": name, "link": {}}
+ROLES = ("main", "satellite", "unknown")   # 主峰 / 卫星峰 / 未知重叠峰
+
+
+def new_peak(name, center, fwhm=1.2, area=1000.0, lor=30.0, role="main"):
+    p = {"name": name, "link": {}, "role": role}
     for k, v in zip(PARAMS, (center, fwhm, area, lor)):
         p[k] = {"value": float(v), "fixed": k == "lor", "min": None, "max": None}
     p["fwhm"]["min"], p["fwhm"]["max"] = 0.2, 6.0
@@ -81,16 +84,20 @@ def new_peak(name, center, fwhm=1.2, area=1000.0, lor=30.0):
 def resolve(peaks, free_vec=None, layout=None):
     """返回每个峰的实际参数 [(center,fwhm,area,lor)]，处理固定/绑定。"""
     vals = [{k: p[k]["value"] for k in PARAMS} for p in peaks]
+    lnk = [dict(p.get("link") or {}) for p in peaks]
     if free_vec is not None:
         for (i, k), v in zip(layout, free_vec):
-            vals[i][k] = v
+            if k.startswith("L:"):
+                lnk[i][k[2:]] = v
+            else:
+                vals[i][k] = v
     names = {p["name"]: i for i, p in enumerate(peaks)}
     done = [False] * len(peaks)
 
     def fin(i, depth=0):
         if done[i] or depth > 20:
             return
-        ln = peaks[i].get("link") or {}
+        ln = lnk[i]
         r = names.get(ln.get("ref"))
         if r is not None and r != i:
             fin(r, depth + 1)
@@ -107,6 +114,17 @@ def resolve(peaks, free_vec=None, layout=None):
     for i in range(len(peaks)):
         fin(i)
     return vals
+
+
+LINK_KEYS = ("dE", "area_ratio", "fwhm_ratio")
+
+
+def link_bounds(k, v):
+    """绑定量自由拟合时的默认范围。"""
+    if k == "dE":
+        d = max(0.2, 0.1 * abs(v))
+        return v - d, v + d
+    return v * 0.5, v * 1.5
 
 
 def linked_params(p):
@@ -148,6 +166,18 @@ def fit(x, y, bg, peaks, max_nfev=4000):
             if v <= mn: v = mn + 1e-9 * (abs(mn) + 1)
             if v >= mx: v = mx - 1e-9 * (abs(mx) + 1)
             layout.append((i, k)); x0.append(v); lo.append(mn); hi.append(mx)
+        ln = p.get("link") or {}
+        if ln.get("ref"):
+            for k in LINK_KEYS:
+                if ln.get(k) is None or not ln.get(k + "_fit"):
+                    continue
+                dmn, dmx = link_bounds(k, ln[k])
+                mn = ln.get(k + "_min", dmn); mx = ln.get(k + "_max", dmx)
+                mn = dmn if mn is None else mn; mx = dmx if mx is None else mx
+                if mx - mn < 1e-12:
+                    continue
+                v = min(max(ln[k], mn + 1e-9), mx - 1e-9)
+                layout.append((i, "L:" + k)); x0.append(v); lo.append(mn); hi.append(mx)
     # 泊松权重：sigma ~ sqrt(counts)
     w = 1.0 / np.sqrt(np.clip(np.asarray(y, float), 1.0, None))
 
@@ -159,7 +189,10 @@ def fit(x, y, bg, peaks, max_nfev=4000):
         r = least_squares(resid, np.array(x0), bounds=(np.array(lo), np.array(hi)),
                           max_nfev=max_nfev, x_scale="jac")
         for (i, k), v in zip(layout, r.x):
-            peaks[i][k]["value"] = float(v)
+            if k.startswith("L:"):
+                peaks[i]["link"][k[2:]] = float(v)
+            else:
+                peaks[i][k]["value"] = float(v)
         ok, msg = bool(r.success), r.message
     else:
         ok, msg = True, "没有自由参数"
@@ -167,7 +200,8 @@ def fit(x, y, bg, peaks, max_nfev=4000):
     for p, v in zip(peaks, vals):     # 把绑定参数的结果写回，便于显示
         for k in PARAMS:
             p[k]["value"] = float(v[k])
-    res = resid(np.array([peaks[i][k]["value"] for i, k in layout])) if layout else (s - model(x, peaks)[1]) * w
+    cur = lambda i, k: peaks[i]["link"][k[2:]] if k.startswith("L:") else peaks[i][k]["value"]
+    res = resid(np.array([cur(i, k) for i, k in layout])) if layout else (s - model(x, peaks)[1]) * w
     chi2 = float(np.sum(res ** 2))
     dof = max(1, len(x) - len(layout))
     return {"chi2": chi2, "rchi2": chi2 / dof, "success": ok, "message": str(msg), "nfree": len(layout)}
@@ -238,12 +272,22 @@ def guess_orbital(name):
 
 
 # ------------------------------------------------------------------ 参数表 / 定量
+def counted(p):
+    """未知重叠峰不计入面积% 与定量。"""
+    return p.get("role", "main") != "unknown"
+
+
+def area_percents(peaks):
+    tot = sum(p["area"]["value"] for p in peaks if counted(p)) or 1.0
+    return [100.0 * p["area"]["value"] / tot if counted(p) else None for p in peaks]
+
+
 def peak_table(spec):
-    """每个峰：名称、位置、FWHM、面积、L%、面积%。"""
-    tot = sum(p["area"]["value"] for p in spec.peaks) or 1.0
-    return [{"spectrum": spec.name, "peak": p["name"], "BE_eV": p["center"]["value"],
-             "FWHM_eV": p["fwhm"]["value"], "area": p["area"]["value"], "L_percent": p["lor"]["value"],
-             "area_percent": 100.0 * p["area"]["value"] / tot} for p in spec.peaks]
+    """每个峰：名称、类型、位置、FWHM、面积、L%、面积%（未知重叠峰不计）。"""
+    return [{"spectrum": spec.name, "peak": p["name"], "role": p.get("role", "main"),
+             "BE_eV": p["center"]["value"], "FWHM_eV": p["fwhm"]["value"], "area": p["area"]["value"],
+             "L_percent": p["lor"]["value"], "area_percent": pct}
+            for p, pct in zip(spec.peaks, area_percents(spec.peaks))]
 
 
 def quantify(specs, sf_table, use_fit=True, ecf_exp=0.6):
@@ -252,8 +296,9 @@ def quantify(specs, sf_table, use_fit=True, ecf_exp=0.6):
     for s in specs:
         sf = sf_table.get(s.element)
         if use_fit and s.peaks:
-            area = sum(p["area"]["value"] for p in s.peaks)
-            be = sum(p["center"]["value"] * p["area"]["value"] for p in s.peaks) / (area or 1)
+            pk = [p for p in s.peaks if counted(p)]
+            area = sum(p["area"]["value"] for p in pk)
+            be = sum(p["center"]["value"] * p["area"]["value"] for p in pk) / (area or 1)
         else:
             area = s.raw_area()
             x, y, bg, _, _ = s.compute()
@@ -269,12 +314,18 @@ def quantify(specs, sf_table, use_fit=True, ecf_exp=0.6):
 
 
 # ------------------------------------------------------------------ 模板
-def doublet(name, center, split, ratio, fwhm=1.2, area=1000.0, lor=30.0, labels=None):
+def doublet(name, center, split, ratio, fwhm=1.2, area=1000.0, lor=30.0, labels=None,
+            fit_split=False, fit_ratio=False):
     """自旋轨道双峰：返回 [主峰, 副峰]，副峰位置/面积/FWHM 绑定主峰。"""
     a, b = labels or (name + " 3/2", name + " 1/2")
     p1 = new_peak(a, center, fwhm, area, lor)
     p2 = new_peak(b, center + split, fwhm, area * ratio, lor)
     p2["link"] = {"ref": a, "dE": split, "area_ratio": ratio, "fwhm_ratio": 1.0, "lor_same": True}
+    if fit_split:
+        p2["link"]["dE_fit"] = True
+    if fit_ratio:
+        p2["link"]["area_ratio_fit"] = True
+    p2["pair"] = True   # 双峰的副峰：删除主峰时一起删除
     return [p1, p2]
 
 
@@ -298,6 +349,25 @@ def builtin_templates():
                                           + doublet("Ti3+ 2p", 457.3, 5.7, 0.5, 1.6)
                                           + doublet("Ti4+ 2p", 458.8, 5.7, 0.5, 1.2))
     return t
+
+
+def satellite(name, parent, dE, area_ratio=None, bind_dE=True, fwhm=None, lor=None):
+    """卫星峰（shake-up 等）：位置相对主峰；ΔE 可绑定或在 ±1.5 eV 内自由；面积比可绑定或自由。"""
+    c = parent["center"]["value"] + dE
+    w = fwhm or parent["fwhm"]["value"] * 1.5
+    p = new_peak(name, c, w, parent["area"]["value"] * (area_ratio or 0.1),
+                 parent["lor"]["value"] if lor is None else lor, role="satellite")
+    ln = {"ref": parent["name"]}
+    if bind_dE:
+        ln["dE"] = dE
+    else:
+        p["center"]["min"], p["center"]["max"] = c - 1.5, c + 1.5
+    if area_ratio is not None:
+        ln["area_ratio"] = area_ratio
+    p["link"] = ln if len(ln) > 1 else {}
+    if not p["link"]:
+        p["link"] = {"ref": parent["name"]}   # 只记录归属，不约束
+    return p
 
 
 def apply_template(spec, peaks):

@@ -23,16 +23,15 @@ jobs:
           --hidden-import avantage_to_xpspeak
           --exclude-module IPython --exclude-module PyQt5 --exclude-module PySide6 --exclude-module tkinter
           run_xpsfit.py
-      - name: Smoke test (server starts and serves the page)
-        shell: python
+      - name: Smoke test (run the packaged exe headless)
+        shell: pwsh
         run: |
-          import subprocess, time, urllib.request, json
-          # 直接用源码起后端，验证打包所用的同一代码路径可工作
-          from xpsfit import server
-          srv, url = server.serve()
-          assert b"XPS Fit Studio" in urllib.request.urlopen(url).read()
-          req = urllib.request.Request(url + "api/state", data=b"{}", headers={"Content-Type": "application/json"})
-          print(json.loads(urllib.request.urlopen(req).read())["templates"][:2])
+          New-Item -ItemType Directory -Force smoke | Out-Null
+          $env:XPSFIT_SMOKE = "$PWD\smoke\result.txt"
+          $env:XPSFIT_SMOKE_VGD = "$PWD\tests_data\Al2p Scan.VGD"
+          $p = Start-Process -FilePath "dist\XPSFitStudio.exe" -PassThru -Wait
+          Get-Content smoke\result.txt
+          if (-not (Select-String -Path smoke\result.txt -Pattern '^OK$' -Quiet)) { exit 1 }
       - uses: actions/upload-artifact@v4
         with:
           name: windows-exe
