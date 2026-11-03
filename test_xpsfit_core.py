@@ -99,6 +99,27 @@ class Core(unittest.TestCase):
         self.assertAlmostEqual(s.peaks[1]["center"]["value"] - s.peaks[0]["center"]["value"], ln["dE"], places=9)
         self.assertEqual(s.peaks[3]["link"]["dE"], 0.44)   # 锁定的不变
 
+    def test_samples_states_ratio(self):
+        x, y, _ = synth()
+        specs = []
+        for sample in ("S1", "S2"):
+            a = core.Spectrum("Al2p Scan", x, y, os.path.join("/data", sample, "Al2p Scan.VGD"))
+            core.apply_template(a, core.builtin_templates()["Al2p: Al 金属 + Al2O3"]); a.do_fit()
+            o = core.Spectrum("O1s Scan", x + 460, y * (1 if sample == "S1" else 2), os.path.join("/data", sample, "O1s Scan.VGD"))
+            o.peaks = [core.new_peak("O lattice", 531, 1.7, 1000)]; o.do_fit()
+            specs += [a, o]
+        self.assertEqual(specs[0].sample, "S1")
+        st = dict(core.chemical_states(specs[0]))
+        self.assertEqual(set(st), {"Al0 2p", "Al2O3 2p"})       # 双峰合并成化学态
+        res = core.quantify_samples(specs, core.load_sf())
+        self.assertEqual([r["sample"] for r in res], ["S1", "S2"])
+        for r in res:
+            self.assertAlmostEqual(sum(r["elements"].values()), 100, places=6)
+            al = sum(v for k, v in r["states"].items() if k.startswith("Al2p"))
+            self.assertAlmostEqual(al, r["elements"]["Al2p"], places=6)
+        r1, r2 = (r["elements"]["O1s"] / r["elements"]["Al2p"] for r in res)
+        self.assertGreater(r2, r1 * 1.5)                          # S2 的 O 信号是 2 倍
+
 
 class Api(unittest.TestCase):
     """不开窗口，直接调用后端 API 走一遍完整流程。"""
@@ -126,7 +147,7 @@ class Api(unittest.TestCase):
                 out = server.api("export_" + kind, {"i": 0})["path"]
                 self.assertTrue(os.path.getsize(out) > 100, out)
             q = server.api("quant", {"use_fit": True, "ecf": True})
-            self.assertAlmostEqual(q["rows"][0]["atomic_percent"], 100.0)
+            self.assertAlmostEqual(q["samples"][0]["elements"]["Al2p"], 100.0)
         finally:
             server.user_dir = old
 

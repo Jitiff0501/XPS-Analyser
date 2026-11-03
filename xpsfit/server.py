@@ -5,6 +5,7 @@ import base64
 import copy
 import json
 import os
+import re
 import socket
 import sys
 import tempfile
@@ -81,21 +82,25 @@ class State:
                     if "BE =" in w:
                         try: hv = float(w.split("BE =")[1].split("-")[0])
                         except ValueError: pass
-                prefix = "" if folder.startswith("xpsfit_up") else folder + " "
-                out.append(core.Spectrum(prefix + b["region"], b["energy"], b["intensity"], path, hv))
+                out.append(core.Spectrum(b["region"], b["energy"], b["intensity"], path, hv))
             return out
         base = os.path.splitext(name)[0]
         for tname, grid in conv.read_tables(path):
             for b in conv.find_blocks(grid, tname, conv.DEFAULT_HV):
                 reg = b["region"]
-                nm = base if reg == conv.clean_region(tname) else "%s %s" % (base, reg)
+                if core.guess_orbital(reg):
+                    nm = reg
+                elif core.guess_orbital(base):
+                    nm = conv.clean_region(base)
+                else:
+                    nm = base if reg == conv.clean_region(tname) else "%s %s" % (base, reg)
                 out.append(core.Spectrum(nm, b["energy"], b["intensity"], path))
         return out
 
     # ---------------------------------------------------------- 视图数据
     def summary(self):
-        return [{"name": s.name, "element": s.element, "fitted": bool(s.last_fit), "npeaks": len(s.peaks)}
-                for s in self.specs]
+        return [{"name": s.name, "element": s.element, "fitted": bool(s.last_fit), "npeaks": len(s.peaks),
+                 "sample": s.sample or "(未分组)"} for s in self.specs]
 
     def view(self, i):
         s = self.S(i)
@@ -110,7 +115,7 @@ class State:
             q.setdefault("role", "main")
             q["linked"] = sorted(core.linked_params(p))
             peaks.append(q)
-        return {"i": int(i), "name": s.name, "element": s.element, "source": s.source, "hv": s.hv,
+        return {"i": int(i), "name": s.name, "element": s.element, "sample": s.sample or "(未分组)", "source": s.source, "hv": s.hv,
                 "shift": s.shift, "bg": s.bg, "be": _f(s.be), "y": _f(s.y),
                 "x": _f(x), "bgline": _f(bg), "comps": [_f(bg + c) for c in comps],
                 "env": _f(bg + env) if s.peaks else [], "resid": _f(y - bg - env) if s.peaks else [],
@@ -132,11 +137,27 @@ def api(method, a):
         paths = WINDOW.create_file_dialog(webview.OPEN_DIALOG, allow_multiple=True, file_types=(
             "XPS 数据 (*.vgd;*.VGD;*.txt;*.csv;*.xlsx;*.xls;*.json)", "所有文件 (*.*)")) or []
         return open_paths(list(paths))
+    if method == "pick_folder":
+        if WINDOW is None:
+            return {"fallback": True}
+        import webview
+        d = WINDOW.create_file_dialog(webview.FOLDER_DIALOG)
+        if not d:
+            return {"specs": st.summary(), "added": 0, "errors": []}
+        return open_paths(folder_files(d[0] if isinstance(d, (list, tuple)) else d))
     if method == "upload":
         tmp = tempfile.mkdtemp(prefix="xpsfit_up")
         paths = []
+        rels = [f.get("rel") or f["name"] for f in a["files"]]
+        if any("/" in r for r in rels):     # 选择了文件夹：只要 .vgd（若有）
+            if any(r.lower().endswith(".vgd") for r in rels):
+                a["files"] = [f for f, r in zip(a["files"], rels) if r.lower().endswith(".vgd")]
+        a["files"].sort(key=lambda f: (f.get("rel") or f["name"]).lower())
         for f in a["files"]:
-            p = os.path.join(tmp, os.path.basename(f["name"]))
+            rel = (f.get("rel") or f["name"]).replace("\\", "/")
+            parts = [re.sub(r'[<>:"|?*\x00-\x1f]', "_", x).strip() or "_" for x in rel.split("/") if x not in ("", ".", "..")]
+            p = os.path.join(tmp, *parts)
+            os.makedirs(os.path.dirname(p), exist_ok=True)
             with open(p, "wb") as fh:
                 fh.write(base64.b64decode(f["b64"]))
             paths.append(p)
@@ -157,7 +178,7 @@ def api(method, a):
     elif method == "calib_c1s":
         p = s.peaks[int(a["j"])]
         d = REF_C1S - p["center"]["value"]
-        same = [t for t in st.specs if os.path.dirname(t.source) == os.path.dirname(s.source)]
+        same = [t for t in st.specs if t.sample == s.sample]
         for t in same:
             shift_spec(t, d)
         return dict(st.view(a["i"]), msg="已平移 %+.3f eV（%d 条谱）" % (d, len(same)))
@@ -231,10 +252,11 @@ def api(method, a):
         if a.get("sf"):
             with open(os.path.join(user_dir(), "sensitivity_factors.json"), "w", encoding="utf-8") as f:
                 json.dump({"factors": st.sf}, f, ensure_ascii=False, indent=1)
-        inc = a.get("include") or [True] * len(st.specs)
-        specs = [t for t, k in zip(st.specs, inc) if k]
-        rows = core.quantify(specs, st.sf, a.get("use_fit", True), 0.6 if a.get("ecf", True) else 0.0)
-        return {"rows": rows, "sf": st.sf}
+        inc = a.get("include")
+        res = core.quantify_samples(st.specs, st.sf, a.get("use_fit", True),
+                                    0.6 if a.get("ecf", True) else 0.0, inc)
+        used = sorted({t.element for t in st.specs if t.element})
+        return {"samples": res, "sf": st.sf, "orbitals": used}
     elif method.startswith("export_"):
         return {"path": export(method[7:], a), "msg": "已导出"}
     elif method == "save_project":
@@ -251,6 +273,18 @@ def api(method, a):
     else:
         raise ValueError("未知操作 %s" % method)
     return dict(st.view(a["i"]), specs=st.summary())
+
+
+def folder_files(d):
+    """文件夹内（含子文件夹）的数据文件；有 .vgd 时只取 .vgd。"""
+    fs = []
+    for root, dirs, files in os.walk(d):
+        dirs[:] = sorted(x for x in dirs if x not in ("xpsfit_output", conv.OUT_DIRNAME))
+        for f in sorted(files):
+            if f.lower().endswith((".vgd", ".xlsx", ".xls", ".csv")) and not f.startswith("~$"):
+                fs.append(os.path.join(root, f))
+    vg = [f for f in fs if f.lower().endswith(".vgd")]
+    return vg or fs
 
 
 def open_paths(paths):

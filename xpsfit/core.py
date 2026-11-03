@@ -219,6 +219,7 @@ class Spectrum:
         self.peaks = []
         self.last_fit = None
         self.element = guess_orbital(name)
+        self.sample = os.path.basename(os.path.dirname(os.path.abspath(source))) if source else ""
 
     @property
     def be(self):
@@ -255,13 +256,14 @@ class Spectrum:
     def to_dict(self):
         return {"name": self.name, "source": self.source, "hv": self.hv,
                 "be": self.be_raw.tolist(), "y": self.y.tolist(), "shift": self.shift,
-                "bg": self.bg, "peaks": self.peaks, "element": self.element}
+                "bg": self.bg, "peaks": self.peaks, "element": self.element, "sample": self.sample}
 
     @classmethod
     def from_dict(cls, d):
         s = cls(d["name"], d["be"], d["y"], d.get("source", ""), d.get("hv", 1486.68))
         s.shift, s.bg, s.peaks = d.get("shift", 0.0), d["bg"], d["peaks"]
         s.element = d.get("element", s.element)
+        s.sample = d.get("sample", s.sample)
         return s
 
 
@@ -288,6 +290,59 @@ def peak_table(spec):
              "BE_eV": p["center"]["value"], "FWHM_eV": p["fwhm"]["value"], "area": p["area"]["value"],
              "L_percent": p["lor"]["value"], "area_percent": pct}
             for p, pct in zip(spec.peaks, area_percents(spec.peaks))]
+
+
+def state_name(name):
+    import re
+    n = re.sub(r"\s*\d/2\s*$", "", name).strip()
+    return n or name
+
+
+def chemical_states(spec):
+    """把双峰副峰、卫星峰并入所属主峰，返回 [(化学态名, 面积)]；未知重叠峰不计。"""
+    by = {p["name"]: p for p in spec.peaks}
+    order, area = [], {}
+    for p in spec.peaks:
+        if not counted(p):
+            continue
+        owner = p
+        ln = p.get("link") or {}
+        if (p.get("pair") or p.get("role") == "satellite") and ln.get("ref") in by:
+            owner = by[ln["ref"]]
+        key = state_name(owner["name"])
+        if key not in area:
+            order.append(key); area[key] = 0.0
+        area[key] += p["area"]["value"]
+    return [(k, area[k]) for k in order]
+
+
+def quantify_samples(specs, sf_table, use_fit=True, ecf_exp=0.6, include=None):
+    """按样品分组定量。返回 [{sample, elements:{orb: at%}, states:{"orb: 态": at%}, rows:[...]}]。
+    同一样品同一轨道有多条谱时只用第一条（其余标记为重复）。"""
+    groups = {}
+    for k, s in enumerate(specs):
+        if include is not None and not include[k]:
+            continue
+        groups.setdefault(s.sample or "(未分组)", []).append(s)
+    out = []
+    for sample, ss in groups.items():
+        seen, use, dup = set(), [], []
+        for s in ss:
+            (dup if s.element in seen else use).append(s); seen.add(s.element)
+        rows = quantify(use, sf_table, use_fit, ecf_exp)
+        elements, states = {}, {}
+        for s, r in zip(use, rows):
+            at = r["atomic_percent"]
+            if at is None:
+                continue
+            elements[s.element or s.name] = at
+            st = chemical_states(s) if (use_fit and s.peaks) else []
+            tot = sum(a for _, a in st) or 1.0
+            for nm, a in st:
+                states["%s: %s" % (s.element or s.name, nm)] = at * a / tot
+        out.append({"sample": sample, "elements": elements, "states": states, "rows": rows,
+                    "duplicates": [s.name for s in dup]})
+    return out
 
 
 def quantify(specs, sf_table, use_fit=True, ecf_exp=0.6):

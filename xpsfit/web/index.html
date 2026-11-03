@@ -63,7 +63,23 @@ aside.left{border-right:1px solid var(--line);padding:14px 10px;overflow:auto}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
 .plotcard{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
 .plothead{display:flex;align-items:center;gap:10px;padding:12px 16px 4px}
-.plothead h2{font:500 18px/1.2 var(--serif);margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plothead h2{font:500 18px/1.2 var(--serif);margin:0;max-width:30%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.etabs{flex:1;display:flex;gap:4px;overflow-x:auto;min-width:0;padding:2px 0;scrollbar-width:thin}
+.etab{border:1px solid transparent;background:none;border-radius:99px;padding:4px 12px;color:var(--ink2);white-space:nowrap;font-size:13px}
+.etab:hover{background:var(--sunk)}
+.etab.on{background:var(--ink);color:#fff}
+.etab .ck{color:var(--ok);margin-left:4px;font-size:11px}
+.etab.on .ck{color:#9FD6B4}
+.grp-h{display:flex;align-items:center;gap:6px;padding:10px 8px 4px;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;user-select:none}
+.grp-h .n{color:var(--ink3);font-weight:400;margin-left:auto}
+.grp-h .car{color:var(--ink3);transition:transform .15s;font-size:10px}
+.grp.closed .car{transform:rotate(-90deg)}
+.grp.closed .items{display:none}
+.spec{margin-left:8px}
+.ratio{display:flex;align-items:center;gap:8px;margin:12px 0 6px;flex-wrap:wrap}
+.ratio select{width:auto;min-width:150px}
+.qsec{font:500 15px/1.2 var(--serif);margin:16px 0 6px}
+.qt td.hl{font-weight:600;color:var(--accent-h)}
 .seg{display:inline-flex;background:var(--sunk);border:1px solid var(--line);border-radius:9px;padding:2px}
 .seg button{border:0;background:none;padding:4px 11px;border-radius:7px;color:var(--ink2);font-size:12.5px}
 .seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
@@ -109,7 +125,7 @@ select.in{padding:5px 6px}
 .opt{display:flex;align-items:center;gap:8px;margin:7px 0}
 .opt>span:first-child{min-width:92px;color:var(--ink2);font-size:12.5px}
 .opt .in.num{width:72px}
-.grp{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:12px 0 2px}
+.egrp{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin:12px 0 2px}
 .switch{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px}
 .role{white-space:nowrap;font-size:10.5px;padding:0 5px;border-radius:5px;margin-left:5px;border:1px solid var(--line)}
 .role.satellite{color:#7A5C4F;background:#F4EEE9}
@@ -147,8 +163,10 @@ input[type=checkbox]{accent-color:var(--accent)}
     <div class="mark"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 13 C4 13 5 3 8 3 C11 3 12 13 15 13" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>
     <h1>XPS Fit Studio</h1><small>v0.1</small>
   </div>
-  <button class="btn primary" onclick="openFiles()">＋ 打开数据</button>
+  <button class="btn primary" onclick="openFolder()">＋ 打开文件夹</button>
+  <button class="btn" onclick="openFiles()">打开文件</button>
   <input type="file" id="file" multiple accept=".vgd,.VGD,.txt,.csv,.xlsx,.xls,.json" hidden>
+  <input type="file" id="folder" webkitdirectory multiple hidden>
   <button class="btn" onclick="call('save_project',{}).then(r=>toast(r.msg,r.path))">保存项目</button>
   <div class="menu" id="expmenu">
     <button class="btn" onclick="toggleMenu(event)">导出 ▾</button>
@@ -174,12 +192,14 @@ input[type=checkbox]{accent-color:var(--accent)}
       <div class="welcome" id="welcome">
         <div>
           <h2>开始一次拟合</h2>
-          <p>打开 Avantage 的 .VGD 文件，或 Excel / CSV / XPSPEAK txt。</p>
-          <button class="btn primary" onclick="openFiles()">＋ 打开数据</button>
+          <p>选择一个样品文件夹，里面所有元素的 .VGD 会一次读入；也可以选多个文件。</p>
+          <button class="btn primary" onclick="openFolder()">＋ 打开文件夹</button>
+          <button class="btn" onclick="openFiles()" style="margin-left:6px">打开文件</button>
         </div>
       </div>
       <div class="plothead" id="plothead" hidden>
         <h2 id="title"></h2>
+        <div class="etabs" id="etabs"></div>
         <div class="seg" id="modes">
           <button data-m="view" class="on">浏览</button>
           <button data-m="peak">点击加峰</button>
@@ -278,15 +298,15 @@ input[type=checkbox]{accent-color:var(--accent)}
   <h4>导出拟合图</h4>
   <div class="exgrid">
     <div>
-      <div class="grp">X 轴（结合能）</div>
+      <div class="egrp">X 轴（结合能）</div>
       <div class="opt"><span>范围 (eV)</span><input class="in num" id="e_xmax" placeholder="高"><span style="min-width:0;color:var(--ink3)">→</span><input class="in num" id="e_xmin" placeholder="低"></div>
       <div class="opt"><span>主刻度间距</span><input class="in num" id="e_xstep" placeholder="自动"><span style="min-width:0;color:var(--ink3)">eV</span></div>
       <div class="opt"><span>次刻度</span><select class="in num" id="e_xminor" style="width:120px"><option value="0">无</option><option value="1" selected>每格 1 条</option><option value="4">每格 4 条</option></select></div>
       <div class="opt"><span>标题</span><input class="in" id="e_xlabel" value="Binding Energy (eV)"></div>
-      <div class="grp">Y 轴（强度）</div>
+      <div class="egrp">Y 轴（强度）</div>
       <div class="opt"><span>数字与刻度</span><label class="switch"><input type="checkbox" id="e_ynumbers" checked onchange="yLabelAuto()"> 显示（关闭则只留标题，无刻度短线）</label></div>
       <div class="opt"><span>标题</span><input class="in" id="e_ylabel" value="Intensity (CPS)"></div>
-      <div class="grp">内容</div>
+      <div class="egrp">内容</div>
       <div class="opt" style="flex-wrap:wrap;gap:10px 14px">
         <label class="switch"><input type="checkbox" id="e_legend" checked> 图例</label>
         <select class="in" id="e_legend_loc" style="width:96px;padding:3px 4px"><option value="best">自动位置</option><option value="upper left">左上</option><option value="upper right">右上</option><option value="outside">图外右侧</option></select>
@@ -296,7 +316,7 @@ input[type=checkbox]{accent-color:var(--accent)}
         <label class="switch"><input type="checkbox" id="e_fill" checked> 峰填充</label>
       </div>
       <div class="opt"><span>原始数据</span><select class="in" id="e_raw" style="width:120px"><option value="markers">空心点</option><option value="line">细线</option></select></div>
-      <div class="grp">尺寸与格式</div>
+      <div class="egrp">尺寸与格式</div>
       <div class="opt"><span>宽 × 高 (cm)</span><input class="in num" id="e_width_cm" value="8.5"><span style="min-width:0">×</span><input class="in num" id="e_height_cm" value="7"></div>
       <div class="opt"><span>字号 / DPI</span><input class="in num" id="e_font" value="9"><input class="in num" id="e_dpi" value="600"></div>
       <div class="opt"><span>格式</span><select class="in" id="e_fmt" style="width:120px"><option value="png">PNG</option><option value="tif">TIFF</option><option value="svg">SVG（矢量）</option><option value="pdf">PDF（矢量）</option></select></div>
@@ -307,15 +327,24 @@ input[type=checkbox]{accent-color:var(--accent)}
 </div></div>
 
 <!-- quant -->
-<div class="scrim" id="qm"><div class="modal" style="width:min(820px,94vw)">
-  <h4>定量 · 原子百分比</h4>
-  <div class="row" style="gap:18px">
-    <label style="min-width:0"><input type="checkbox" id="q_fit" checked onchange="quant()"> 用拟合峰面积</label>
+<div class="scrim" id="qm"><div class="modal" style="width:min(1000px,96vw)">
+  <h4>定量 · 原子百分比与比例</h4>
+  <div class="row" style="gap:18px;flex-wrap:wrap">
+    <label style="min-width:0"><input type="checkbox" id="q_fit" checked onchange="quant()"> 用拟合峰面积（否则用扣背景积分）</label>
     <label style="min-width:0"><input type="checkbox" id="q_ecf" checked onchange="quant()"> 能量补偿 KE<sup>0.6</sup></label>
   </div>
-  <table class="qt"><thead><tr><th>计入</th><th>谱</th><th>轨道</th><th>BE</th><th>面积</th><th>SF (ALTHERMO1)</th><th>原子 %</th></tr></thead><tbody id="qtab"></tbody></table>
-  <p class="note">原子% ∝ 面积 / (SF · KE<sup>0.6</sup>)。SF 可直接修改，会保存供下次使用。同一元素有多条谱（如深度剖析各层）时只勾选一组。Avantage 另含谱仪传输函数校正，结果可能略有差别，建议先用一组样品与 Avantage 对照。</p>
-  <div class="foot"><button class="btn" onclick="copyQuant()">复制表格</button><button class="btn primary" onclick="closeM('qm')">完成</button></div>
+  <div class="qsec">灵敏度因子（ALTHERMO1，可改）</div>
+  <div id="qsf" style="display:flex;gap:10px;flex-wrap:wrap"></div>
+  <div class="qsec">元素原子 %（每行一个样品）</div>
+  <div style="overflow:auto"><table class="qt" id="qel"></table></div>
+  <div class="qsec">化学态原子 %</div>
+  <div style="overflow:auto"><table class="qt" id="qst"></table></div>
+  <div class="qsec">比例</div>
+  <div class="ratio"><select class="in" id="q_a" onchange="ratio()"></select><span>÷</span><select class="in" id="q_b" onchange="ratio()"></select>
+    <button class="btn sm" onclick="addRatio()">＋ 加入表格</button><span class="note" style="margin:0">化学态 ÷ 同元素总量即该态占比</span></div>
+  <div style="overflow:auto"><table class="qt" id="qra"></table></div>
+  <p class="note">原子% ∝ 面积 / (SF · KE<sup>0.6</sup>)，在每个样品内归一。化学态 = 主峰 + 其双峰副峰 + 卫星峰；未知重叠峰不计。双峰合并后的态名去掉 “3/2”“5/2” 等。Avantage 另含传输函数校正，数值可能略有差别。</p>
+  <div class="foot"><button class="btn" onclick="copyQuant()">复制全部表格</button><button class="btn primary" onclick="closeM('qm')">完成</button></div>
 </div></div>
 
 <div id="toast"></div>
@@ -348,6 +377,12 @@ function toast(msg,path){
   t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),path?6000:2600);
 }
 /* ---------- files ---------- */
+async function openFolder(){
+  const r=await call("pick_folder");
+  if(r.fallback){$("folder").click();return}
+  afterOpen(r);
+}
+$("folder").onchange=e=>upload([...e.target.files]);
 async function openFiles(){
   const r=await call("pick_files");
   if(r.fallback){$("file").click();return}
@@ -356,8 +391,11 @@ async function openFiles(){
 $("file").onchange=e=>upload([...e.target.files]);
 async function upload(files){
   if(!files.length)return;
-  const arr=await Promise.all(files.map(f=>new Promise(res=>{const rd=new FileReader();rd.onload=()=>res({name:f.name,b64:rd.result.split(",")[1]});rd.readAsDataURL(f)})));
-  afterOpen(await call("upload",{files:arr}));$("file").value="";
+  files=files.filter(f=>/\.(vgd|txt|csv|xlsx|xls|json)$/i.test(f.name));
+  if(files.some(f=>f.webkitRelativePath)&&files.some(f=>/\.vgd$/i.test(f.name)))files=files.filter(f=>/\.vgd$/i.test(f.name));
+  if(!files.length){toast("没有找到可读取的数据文件");return}
+  const arr=await Promise.all(files.map(f=>new Promise(res=>{const rd=new FileReader();rd.onload=()=>res({name:f.name,rel:f.webkitRelativePath||f.name,b64:rd.result.split(",")[1]});rd.readAsDataURL(f)})));
+  afterOpen(await call("upload",{files:arr}));$("file").value="";$("folder").value="";
 }
 function afterOpen(r){
   const before=S.specs.length;S.specs=r.specs;renderSpecs();
@@ -371,26 +409,47 @@ const drop=$("drop");
 document.addEventListener("drop",ev=>upload([...ev.dataTransfer.files]));
 
 /* ---------- spectra list ---------- */
+let CLOSED={};
 function renderSpecs(){
   const el=$("specs");el.innerHTML="";
   if(!S.specs.length){el.innerHTML='<div class="empty">还没有数据</div>';}
-  S.specs.forEach((s,i)=>{
-    const d=document.createElement("div");d.className="spec"+(i===S.cur?" on":"");
-    d.innerHTML=`<span class="dot ${s.fitted?"ok":""}"></span><span class="nm"></span>${s.element?`<span class="chip">${s.element}</span>`:""}`;
-    d.querySelector(".nm").textContent=s.name;d.title=s.name+"\n双击重命名，右键移除";
-    d.onclick=()=>select(i);
-    d.ondblclick=async()=>{const n=prompt("重命名",s.name);if(n){S.cur=i;await act("rename",{name:n})}};
-    d.oncontextmenu=async ev=>{ev.preventDefault();if(confirm("移除 “"+s.name+"”？（不会删除原文件）")){const r=await call("remove",{i});S.specs=r.specs;S.cur=null;S.v=null;renderSpecs();if(S.specs.length)select(Math.min(i,S.specs.length-1));else showWelcome(true)}};
-    el.append(d);
-  });
+  const groups={};S.specs.forEach((s,i)=>(groups[s.sample]=groups[s.sample]||[]).push(i));
+  for(const g in groups){
+    const box=document.createElement("div");box.className="grp"+(CLOSED[g]?" closed":"");
+    const fit=groups[g].filter(i=>S.specs[i].fitted).length;
+    box.innerHTML=`<div class="grp-h"><span class="car">▼</span><span class="gn"></span><span class="n">${fit}/${groups[g].length}</span></div><div class="items"></div>`;
+    box.querySelector(".gn").textContent=g;box.querySelector(".grp-h").onclick=()=>{CLOSED[g]=!CLOSED[g];renderSpecs()};
+    const items=box.querySelector(".items");
+    groups[g].forEach(i=>{const s=S.specs[i];
+      const d=document.createElement("div");d.className="spec"+(i===S.cur?" on":"");
+      d.innerHTML=`<span class="dot ${s.fitted?"ok":""}"></span><span class="nm"></span>${s.element&&s.element!==s.name?`<span class="chip">${s.element}</span>`:""}`;
+      d.querySelector(".nm").textContent=s.name;d.title=g+" / "+s.name+"\n双击重命名，右键移除";
+      d.onclick=()=>select(i);
+      d.ondblclick=async()=>{const n=prompt("重命名",s.name);if(n){S.cur=i;await act("rename",{name:n})}};
+      d.oncontextmenu=async ev=>{ev.preventDefault();if(confirm("移除 “"+s.name+"”？（不会删除原文件）")){const r=await call("remove",{i});S.specs=r.specs;S.cur=null;S.v=null;renderSpecs();if(S.specs.length)select(Math.min(i,S.specs.length-1));else showWelcome(true)}};
+      items.append(d)});
+    el.append(box);
+  }
+  renderTabs();
 }
+function renderTabs(){
+  const t=$("etabs");if(!t)return;t.innerHTML="";if(S.cur===null||!S.specs[S.cur])return;
+  const g=S.specs[S.cur].sample;
+  S.specs.forEach((s,i)=>{if(s.sample!==g)return;const b=document.createElement("button");b.className="etab"+(i===S.cur?" on":"");
+    b.textContent=s.element||s.name;if(s.fitted){const c=document.createElement("span");c.className="ck";c.textContent="✓";b.append(c)}
+    b.title=s.name;b.onclick=()=>select(i);t.append(b)});
+}
+document.addEventListener("keydown",e=>{if(document.querySelector(".scrim.open")||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;
+  if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight"||S.cur===null)return;const g=S.specs[S.cur].sample;
+  const ids=S.specs.map((s,i)=>s.sample===g?i:-1).filter(i=>i>=0);const k=ids.indexOf(S.cur)+(e.key==="ArrowRight"?1:-1);
+  if(k>=0&&k<ids.length)select(ids[k])});
 async function select(i){S.cur=i;S.sel=null;renderSpecs();setView(await call("view",{i}))}
 function showWelcome(on){$("welcome").hidden=!on;$("plothead").hidden=on;$("plot").hidden=on;if(on){$("fitinfo").textContent="";$("ptab").innerHTML=""}}
 
 /* ---------- view ---------- */
 function setView(v){
   S.v=v;showWelcome(false);
-  $("title").textContent=v.name;
+  $("title").textContent=v.sample;$("title").title=v.sample+" / "+v.name;
   $("shift").value=+v.shift.toFixed(4);
   $("hvinfo").textContent="hν "+v.hv+" eV";
   $("bgtype").value=v.bg.type;$("bglo").value=v.region[0].toFixed(2);$("bghi").value=v.region[1].toFixed(2);$("bgn").value=v.bg.navg||3;
@@ -554,20 +613,41 @@ document.addEventListener("click",()=>$("expmenu").classList.remove("open"));
 async function exp(kind,a){if(S.cur===null){toast("请先打开数据");return}const r=await call("export_"+kind,Object.assign({i:S.cur},a));toast(r.msg,r.path)}
 
 /* ---------- quant ---------- */
-async function openQuant(){if(!S.specs.length)return;S.qinc=S.specs.map(()=>true);await quant();$("qm").classList.add("open")}
+let Q=null,RATIOS=[];
+async function openQuant(){if(!S.specs.length)return;await quant();$("qm").classList.add("open")}
 async function quant(sf){
-  const r=await call("quant",{include:S.qinc,use_fit:$("q_fit").checked,ecf:$("q_ecf").checked,sf});
-  S.qrows=r.rows;const byName={};r.rows.forEach(x=>byName[x.spectrum]=x);
-  $("qtab").innerHTML="";
-  S.specs.forEach((s,i)=>{const x=S.qinc[i]?byName[s.name]:null;const tr=document.createElement("tr");
-    tr.innerHTML=`<td><input type="checkbox" ${S.qinc[i]?"checked":""}></td><td></td><td>${s.element||"—"}</td><td>${x?x.BE_eV.toFixed(2):""}</td><td>${x?fmt(x.area,4):""}</td><td><input class="in num" style="width:72px;text-align:right" value="${r.sf[s.element]??""}"></td><td style="font-weight:600">${x&&x.atomic_percent!=null?x.atomic_percent.toFixed(2):""}</td>`;
-    tr.children[1].textContent=s.name;
-    tr.querySelector("input[type=checkbox]").onchange=e=>{S.qinc[i]=e.target.checked;quant()};
-    tr.querySelector("input.in").onchange=e=>{if(s.element)quant({[s.element]:e.target.value})};
-    $("qtab").append(tr)});
+  Q=await call("quant",{use_fit:$("q_fit").checked,ecf:$("q_ecf").checked,sf});
+  $("qsf").innerHTML="";
+  Q.orbitals.forEach(o=>{const w=document.createElement("label");w.className="switch";w.innerHTML=`<span style="min-width:0;color:var(--ink2)">${o}</span><input class="in num" style="width:66px;text-align:right" value="${Q.sf[o]??""}">`;
+    w.querySelector("input").onchange=e=>quant({[o]:e.target.value});$("qsf").append(w)});
+  const els=[...new Set(Q.samples.flatMap(r=>Object.keys(r.elements)))];
+  const sts=[...new Set(Q.samples.flatMap(r=>Object.keys(r.states)))];
+  table("qel",els,r=>r.elements);table("qst",sts,r=>r.states);
+  const opts=[...els.map(e=>["E:"+e,e+"（元素）"]),...sts.map(e=>["S:"+e,e])];
+  for(const id of["q_a","q_b"]){const cur=$(id).value;$(id).innerHTML="";opts.forEach(([v,t])=>{const o=document.createElement("option");o.value=v;o.textContent=t;$(id).append(o)});
+    if(opts.some(o=>o[0]===cur))$(id).value=cur;else if(id==="q_b"&&opts.length>1)$(id).selectedIndex=1}
+  ratio();
 }
-function copyQuant(){const t=["谱\t轨道\tBE\t面积\tSF\t原子%"].concat(S.qrows.map(r=>[r.spectrum,r.orbital,r.BE_eV.toFixed(2),r.area.toFixed(1),r.SF,r.atomic_percent!=null?r.atomic_percent.toFixed(2):""].join("\t"))).join("\n");
-  navigator.clipboard.writeText(t).then(()=>toast("已复制，可直接粘贴到 Excel"))}
+function val(r,k){return k.startsWith("E:")?r.elements[k.slice(2)]:r.states[k.slice(2)]}
+function lbl(k){return k.slice(2)}
+function table(id,cols,get){
+  const t=$(id);if(!cols.length){t.innerHTML='<tr><td class="note">（无）</td></tr>';return}
+  t.innerHTML=`<thead><tr><th>样品</th>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>`+
+    Q.samples.map(r=>`<tr><td>${esc(r.sample)}${r.duplicates.length?` <span class="tag" title="${esc(r.duplicates.join(", "))}">（有重复轨道，已用第一条）</span>`:""}</td>${cols.map(c=>`<td>${get(r)[c]!=null?get(r)[c].toFixed(2):"—"}</td>`).join("")}</tr>`).join("")+"</tbody>";
+}
+function ratioCols(){const a=$("q_a").value,b=$("q_b").value;const cur=a&&b?[[a,b]]:[];return [...RATIOS,...cur.filter(([x,y])=>!RATIOS.some(([p,q])=>p===x&&q===y))]}
+function ratio(){
+  const cols=ratioCols(),t=$("qra");
+  if(!cols.length){t.innerHTML="";return}
+  t.innerHTML=`<thead><tr><th>样品</th>${cols.map(([a,b],k)=>`<th>${esc(lbl(a))} / ${esc(lbl(b))}${k<RATIOS.length?` <a style="cursor:pointer;color:var(--ink3)" onclick="RATIOS.splice(${k},1);ratio()">✕</a>`:""}</th>`).join("")}</tr></thead><tbody>`+
+    Q.samples.map(r=>`<tr><td>${esc(r.sample)}</td>${cols.map(([a,b])=>{const x=val(r,a),y=val(r,b);return `<td class="hl">${x!=null&&y?(x/y).toFixed(3):"—"}</td>`}).join("")}</tr>`).join("")+"</tbody>";
+}
+function addRatio(){const a=$("q_a").value,b=$("q_b").value;if(a&&b&&a!==b&&!RATIOS.some(([p,q])=>p===a&&q===b))RATIOS.push([a,b]);ratio()}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function copyQuant(){const out=[];
+  for(const[id,title]of[["qel","元素原子%"],["qst","化学态原子%"],["qra","比例"]]){out.push(title);
+    $(id).querySelectorAll("tr").forEach(tr=>out.push([...tr.children].map(td=>td.textContent.replace("✕","").trim()).join("\t")));out.push("")}
+  navigator.clipboard.writeText(out.join("\n")).then(()=>toast("已复制，可直接粘贴到 Excel"),()=>toast("复制失败"))}
 
 /* ---------- init ---------- */
 (async()=>{const r=await call("state");S.specs=r.specs;S.native=r.native;fillTpl(r.templates);renderSpecs();if(S.specs.length)select(0)})();
