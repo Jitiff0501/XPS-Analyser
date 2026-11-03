@@ -217,7 +217,8 @@ input[type=checkbox]{accent-color:var(--accent)}
       <div class="plothead" id="plothead" hidden>
         <h2 id="title"></h2>
         <div class="etabs" id="etabs"></div>
-        <button class="btn sm ghost" onclick="resetView()" title="恢复完整视图（也可双击图）">⤢ 复位</button>
+        <button class="btn sm ghost" onclick="resetView()" title="回到默认分析窗口（也可双击图）">⤢ 复位</button>
+        <button class="btn sm ghost" onclick="fullView()" title="显示整个采集范围">全谱</button>
         <div class="seg" id="clickkind" hidden title="图上点击时添加的峰类型">
           <button data-k="single" class="on">单峰</button>
           <button data-k="doublet">双峰</button>
@@ -494,7 +495,7 @@ document.addEventListener("keydown",e=>{if(document.querySelector(".scrim.open")
   if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight"||S.cur===null)return;const g=S.specs[S.cur].sample;
   const ids=S.specs.map((s,i)=>s.sample===g?i:-1).filter(i=>i>=0);const k=ids.indexOf(S.cur)+(e.key==="ArrowRight"?1:-1);
   if(k>=0&&k<ids.length)select(ids[k])});
-async function select(i){S.cur=i;S.sel=null;renderSpecs();setView(await call("view",{i}));loadRef()}
+async function select(i){S.cur=i;S.sel=null;S.full=false;S.xr=S.yr=null;renderSpecs();setView(await call("view",{i}));loadRef()}
 function showWelcome(on){$("welcome").hidden=!on;$("plothead").hidden=on;$("plot").hidden=on;if(on){$("fitinfo").textContent="";$("ptab").innerHTML=""}}
 
 /* ---------- view ---------- */
@@ -556,13 +557,19 @@ function draw(){
     marker:{size:11,color:"#fff",line:{color:hc,width:2.2},symbol:"circle"}});
   const RS=refShapes(v);L.shapes=L.shapes.concat(RS.shapes);L.annotations=RS.ann;
   if(S.xr&&S.fixFor===v.i){L.xaxis.autorange=false;L.xaxis.range=S.xr;L.yaxis.autorange=false;L.yaxis.range=S.yr}
+  else if(S.full){L.uirevision=v.i+":full:"+(S.resetN||0)}
+  else if(!S.full&&v.window){const[lo,hi]=v.window,yr=winY(v,lo,hi);L.xaxis.autorange=false;L.xaxis.range=[hi+0.3,lo-0.3];
+    if(yr){L.yaxis.autorange=false;L.yaxis.range=yr}L.uirevision=v.i+":"+lo+":"+hi+":"+S.resetN}
   Plotly.react("plot",T,L,{displaylogo:false,displayModeBar:false,responsive:true,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]});
   const pl=$("plot");pl.removeAllListeners&&pl.removeAllListeners("plotly_click");pl.on("plotly_click",onClick);
   pl.removeAllListeners&&pl.removeAllListeners("plotly_selected");
   pl.on("plotly_selected",ev=>{if(S.mode!=="bg"||!ev||!ev.range||!ev.range.x)return;const[a,b]=ev.range.x.slice().sort((a,b)=>a-b);
     $("bglo").value=a.toFixed(2);$("bghi").value=b.toFixed(2);setMode("view");setBg()});
 }
-function resetView(){S.xr=S.yr=null;Plotly.relayout("plot",{"xaxis.autorange":"reversed","yaxis.autorange":true,"yaxis2.autorange":true})}
+function winY(v,lo,hi){let a=Infinity,b=-Infinity;const upd=(X,Y)=>{for(let i=0;i<X.length;i++){if(X[i]<lo||X[i]>hi)continue;if(Y[i]<a)a=Y[i];if(Y[i]>b)b=Y[i]}};
+  upd(v.be,v.y);if(v.bgline.length)upd(v.x,v.bgline);if(v.env.length)upd(v.x,v.env);if(!isFinite(a))return null;const pad=(b-a||1);return [a-0.05*pad,b+0.12*pad]}
+function fullView(){S.xr=S.yr=null;S.full=true;draw()}
+function resetView(){S.xr=S.yr=null;S.full=false;S.resetN=(S.resetN||0)+1;draw()}
 function canMove(p){const l=new Set(p.linked||[]);return {x:!p.center.fixed&&!l.has("center"),h:!p.area.fixed&&!l.has("area"),w:!p.fwhm.fixed&&!l.has("fwhm")}}
 function glPeak(x,c,w,a,lor){const e=Math.min(Math.max(lor/100,0),1),L2=Math.LN2;w=Math.max(w,1e-6);
   return x.map(t=>{const d=t-c;return a*((1-e)*Math.sqrt(4*L2/Math.PI)/w*Math.exp(-4*L2*d*d/(w*w))+e*(2/Math.PI)*w/(4*d*d+w*w))})}
@@ -796,7 +803,7 @@ function yLabelAuto(){const y=$("e_ylabel");if(!$("e_ynumbers").checked&&y.value
 let prevT;
 function openExport(){if(!S.v){toast("请先打开数据");return}
   try{const o=JSON.parse(localStorage.getItem("xpsfit_export2")||"{}");for(const k in o){const e=$("e_"+k);if(e&&!["xmin","xmax"].includes(k)){e.type==="checkbox"?e.checked=o[k]:e.value=o[k]??""}}}catch(e){}
-  $("e_xmax").value=Math.max(...S.v.be).toFixed(1);$("e_xmin").value=Math.min(...S.v.be).toFixed(1);
+  const W=S.v.window||[Math.min(...S.v.be),Math.max(...S.v.be)];$("e_xmax").value=(+W[1]).toFixed(1);$("e_xmin").value=(+W[0]).toFixed(1);
   $("exm").classList.add("open");preview()}
 document.querySelectorAll("#exm input,#exm select").forEach(e=>e.addEventListener(e.type==="checkbox"||e.tagName==="SELECT"?"change":"input",()=>{clearTimeout(prevT);prevT=setTimeout(preview,350)}));
 async function preview(){const o=eopts();try{localStorage.setItem("xpsfit_export2",JSON.stringify(o))}catch(e){}

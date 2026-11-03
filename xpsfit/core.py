@@ -355,6 +355,30 @@ def fit(x, y, bg, peaks, max_nfev=4000):
     return {"chi2": chi2, "rchi2": chi2 / dof, "success": ok, "message": str(msg), "nfree": len(layout)}
 
 
+# ------------------------------------------------------------------ 默认分析窗口（BE, eV）
+# 打开谱时默认的显示范围与背景范围；采集窗口更宽时只用这一段，可随时修改或点“全谱”
+DEFAULT_WINDOWS = {   # 文献中常用的高分辨谱显示范围
+    "C1s": (280, 292), "N1s": (392, 404), "O1s": (526, 536), "F1s": (680, 692),
+    "Na1s": (1066, 1078), "Mg2p": (46, 56), "Al2p": (70, 80), "Si2p": (96, 108),
+    "P2p": (128, 140), "S2p": (158, 172), "Cl2p": (194, 206), "K2p": (290, 300),
+    "Ca2p": (342, 356), "Ti2p": (450, 470), "V2p": (510, 530), "Cr2p": (570, 595),
+    "Mn2p": (635, 665), "Fe2p": (700, 740), "Co2p": (770, 810), "Ni2p": (850, 890),
+    "Cu2p": (925, 965), "Zn2p": (1015, 1050), "Zr3d": (175, 190), "Nb3d": (200, 215),
+    "Mo3d": (224, 240), "Ag3d": (362, 380), "Hf4f": (12, 24), "Ta4f": (20, 32),
+    "W4f": (28, 42), "Pt4f": (66, 82), "Au4f": (80, 92),
+}
+
+
+def default_window(orbital, be):
+    """采集范围与默认窗口的交集；没有默认值或交集太窄时用整个采集范围。"""
+    lo, hi = float(np.min(be)), float(np.max(be))
+    w = DEFAULT_WINDOWS.get(orbital)
+    if not w:
+        return [lo, hi]
+    a, b = max(lo, w[0]), min(hi, w[1])
+    return [a, b] if b - a >= 3 else [lo, hi]
+
+
 # ------------------------------------------------------------------ 谱
 class Spectrum:
     def __init__(self, name, be, counts, source="", hv=1486.68):
@@ -368,6 +392,9 @@ class Spectrum:
         self.last_fit = None
         self.element = guess_orbital(name)
         self.sample = os.path.basename(os.path.dirname(os.path.abspath(source))) if source else ""
+        self.window = default_window(self.element, self.be_raw)      # 显示/分析窗口（未校正坐标）
+        if self.window != [float(self.be_raw.min()), float(self.be_raw.max())]:
+            self.bg["lo"], self.bg["hi"] = self.window
 
     @property
     def be(self):
@@ -411,7 +438,8 @@ class Spectrum:
     def to_dict(self):
         return {"name": self.name, "source": self.source, "hv": self.hv,
                 "be": self.be_raw.tolist(), "y": self.y.tolist(), "shift": self.shift,
-                "bg": self.bg, "peaks": self.peaks, "element": self.element, "sample": self.sample}
+                "bg": self.bg, "peaks": self.peaks, "element": self.element, "sample": self.sample,
+                "window": self.window}
 
     @classmethod
     def from_dict(cls, d):
@@ -419,6 +447,7 @@ class Spectrum:
         s.shift, s.bg, s.peaks = d.get("shift", 0.0), d["bg"], [ensure_peak(p) for p in d["peaks"]]
         s.element = d.get("element", s.element)
         s.sample = d.get("sample", s.sample)
+        s.window = d.get("window") or [float(s.be_raw.min()), float(s.be_raw.max())]
         return s
 
 

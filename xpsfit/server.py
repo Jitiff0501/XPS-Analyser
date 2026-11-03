@@ -120,7 +120,8 @@ class State:
                 "shift": s.shift, "bg": s.bg, "be": _f(s.be), "y": _f(s.y),
                 "x": _f(x), "bgline": _f(bg), "comps": [_f(bg + c) for c in comps],
                 "env": _f(bg + env) if s.peaks else [], "resid": _f(y - bg - env) if s.peaks else [],
-                "peaks": peaks, "fit": s.last_fit, "region": [float(x.min()), float(x.max())]}
+                "peaks": peaks, "fit": s.last_fit, "region": [float(x.min()), float(x.max())],
+                "window": [s.window[0] + s.shift, s.window[1] + s.shift]}
 
 
 ST = State()
@@ -193,7 +194,10 @@ def api(method, a):
     s = st.S(a["i"]) if "i" in a and a["i"] is not None and st.specs else None
 
     if method == "rename":
+        old = s.element
         s.name = a["name"]; s.element = core.guess_orbital(a["name"]) or s.element
+        if s.element != old:
+            s.window = core.default_window(s.element, s.be_raw)
     elif method == "set_element":
         s.element = a["element"]
     elif method == "remove":
