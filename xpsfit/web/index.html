@@ -128,12 +128,38 @@ select.in{padding:5px 6px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
 .grid3 .btn{justify-content:center}
 .autobox{display:flex;flex-direction:column;gap:6px}
+/* 右侧：拟合卡片 + 折叠分区 */
+.hero{background:linear-gradient(180deg,#FFFFFF 0%,#FBF6F2 100%);border:1px solid #EBDDD3;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
+.hero-h{display:flex;align-items:baseline;gap:8px}
+.hero-t{font:500 17px/1 var(--serif)}
+.hero .fitbtn{padding:11px;font-size:14.5px}
+.btn.wide{width:100%;justify-content:center}
+.grid3.tight{margin-top:2px}
+.summary{display:flex;flex-direction:column;gap:5px;padding:4px 2px}
+.srow{display:grid;grid-template-columns:minmax(0,1fr) 48px;gap:8px;align-items:center;font-size:12.5px}
+.srow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.srow .pc{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.sbar{grid-column:1/3;height:5px;border-radius:99px;background:var(--sunk);overflow:hidden;margin-top:-2px}
+.sbar i{display:block;height:100%;border-radius:99px}
+details.sec{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0 14px}
+details.sec[open]{padding-bottom:12px}
+details.sec>summary{list-style:none;cursor:pointer;padding:11px 0;font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;user-select:none}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:"";margin-left:auto;width:7px;height:7px;border-right:1.6px solid var(--ink3);border-bottom:1.6px solid var(--ink3);transform:rotate(-45deg);transition:transform .15s}
+details.sec[open]>summary::after{transform:rotate(45deg)}
+details.sec>summary .sub{font-weight:400;color:var(--ink3);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%}
+.langseg button{min-width:34px}
+.steps{display:flex;flex-direction:column;gap:10px;text-align:left;margin:18px auto 22px;max-width:420px}
+.step{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.step b{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px}
+.step span{color:var(--ink2);font-size:13px;line-height:1.5}
+#qwarn details.more summary{cursor:pointer;color:var(--ink3);font-size:12px;margin-top:2px}
 .qwarn{border:1px solid #F0D9C9;background:#FBF3EE;border-radius:10px;padding:8px 10px;font-size:12px;color:#8A4A2E;max-height:140px;overflow:auto}
 .qwarn div{margin:2px 0}
 .rep h5{font:600 13px/1.3 var(--sans);margin:12px 0 4px}
 .rep ol{margin:0;padding-left:20px;font-size:12.5px;color:var(--ink2)}
 .rep li{margin:3px 0}
-.rep li.ov{color:#6b6a64}.rep li.sat{color:#7A5C4F}.rep li.new{color:var(--ok)}.rep li.warn{color:#B4532A}
+.rep li.ov{color:#3B6EA8}.rep li.sat{color:#7B5BA6}.rep li.new{color:var(--ok)}.rep li.warn{color:#B4532A}
 .pk-warn{color:#B4532A;margin-left:3px}
 .btn.primary-soft{background:var(--accent-soft);border-color:#EBCDBF;color:var(--accent-h);font-weight:600}
 .btn.primary-soft:hover{background:#F1DACF}
@@ -202,6 +228,7 @@ input[type=checkbox]{accent-color:var(--accent)}
   </div>
   <button class="btn" onclick="openQuant()">定量 · 原子 %</button>
   <button class="btn ghost" onclick="importRef()" title="导入 NIST XPS 数据库导出的 zip / csv，用于推荐峰位">导入 NIST</button>
+  <div class="seg langseg" id="langseg" title="语言 / Language"><button data-l="zh">中</button><button data-l="en">EN</button></div>
   <input type="file" id="reffile" multiple accept=".zip,.csv" hidden>
 </header>
 
@@ -218,6 +245,11 @@ input[type=checkbox]{accent-color:var(--accent)}
         <div>
           <h2>开始一次拟合</h2>
           <p>选择一个样品文件夹，里面所有元素的 .VGD 会一次读入；也可以选多个文件。</p>
+          <div class="steps">
+            <div class="step"><b>1</b><span>打开样品文件夹</span></div>
+            <div class="step"><b>2</b><span>⚡ 一键拟合（自动选背景、建模、区分重叠/卫星）</span></div>
+            <div class="step"><b>3</b><span>检查报告，按需微调，导出</span></div>
+          </div>
           <button class="btn primary" onclick="openFolder()">＋ 打开文件夹</button>
           <button class="btn" onclick="openFiles()" style="margin-left:6px">打开文件</button>
         </div>
@@ -244,13 +276,33 @@ input[type=checkbox]{accent-color:var(--accent)}
   </section>
 
   <aside class="right" id="right">
-    <div class="panel">
-      <h3>能量校正 <span class="sub" id="hvinfo"></span></h3>
-      <div class="row"><label>平移 ΔBE (eV)</label><input class="in num" id="shift"><button class="btn sm" onclick="setShift()">应用</button></div>
-      <button class="btn sm" style="width:100%;justify-content:center" onclick="calib()">选中峰 → C1s 284.8 eV（同样品一起平移）</button>
-    </div>
-    <div class="panel">
-      <h3>背景</h3>
+    <section class="hero">
+      <div class="hero-h"><span class="hero-t">拟合</span><span class="sub" id="fitsum"></span></div>
+      <button class="btn primary fitbtn" onclick="autoFit(false)" title="自动选背景、按元素建模、检查残差并区分重叠峰/卫星峰">⚡ 一键拟合</button>
+      <button class="btn wide" onclick="autoFit(true)">⚡ 一键拟合本样品全部谱</button>
+      <div id="summary" class="summary"><div class="note" style="margin:0">暂无拟合结果</div></div>
+      <div id="qwarn" class="qwarn" hidden></div>
+      <div class="grid3 tight">
+        <button class="btn sm" onclick="act('fit').then(()=>toast('拟合完成'))" title="按当前设置拟合">拟合</button>
+        <button class="btn sm" onclick="act('refine',{window:0.3})" title="峰位限制在当前值 ±0.3 eV 内重新拟合">局部微调</button>
+        <button class="btn sm" onclick="toast('多起点拟合中…');act('multistart',{n:12})" title="从 12 组随机起点拟合，取最好结果，避免局部最优">多起点</button>
+      </div>
+    </section>
+    <div class="sec-title" style="margin:6px 4px 0">手动调整</div>
+    <details class="sec" data-sec="peaks" open><summary>峰 <span class="sub">双击行编辑</span></summary>
+      <table class="peaks"><thead><tr><th>名称</th><th>BE</th><th>FWHM</th><th>面积 %</th><th>L%</th></tr></thead><tbody id="ptab"></tbody></table>
+      <div class="grid3">
+        <button class="btn sm primary-soft" onclick="openAdd()">＋ 添加峰</button>
+        <button class="btn sm" onclick="delPeak()">－ 删除峰</button>
+        <button class="btn sm" onclick="editPeak()">编辑</button>
+        <button class="btn sm" onclick="setMode('peak')">图上点击加</button>
+        <button class="btn sm" onclick="openEq()" title="多选峰，让 FWHM 或 L% 相等">参数相等…</button>
+        <button class="btn sm" onclick="if(confirm('删除全部峰？'))act('clear_peaks')">清空</button>
+        <button class="btn sm" onclick="saveTpl()">存为模板</button>
+      </div>
+      <div class="row" style="margin-top:10px"><select class="in" id="tpl"></select><button class="btn sm" onclick="useTpl()">套用</button></div>
+    </details>
+    <details class="sec" data-sec="bg"><summary>背景 <span class="sub" id="bgsum"></span></summary>
       <div class="row"><label>类型</label>
         <select class="in" id="bgtype" onchange="setBg()"><option>Shirley</option><option value="Smart">Smart（Shirley，不高于数据）</option><option value="Points">自定义点（在图上点选）</option><option value="SNIP">SNIP（全谱）</option><option>Linear</option><option>Tougaard</option><option>None</option></select></div>
       <div class="row"><label>BE 范围</label><input class="in num" id="bglo"><span style="color:var(--ink3)">–</span><input class="in num" id="bghi"></div>
@@ -265,36 +317,17 @@ input[type=checkbox]{accent-color:var(--accent)}
         <div class="row"><span id="bgpts_n" class="note" style="margin:0;flex:1"></span><button class="btn sm" onclick="setMode('bgpts')">编辑点</button><button class="btn sm" onclick="if(confirm('清除全部背景点？')){S.v.bg.points=[];sendPts()}">清除</button></div>
         <p class="note" style="margin:4px 0 0">“编辑点”后在图上点击添加；拖动移动；右键或双击删除。背景范围 = 最左到最右的点。</p>
       </div>
-    </div>
-    <div class="panel" id="refpanel">
-      <h3><span id="reftitle">推荐峰位</span> <span class="sub" id="refsrc"></span></h3>
+    </details>
+    <details class="sec" data-sec="cal"><summary>能量校正 <span class="sub" id="hvinfo"></span></summary>
+      <div class="row"><label>平移 ΔBE (eV)</label><input class="in num" id="shift"><button class="btn sm" onclick="setShift()">应用</button></div>
+      <button class="btn sm" style="width:100%;justify-content:center" onclick="calib()">选中峰 → C1s 284.8 eV（同样品一起平移）</button>
+    </details>
+    <details class="sec" id="refpanel" data-sec="ref"><summary><span id="reftitle">推荐峰位</span> <span class="sub" id="refsrc"></span></summary>
       <div id="refbody" class="note" style="margin:0">打开谱后显示</div>
-    </div>
-    <div class="panel">
-      <h3>峰 <span class="sub">双击行编辑</span></h3>
-      <table class="peaks"><thead><tr><th>名称</th><th>BE</th><th>FWHM</th><th>面积 %</th><th>L%</th></tr></thead><tbody id="ptab"></tbody></table>
-      <div class="grid3">
-        <button class="btn sm primary-soft" onclick="openAdd()">＋ 添加峰</button>
-        <button class="btn sm" onclick="delPeak()">－ 删除峰</button>
-        <button class="btn sm" onclick="editPeak()">编辑</button>
-        <button class="btn sm" onclick="setMode('peak')">图上点击加</button>
-        <button class="btn sm" onclick="openEq()" title="多选峰，让 FWHM 或 L% 相等">参数相等…</button>
-        <button class="btn sm" onclick="if(confirm('删除全部峰？'))act('clear_peaks')">清空</button>
-        <button class="btn sm" onclick="saveTpl()">存为模板</button>
-      </div>
-      <div class="row" style="margin-top:10px"><select class="in" id="tpl"></select><button class="btn sm" onclick="useTpl()">套用</button></div>
-    </div>
-    <div class="autobox">
-      <button class="btn primary fitbtn" onclick="autoFit(false)" title="自动选背景、按元素建模、检查残差并区分重叠峰/卫星峰">⚡ 一键拟合</button>
-      <button class="btn" style="justify-content:center" onclick="autoFit(true)">⚡ 一键拟合本样品全部谱</button>
-    </div>
-    <div id="qwarn" class="qwarn" hidden></div>
-    <div class="grid3" style="margin-top:0">
-      <button class="btn" onclick="act('fit').then(()=>toast('拟合完成'))" title="按当前设置拟合">拟合</button>
-      <button class="btn" onclick="act('refine',{window:0.3})" title="峰位限制在当前值 ±0.3 eV 内重新拟合">局部微调</button>
-      <button class="btn" onclick="toast('多起点拟合中…');act('multistart',{n:12})" title="从 12 组随机起点拟合，取最好结果，避免局部最优">多起点</button>
-    </div>
-    <button class="btn" style="justify-content:center" onclick="fitSame()">用相同设置拟合全部同类谱</button>
+    </details>
+    <details class="sec" data-sec="batch"><summary>批量</summary>
+      <button class="btn wide" onclick="fitSame()">用相同设置拟合全部同类谱</button>
+    </details>
   </aside>
 </main>
 </div>
@@ -536,7 +569,9 @@ function setView(v){
   if(isP){$("bginterp").value=v.bg.interp||"smooth";$("bgpts_n").textContent=`${(v.bg.points||[]).length} 个点`+((v.bg.points||[]).length<2?"（至少 2 个）":"")}
   const man=v.bg.ylo!=null||v.bg.yhi!=null;$("bgends").textContent=man?`手动（低 BE 端 ${v.bgline[0]?.toFixed(0)} · 高 BE 端 ${v.bgline[v.bgline.length-1]?.toFixed(0)}）`:"自动（端点平均）";$("bgauto").disabled=!man;$("bglo").value=v.region[0].toFixed(2);$("bghi").value=v.region[1].toFixed(2);$("bgn").value=v.bg.navg||3;
   const f=v.fit;$("fitinfo").textContent=f?`约化 χ² ${fmt(f.rchi2,3)}${f.rel_rms!=null?`   残差 RMS ${(100*f.rel_rms).toFixed(1)}%`:""}   自由参数 ${f.nfree}${f.success?"":"   ⚠ "+f.message}`:"";
-  const qw=$("qwarn"),W=(f&&f.warnings)||[];qw.hidden=!W.length;qw.innerHTML=W.map(w=>`<div>⚠ ${esc(w)}</div>`).join("");
+  renderSummary(v);
+  $("bgsum").textContent=v.bg.type+(v.bg.type!=="None"&&v.region?` · ${v.region[0].toFixed(1)}–${v.region[1].toFixed(1)} eV`:"");
+  const qw=$("qwarn"),W=(f&&f.warnings)||[];qw.hidden=!W.length;qw.innerHTML=W.slice(0,3).map(w=>`<div>⚠ ${esc(w)}</div>`).join("")+(W.length>3?`<details class="more"><summary>+${W.length-3} 条提示</summary>${W.slice(3).map(w=>`<div>⚠ ${esc(w)}</div>`).join("")}</details>`:"");
   if(S.sel!==null&&S.sel>=v.peaks.length)S.sel=null;
   renderPeaks();draw();
 }
@@ -546,10 +581,10 @@ function renderPeaks(){
   S.v.peaks.forEach((p,j)=>{
     const tr=document.createElement("tr");if(j===S.sel)tr.className="on";
     const ln=p.link||{};const flags=(p.linked.length?"⛓":"")+(["dE","area_ratio","fwhm_ratio"].some(k=>ln[k+"_fit"])?"≈":"")+(["center","fwhm","area"].some(k=>p[k].fixed)?"🔒":"");
-    tr.innerHTML=`<td><span class="sw" style="background:${pcol(p,j)}"></span><span class="pn"></span>${p.role&&p.role!=="main"?`<span class="role ${p.role}">${p.role==="unknown"?"未知":"卫星"}</span>`:""}${p.shape==="Asym"&&!p.pair?`<span class="role satellite" title="不对称峰 T=${p.tail.value.toFixed(2)} τ=${p.tau.value.toFixed(2)}">不对称</span>`:""}<span class="tag">${flags}</span></td><td>${p.center.value.toFixed(2)}</td><td>${p.fwhm.value.toFixed(2)}</td><td>${p.pct==null?"—":p.pct.toFixed(1)}</td><td>${p.lor.value.toFixed(0)}</td>`;
+    tr.innerHTML=`<td><span class="sw" style="background:${pcol(p,j)}"></span><span class="pn"></span>${p.role&&p.role!=="main"?`<span class="role ${p.role}">${p.role==="unknown"?"未知":"卫星"}</span>`:""}${p.shape==="Asym"&&!p.pair?`<span class="role satellite" title="${TR("不对称峰")} T=${p.tail.value.toFixed(2)} τ=${p.tau.value.toFixed(2)}">不对称</span>`:""}<span class="tag">${flags}</span></td><td>${p.center.value.toFixed(2)}</td><td>${p.fwhm.value.toFixed(2)}</td><td>${p.pct==null?"—":p.pct.toFixed(1)}</td><td>${p.lor.value.toFixed(0)}</td>`;
     tr.querySelector(".pn").textContent=p.name;
     const er=k=>p[k]&&p[k].err!=null?` ± ${p[k].err<0.01?p[k].err.toExponential(1):p[k].err.toFixed(k==="area"?0:2)}`:"";
-    tr.title=`${p.name}\nBE ${p.center.value.toFixed(3)}${er("center")} eV\nFWHM ${p.fwhm.value.toFixed(3)}${er("fwhm")} eV\n面积 ${p.area.value.toFixed(0)}${er("area")}`;
+    tr.title=`${p.name}\nBE ${p.center.value.toFixed(3)}${er("center")} eV\nFWHM ${p.fwhm.value.toFixed(3)}${er("fwhm")} eV\n${TR("面积")} ${p.area.value.toFixed(0)}${er("area")}`;
     const atB=["center","fwhm"].some(k=>!(p.linked||[]).includes(k)&&!p[k].fixed&&p[k].min!=null&&p[k].max!=null&&Math.min(Math.abs(p[k].value-p[k].min),Math.abs(p[k].value-p[k].max))<1e-3);
     if(atB){const w=document.createElement("span");w.className="pk-warn";w.textContent="⚠";w.title="峰位或 FWHM 卡在约束边界";tr.children[0].append(w)}
     tr.onclick=()=>{S.sel=j;renderPeaks();draw()};
@@ -560,20 +595,20 @@ function renderPeaks(){
 }
 function draw(){
   const v=S.v;if(!v)return;
-  const T=[{x:v.be,y:v.y,mode:"lines",name:"原始数据",line:{color:"#3d3c38",width:1.2},hovertemplate:"%{x:.2f} eV<br>%{y:.0f}<extra></extra>"}];
-  if(v.bg.type!=="None")T.push({x:v.x,y:v.bgline,mode:"lines",name:"背景",line:{color:"#A8A59B",width:1.4,dash:"dot"},hoverinfo:"skip"});
+  const T=[{x:v.be,y:v.y,mode:"lines",name:TR("原始数据"),line:{color:"#3d3c38",width:1.2},hovertemplate:"%{x:.2f} eV<br>%{y:.0f}<extra></extra>"}];
+  if(v.bg.type!=="None")T.push({x:v.x,y:v.bgline,mode:"lines",name:TR("背景"),line:{color:"#A8A59B",width:1.4,dash:"dot"},hoverinfo:"skip"});
   v.comps.forEach((c,j)=>{const p=v.peaks[j],col=pcol(p,j),on=j===S.sel,r=p.role||"main";
     T.push({x:v.x,y:v.bgline,mode:"lines",line:{width:0},showlegend:false,hoverinfo:"skip"});
     T.push({x:v.x,y:c,mode:"lines",name:p.name,fill:"tonexty",fillcolor:hex(col,(on?.38:.2)*(r==="main"?1:.6)),line:{color:col,width:on?2.6:1.4,dash:r==="unknown"?"dash":r==="satellite"?"dot":"solid"},hoverinfo:"skip"});});
-  if(v.env.length){T.push({x:v.x,y:v.env,mode:"lines",name:"包络",line:{color:"#C96442",width:2},hoverinfo:"skip"});
-    T.push({x:v.x,y:v.resid,mode:"lines",name:"残差",yaxis:"y2",line:{color:"#8C8A83",width:1},showlegend:false,hoverinfo:"skip"});}
+  if(v.env.length){T.push({x:v.x,y:v.env,mode:"lines",name:TR("包络"),line:{color:"#C96442",width:2},hoverinfo:"skip"});
+    T.push({x:v.x,y:v.resid,mode:"lines",name:TR("残差"),yaxis:"y2",line:{color:"#8C8A83",width:1},showlegend:false,hoverinfo:"skip"});}
   const shapes=[[v.region[0]],[v.region[1]]].map(([x])=>({type:"line",x0:x,x1:x,yref:"paper",y0:.22,y1:1,line:{color:"#C9C5B8",width:1,dash:"dot"}}));
   S.clicks.forEach(x=>shapes.push({type:"line",x0:x,x1:x,yref:"paper",y0:.22,y1:1,line:{color:"#C96442",width:1.5}}));
   const L={margin:{l:64,r:18,t:8,b:46},paper_bgcolor:"#fff",plot_bgcolor:"#fff",
     font:{family:getComputedStyle(document.body).fontFamily,size:12,color:"#3d3c38"},
     xaxis:{autorange:"reversed",title:{text:"Binding Energy (eV)"},showgrid:false,zeroline:false,linecolor:"#D9D5C8",ticks:"outside",tickcolor:"#D9D5C8",anchor:"y2"},
     yaxis:{domain:[.24,1],title:{text:"Intensity (CPS)"},gridcolor:"#F1EFE8",zeroline:false,linecolor:"#D9D5C8"},
-    yaxis2:{domain:[0,.17],title:{text:"残差",font:{size:11}},gridcolor:"#F1EFE8",zeroline:true,zerolinecolor:"#D9D5C8",linecolor:"#D9D5C8"},
+    yaxis2:{domain:[0,.17],title:{text:TR("残差"),font:{size:11}},gridcolor:"#F1EFE8",zeroline:true,zerolinecolor:"#D9D5C8",linecolor:"#D9D5C8"},
     legend:{traceorder:"normal",orientation:"h",x:0,y:1.02,yanchor:"bottom",font:{size:11.5},bgcolor:"rgba(0,0,0,0)"},
     hovermode:S.mode==="bgpts"?false:"x",dragmode:S.mode==="view"?"zoom":S.mode==="bg"?"select":false,selectdirection:"h",shapes,showlegend:true,uirevision:v.i};
   // 峰顶拖动手柄
@@ -801,9 +836,9 @@ async function autoFit(all,again){
   S.lastAll=!!all;toast(all?"正在一键拟合本样品全部谱…":"正在一键拟合…");
   const v=await act("autofit",{all:!!all,extra:$("ar_extra").value});if(!v)return;S.sel=null;renderPeaks();
   const b=$("ar_body");b.innerHTML="";
-  (v.report||[]).forEach(r=>{const h=document.createElement("h5");h.textContent=`${r.sample} · ${r.spectrum}　（样品元素：${r.elements.join("、")}）`;b.append(h);
+  (v.report||[]).forEach(r=>{const h=document.createElement("h5");h.textContent=`${r.sample} · ${r.spectrum}　`+TR(`（样品元素：${r.elements.join("、")}）`);b.append(h);
     const ol=document.createElement("ol");r.steps.forEach(t=>{const li=document.createElement("li");li.textContent=t;
-      li.className=/重叠峰|同一重叠/.test(t)?"ov":/卫星峰/.test(t)?"sat":/新化学态/.test(t)?"new":/^⚠|无法归属/.test(t)?"warn":"";ol.append(li)});b.append(ol)});
+      li.className=/重叠峰|同一重叠|overlap/i.test(t)?"ov":/卫星峰|→\s*satellite/i.test(t)?"sat":/新化学态|new chemical state/i.test(t)?"new":/^⚠|无法归属|cannot be assigned/i.test(t)?"warn":"";ol.append(li)});b.append(ol)});
   $("arm").classList.add("open")}
 function delPeak(){if(S.sel===null)return;act("delete_peak",{j:S.sel});S.sel=null}
 let AK="single";
@@ -869,6 +904,13 @@ let REF=null,REFALL=false;const MARKS={};   // 每个轨道勾选显示的化合
 function marks(){const o=REF&&REF.orbital||"";return MARKS[o]||(MARKS[o]=new Set())}
 async function loadRef(){
   if(S.cur===null)return;REF=await call("reference",{i:S.cur});renderRef();draw()}
+function renderSummary(v){
+  const box=$("summary");$("fitsum").textContent=v.fit?`χ²ᵣ ${fmt(v.fit.rchi2,3)}${v.fit.rel_rms!=null?` · RMS ${(100*v.fit.rel_rms).toFixed(1)}%`:""}`:"";
+  if(v.kind==="survey"){const E=((v.ident&&v.ident.elements)||[]).filter(e=>e.confirmed).map(e=>e.el);
+    box.innerHTML=`<div class="note" style="margin:0">${esc(E.join(" · ")||"—")}</div>`;return}
+  const st=(v.states||[]).filter(x=>x[1]>0.0005);
+  if(!st.length||!v.peaks.length){box.innerHTML='<div class="note" style="margin:0">暂无拟合结果</div>';return}
+  box.innerHTML=st.map(([n,f],k)=>`<div class="srow"><span class="nm" title="${esc(n)}">${esc(n)}</span><span class="pc">${(100*f).toFixed(1)}%</span><div class="sbar"><i style="width:${(100*f).toFixed(1)}%;background:${COLORS[k%8]}"></i></div></div>`).join("")}
 function renderSurvey(){
   const v=S.v,b=$("refbody");$("refsrc").textContent="全谱识别";
   const E=(v.ident&&v.ident.elements)||[];
@@ -976,8 +1018,53 @@ function copyQuant(){const out=[];
     $(id).querySelectorAll("tr").forEach(tr=>out.push([...tr.children].map(td=>td.textContent.replace("✕","").trim()).join("\t")));out.push("")}
   navigator.clipboard.writeText(out.join("\n")).then(()=>toast("已复制，可直接粘贴到 Excel"),()=>toast("复制失败"))}
 
+/* ---------- 折叠分区：记住展开状态 ---------- */
+document.querySelectorAll("details.sec").forEach(d=>{const k="xpsfit_sec_"+d.dataset.sec;
+  try{const v=localStorage.getItem(k);if(v!==null)d.open=v==="1"}catch(e){}
+  d.addEventListener("toggle",()=>{try{localStorage.setItem(k,d.open?"1":"0")}catch(e){}})});
+
+/* ---------- 中英文切换 ---------- */
+let LANG="zh",I18N=null,RX=[];
+function trText(t){
+  if(LANG!=="en"||!I18N||!t||!/[\u4e00-\u9fff]/.test(t))return t;
+  const lead=t.match(/^\s*/)[0],tail=t.match(/\s*$/)[0];let c=t.trim();
+  if(c.startsWith("⚠"))return lead+"⚠ "+trText(c.replace(/^⚠\s*/,"")).trim()+tail;
+  if(I18N.phrases[c]!==undefined)return lead+I18N.phrases[c]+tail;
+  for(const[rx,en]of RX){const m=c.match(rx);if(m){const g=m.slice(1).map(x=>trText(x.trim()));
+    return lead+punct(en.replace(/\{(\d+)\}/g,(_,i)=>g[+i]??""))+tail}}
+  if(c.includes("；"))return lead+c.split("；").map(trText).join("; ")+tail;
+  let o=c;for(const k of SUBS)if(o.includes(k))o=o.split(k).join(I18N.phrases[k]);
+  return lead+punct(o)+tail}
+let SUBS=[];
+function punct(t){return t.replace(/、/g,", ").replace(/；/g,"; ").replace(/（/g," (").replace(/）/g,")").replace(/：/g,": ").replace(/，/g,", ").replace(/。/g,". ").replace(/\(\s+/g,"(")}
+const TR=s=>trText(s);
+const ZH=new WeakMap();
+function trNode(n){
+  if(n.nodeType===3){if(!n.parentNode||/^(SCRIPT|STYLE)$/.test(n.parentNode.nodeName))return;
+    let o=ZH.get(n);if(o===undefined||(n.nodeValue!==o&&n.nodeValue!==n.__en)){o=n.nodeValue;ZH.set(n,o)}
+    const v=LANG==="en"?trText(o):o;if(n.nodeValue!==v){n.__en=v;n.nodeValue=v}return}
+  if(n.nodeType!==1||n.closest&&n.closest("#plot"))return;
+  for(const a of["title","placeholder"]){if(!n.hasAttribute(a))continue;const k="zh_"+a;
+    if(n.dataset[k]===undefined||(n.getAttribute(a)!==n.dataset[k]&&n.getAttribute(a)!==n.dataset["en_"+a]))n.dataset[k]=n.getAttribute(a);
+    const v=LANG==="en"?trText(n.dataset[k]):n.dataset[k];n.dataset["en_"+a]=v;n.setAttribute(a,v)}
+  n.childNodes.forEach(trNode)}
+let MO=null;
+function applyLang(){trNode(document.body);document.documentElement.lang=LANG==="en"?"en":"zh-CN";
+  document.querySelectorAll("#langseg button").forEach(b=>b.classList.toggle("on",b.dataset.l===LANG));
+  if(S.v)draw()}
+async function initLang(){
+  I18N=await call("i18n");LANG=I18N.lang||"zh";RX=I18N.patterns.map(([rx,en])=>[new RegExp(rx,"s"),en]);
+  SUBS=Object.keys(I18N.phrases).filter(k=>k.length>=4&&/[\u4e00-\u9fff]/.test(k)).sort((a,b)=>b.length-a.length);
+  MO=new MutationObserver(ms=>{if(LANG!=="en")return;for(const m of ms){if(m.type==="characterData")trNode(m.target);else m.addedNodes.forEach(trNode)}});
+  MO.observe(document.body,{childList:true,subtree:true,characterData:true});
+  applyLang()}
+document.querySelectorAll("#langseg button").forEach(b=>b.onclick=async()=>{LANG=b.dataset.l;await call("set_lang",{lang:LANG});applyLang();
+  if(S.cur!==null){setView(await call("view",{i:S.cur}));loadRef()}});
+const _confirm=window.confirm.bind(window),_prompt=window.prompt.bind(window);
+window.confirm=m=>_confirm(TR(m));window.prompt=(m,d)=>_prompt(TR(m),d);
+
 /* ---------- init ---------- */
-(async()=>{const r=await call("state");S.specs=r.specs;S.native=r.native;fillTpl(r.templates);renderSpecs();if(S.specs.length)select(0)})();
+(async()=>{try{await initLang()}catch(e){}const r=await call("state");S.specs=r.specs;S.native=r.native;fillTpl(r.templates);renderSpecs();if(S.specs.length)select(0)})();
 window.addEventListener("resize",()=>S.v&&Plotly.Plots.resize("plot"));
 </script>
 </body>

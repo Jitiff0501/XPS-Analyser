@@ -27,6 +27,7 @@ from xpsfit import core  # noqa: E402
 from xpsfit import reference  # noqa: E402
 from xpsfit import autofit  # noqa: E402
 from xpsfit import identify  # noqa: E402
+from xpsfit import i18n  # noqa: E402
 import avantage_to_xpspeak as conv  # noqa: E402
 
 APP = "XPS Fit Studio"
@@ -124,10 +125,40 @@ class State:
                 "env": _f(bg + env) if s.peaks else [], "resid": _f(y - bg - env) if s.peaks else [],
                 "peaks": peaks, "fit": s.last_fit, "region": [float(x.min()), float(x.max())],
                 "window": [s.window[0] + s.shift, s.window[1] + s.shift],
-                "kind": getattr(s, "kind", "region"), "ident": getattr(s, "ident", None)}
+                "kind": getattr(s, "kind", "region"), "ident": getattr(s, "ident", None),
+                "states": _states(s)}
 
 
 ST = State()
+
+
+def _settings_path():
+    return os.path.join(user_dir(), "settings.json")
+
+
+def load_lang():
+    try:
+        with open(_settings_path(), encoding="utf-8") as f:
+            return json.load(f).get("lang", "zh")
+    except Exception:
+        return "zh"
+
+
+ST.lang = load_lang()
+_LOC_KEYS = {"msg", "steps", "warnings", "errors", "error", "imported", "message"}
+
+
+def localize(obj, key=None):
+    """英文界面时翻译返回给前端的消息（报告、提示、警告）。"""
+    if ST.lang != "en":
+        return obj
+    if isinstance(obj, dict):
+        return {k: localize(v, k) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [localize(v, key) for v in obj]
+    if isinstance(obj, str) and key in _LOC_KEYS:
+        return i18n.tr(obj)
+    return obj
 
 
 # ============================================================== API
@@ -136,6 +167,21 @@ def api(method, a):
     if method == "identify":
         t = st.S(a["i"]); auto_identify(t)
         return dict(st.view(a["i"]), specs=st.summary())
+    if method == "i18n":
+        return dict(i18n.table(), lang=ST.lang)
+    if method == "set_lang":
+        ST.lang = "en" if a.get("lang") == "en" else "zh"
+        try:
+            d = {}
+            if os.path.exists(_settings_path()):
+                with open(_settings_path(), encoding="utf-8") as f:
+                    d = json.load(f)
+            d["lang"] = ST.lang
+            with open(_settings_path(), "w", encoding="utf-8") as f:
+                json.dump(d, f)
+        except Exception:
+            pass
+        return {"lang": ST.lang}
     if method == "state":
         return {"specs": st.summary(), "templates": list(st.templates), "native": WINDOW is not None}
     if method == "pick_files":
@@ -391,6 +437,15 @@ def open_in_file_manager(p):
         subprocess.Popen(["open", p])
     else:
         subprocess.Popen(["xdg-open", p])
+
+
+def _states(s):
+    try:
+        st = core.chemical_states(s)
+    except Exception:
+        return []
+    tot = sum(a for _, a in st) or 1.0
+    return [[n, a / tot] for n, a in st]
 
 
 def auto_identify(t):
@@ -806,11 +861,11 @@ class Handler(BaseHTTPRequestHandler):
         try:
             args = json.loads(self.rfile.read(n) or b"{}")
             with ST.lock:
-                res = api(self.path[5:], args)
+                res = localize(api(self.path[5:], args))
             body, code = json.dumps(res, ensure_ascii=False, allow_nan=False, default=str), 200
         except Exception as e:
             traceback.print_exc()
-            body, code = json.dumps({"error": str(e)}, ensure_ascii=False), 400
+            body, code = json.dumps(localize({"error": str(e)}), ensure_ascii=False), 400
         self._send(code, body.encode("utf-8"), "application/json; charset=utf-8")
 
 
@@ -830,6 +885,9 @@ def smoke(out):
     lines = ["page ok", "templates %d" % len(ST.templates), "sf %d" % len(ST.sf),
              "reference %s" % ",".join(reference.available())]
     assert "Cu" in reference.available(), "bundled NIST reference missing"
+    tab = api("i18n", {})
+    assert i18n.tr("暂无拟合结果") == "No fit yet" and len(tab["patterns"]) > 50
+    lines.append("i18n %d phrases %d patterns" % (len(tab["phrases"]), len(tab["patterns"])))
     vgd = os.environ.get("XPSFIT_SMOKE_VGD")
     if vgd:
         r = open_paths([vgd]); assert r["added"] == 1, r
