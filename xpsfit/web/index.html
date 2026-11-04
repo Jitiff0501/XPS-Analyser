@@ -367,6 +367,7 @@ input[type=checkbox]{accent-color:var(--accent)}
         <label class="switch"><input type="checkbox" id="e_envelope" checked> 包络</label>
         <label class="switch"><input type="checkbox" id="e_fill" checked> 峰填充</label>
       </div>
+      <div class="opt"><span>峰标注</span><select class="in" id="e_labels" style="width:160px"><option value="legend">图例</option><option value="arrows">箭头指向峰（无峰图例）</option></select></div>
       <div class="opt"><span>原始数据</span><select class="in" id="e_raw" style="width:120px"><option value="line" selected>线</option><option value="markers">空心点</option></select></div>
       <div class="egrp">尺寸与格式</div>
       <div class="opt"><span>宽 × 高 (cm)</span><input class="in num" id="e_width_cm" value="8.5"><span style="min-width:0">×</span><input class="in num" id="e_height_cm" value="7"></div>
@@ -796,8 +797,8 @@ async function addPeak(){
     parent:$("a_parent").value,dE:$("s_dE").value,lock_split:$("d_lock_split").checked,lock_ratio:$("d_lock_ratio").checked,bind_dE:$("s_bind_dE").checked,bind_area:$("s_bind_area").checked};
   closeM("addm");await act("add_peak",a);S.sel=S.v.peaks.length-(AK==="doublet"?2:1);renderPeaks();draw()}
 /* ---------- export ---------- */
-const EOPTS=["xmin","xmax","xstep","xminor","xlabel","ynumbers","ylabel","legend","legend_loc","title","background","envelope","fill","raw","width_cm","height_cm","font","dpi","fmt"];
-function eopts(){const o={};for(const k of EOPTS){const e=$("e_"+k);o[k]=e.type==="checkbox"?e.checked:(e.value.trim()===""?null:(isNaN(+e.value)||["fmt","raw","xlabel","ylabel","legend_loc"].includes(k)?e.value:+e.value))}return o}
+const EOPTS=["xmin","xmax","xstep","xminor","xlabel","ynumbers","ylabel","legend","legend_loc","labels","title","background","envelope","fill","raw","width_cm","height_cm","font","dpi","fmt"];
+function eopts(){const o={};for(const k of EOPTS){const e=$("e_"+k);o[k]=e.type==="checkbox"?e.checked:(e.value.trim()===""?null:(isNaN(+e.value)||["fmt","raw","xlabel","ylabel","legend_loc","labels"].includes(k)?e.value:+e.value))}return o}
 function yLabelAuto(){const y=$("e_ylabel");if(!$("e_ynumbers").checked&&y.value==="Intensity (CPS)")y.value="Intensity (a.u.)";
   else if($("e_ynumbers").checked&&y.value==="Intensity (a.u.)")y.value="Intensity (CPS)"}
 let prevT;

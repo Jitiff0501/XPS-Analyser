@@ -450,8 +450,98 @@ def export(kind, a):
 FIG_DEFAULTS = {"fmt": "png", "width_cm": 8.5, "height_cm": 7.0, "dpi": 600, "font": 9,
                 "xmin": None, "xmax": None, "xstep": None, "xminor": 1,
                 "ynumbers": True, "ylabel": "Intensity (CPS)", "xlabel": "Binding Energy (eV)",
-                "legend": True, "legend_loc": "best", "title": True, "background": True, "envelope": True, "raw": "line",
+                "legend": True, "legend_loc": "best", "title": True, "labels": "legend", "background": True, "envelope": True, "raw": "line",
                 "fill": True}
+
+
+def pretty_label(name):
+    """峰名转论文写法：Al0 → Al⁰，Co2+ → Co²⁺，2p 3/2 → 2p₃/₂（mathtext）。"""
+    t = str(name)
+    t = re.sub(r"\b([A-Z][a-z]?)(\d)\+", r"\1$^{\2+}$", t)
+    t = re.sub(r"\b([A-Z][a-z]?)0(?=[\s/]|$)", r"\1$^{0}$", t)
+    t = re.sub(r"\b([A-Z][a-z]?)\+(?=[\s/]|$)", r"\1$^{+}$", t)
+    t = re.sub(r"\s?(\d)/2\b", r"$_{\1/2}$", t)
+    t = t.replace("sat.", "sat.").replace("$$", "")
+    return t
+
+
+def _arrow_labels(ax, fig, x, bg, comps, env, peaks, cols, o, ylim, yraw=None):
+    """在峰顶画箭头 + 名称。用实际渲染的文字边框检测重叠，重叠就向上错开；返回需要的 y 上限。
+    分裂很小（< 1 eV，如 Al2p）的双峰只标一次（合并后的峰顶，名称去掉 3/2）。"""
+    import numpy as np
+    big = max((float(np.max(c)) for c in comps), default=1.0) or 1.0
+    names = {p["name"]: k for k, p in enumerate(peaks)}
+    merged = {}                                  # 主峰 -> 合并后的曲线
+    for k, p in enumerate(peaks):
+        ln = p.get("link") or {}
+        if p.get("pair") and ln.get("ref") in names and abs(ln.get("dE") or 9) < 1.0:
+            merged.setdefault(names[ln["ref"]], comps[names[ln["ref"]]].copy())
+            merged[names[ln["ref"]]] += comps[k]
+    items = []
+    for k, (p, c) in enumerate(zip(peaks, comps)):
+        ln = p.get("link") or {}
+        if p.get("pair") and abs(ln.get("dE") or 9) < 1.0:
+            continue
+        cc = merged.get(k, c)
+        if float(np.max(cc)) < 0.03 * big:
+            continue                             # 很小的峰不标
+        kk = int(np.argmax(cc))
+        name = re.sub(r"\s*\d/2\s*$", "", p["name"]) if k in merged else p["name"]
+        items.append((float(x[kk]), float(bg[kk] + cc[kk]), pretty_label(name), k))
+    fs = float(o["font"]) * 0.8
+    renderer = fig.canvas.get_renderer()
+    envtop = bg + env
+    if yraw is not None:                         # 标签也要避开（含噪声的）原始数据
+        envtop = np.maximum(envtop, np.asarray(yraw, float))
+    y0, y1 = ylim
+    top = y1 + 0.42 * (y1 - y0)                  # 预留标签空间
+    ax.set_ylim(y0, top)
+    from matplotlib.text import Text
+    T = ax.transData
+    axbb = ax.get_window_extent(renderer)
+    placed = []
+
+    def curve_px(xd0, xd1):
+        a, b = sorted((xd0, xd1))
+        m = (x >= a - 0.15) & (x <= b + 0.15)
+        v = float(envtop[m].max()) if m.any() else float(envtop.max())
+        return T.transform((x[0], v))[1]
+
+    for xa, ya, lab, k in sorted(items, key=lambda t: -t[1]):
+        role = peaks[k].get("role", "main")
+        col = "#7A7A7A" if role == "unknown" else cols[k % len(cols)]
+        ann = ax.annotate(lab, xy=(xa, ya), xytext=(xa, ya), textcoords="data", ha="center", va="bottom",
+                          fontsize=fs, color=col, annotation_clip=False,
+                          arrowprops=dict(arrowstyle="-|>", color=col, lw=0.6, shrinkA=1, shrinkB=1.5, mutation_scale=6))
+        apx = T.transform((xa, ya))
+        bb0 = Text.get_window_extent(ann, renderer)
+        w, h = bb0.width, bb0.height
+        best, best_score = None, None
+        for lvl in range(0, 60):
+            ypx = apx[1] + 10 + lvl * h * 0.55
+            if ypx + h > axbb.y1 - 2:
+                break
+            for dxf in (0, 0.6, -0.6, 1.1, -1.1, 1.7, -1.7):
+                cx = apx[0] + dxf * w
+                bb = type(bb0).from_bounds(cx - w / 2, ypx, w, h).expanded(1.08, 1.15)
+                if bb.x0 < axbb.x0 + 2 or bb.x1 > axbb.x1 - 2:
+                    continue
+                inv = T.inverted()
+                xd0, xd1 = inv.transform((bb.x0, 0))[0], inv.transform((bb.x1, 0))[0]
+                clash = sum(1 for q in placed if bb.overlaps(q)) + (1 if bb.y0 < curve_px(xd0, xd1) + 3 else 0)
+                score = clash * 1000 + lvl * 3 + abs(dxf) * 4
+                if best_score is None or score < best_score:
+                    best, best_score = (cx, ypx, bb), score
+                if clash == 0:
+                    break
+            if best_score is not None and best_score < 1000:
+                break
+        if best is None:
+            best = (apx[0], apx[1] + 10, bb0)
+        cx, ypx, bb = best
+        ann.xyann = tuple(T.inverted().transform((cx, ypx)))
+        placed.append(bb)
+    return top
 
 
 def figure(s, path, opts=None, dpi=None):
@@ -468,7 +558,9 @@ def figure(s, path, opts=None, dpi=None):
                                 "xtick.direction": "in", "ytick.direction": "in"})
     cols = ["#3B6EA8", "#C4553A", "#4E9A6A", "#8A63B8", "#D08A2E", "#7A5C4F", "#C76B9E", "#3A9AA8"]
     x, y, bg, comps, env = s.compute()
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
     fig = Figure(figsize=(float(o["width_cm"]) / 2.54, float(o["height_cm"]) / 2.54))
+    FigureCanvasAgg(fig)                      # 需要渲染器来测量文字边框（箭头标注防重叠）
     ax = fig.add_subplot(111)
     if o["raw"] == "line":
         ax.plot(s.be, s.y, "-", color="#222", lw=0.9, label="Raw")
@@ -482,7 +574,7 @@ def figure(s, path, opts=None, dpi=None):
         ls = "--" if role == "unknown" else (":" if role == "satellite" else "-")
         if o["fill"]:
             ax.fill_between(x, bg, bg + c, color=col, alpha=0.18 if role != "main" else 0.3, lw=0)
-        ax.plot(x, bg + c, color=col, lw=0.9, ls=ls, label=p["name"])
+        ax.plot(x, bg + c, color=col, lw=0.9, ls=ls, label=None if o["labels"] == "arrows" else p["name"])
     if o["envelope"] and s.peaks:
         ax.plot(x, bg + env, color="#C00000", lw=1.1, label="Envelope")
     xmax = float(o["xmax"]) if o["xmax"] is not None else float(s.be.max())
@@ -517,6 +609,11 @@ def figure(s, path, opts=None, dpi=None):
         else:
             ax.legend(fontsize=fs, frameon=False, loc=o["legend_loc"])
     fig.tight_layout()
+    if o["labels"] == "arrows" and s.peaks:
+        # 先排版（含标题、轴标签），再放标签；之后不再排版，避免标签与峰错位
+        yl = ax.get_ylim()
+        top = _arrow_labels(ax, fig, x, bg, comps, env, s.peaks, cols, o, yl, yraw=y)
+        ax.set_ylim(yl[0], max(yl[1], top))
     fmt = o["fmt"] if o["fmt"] != "tif" else "tiff"
     fig.savefig(path, dpi=dpi or float(o["dpi"]), format=fmt)
 
@@ -545,9 +642,11 @@ def add_peak(s, a):
             raise ValueError("双峰需要分裂和面积比")
         base = a.get("name") or s.element or "X"
         k, nm = 2, base
-        while ("%s %s" % (nm, j_lab[0])) in names or ("%s %s" % (nm, j_lab[1])) in names:
+        while any(n.startswith(nm + " ") for n in names):
             nm = "%s (%d)" % (base, k); k += 1
-        labels = ("%s %s" % (nm, j_lab[0]), "%s %s" % (nm, j_lab[1]))
+        sub = re.search(r"\d[spdf]$", s.element or "")
+        sub = sub.group(0) if sub and sub.group(0) not in nm else ""      # 名称里没有能级时补上，如 Cr0 → Cr0 2p3/2
+        labels = ("%s %s%s" % (nm, sub, j_lab[0]), "%s %s%s" % (nm, sub, j_lab[1]))
         s.peaks.extend(core.doublet(nm, c, float(a["split"]), float(a["ratio"]), w, h * w * 1.064, lor, labels,
                                     fit_split=not a.get("lock_split", True), fit_ratio=not a.get("lock_ratio", True),
                                     shape=shape))
