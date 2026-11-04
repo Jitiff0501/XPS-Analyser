@@ -33,18 +33,34 @@ def _asym_unit(x, center, fwhm, lor, tail, tau):
     return u + t
 
 
-def _asym_norm(fwhm, lor, tail, tau):
-    """峰高为 1 的不对称形状的面积（数值积分）。"""
+def _asym_norm_numeric(fwhm, lor, tail, tau):
+    """（参考实现）峰高为 1 的不对称形状的面积：大范围数值积分。"""
     w, tau = max(fwhm, 1e-3), max(tau, 1e-3)
     lo, hi = -40 * w, 40 * w + 25 * tau
-    n = 6000
-    xx = np.linspace(lo, hi, n)
+    xx = np.linspace(lo, hi, 6000)
     yy = _asym_unit(xx, 0.0, w, lor, tail, tau)
     area = float(np.trapezoid(yy, xx)) if hasattr(np, "trapezoid") else float(np.trapz(yy, xx))
-    # 洛伦兹分量在积分区间外的部分（解析补上）：∫ w²/(4d²+w²) = (w/2)·[π/2 − atan(2|d₀|/w)]
     eta = min(max(lor / 100.0, 0.0), 1.0)
     if eta > 0:
         area += eta * (w / 2) * ((np.pi / 2 - np.arctan(2 * abs(lo) / w)) + (np.pi / 2 - np.arctan(2 * hi / w)))
+    return area
+
+
+_TRAPZ = np.trapezoid if hasattr(np, "trapezoid") else np.trapz
+
+
+def _asym_norm(fwhm, lor, tail, tau):
+    """峰高为 1 的不对称形状的面积。GL 部分解析：(1−η)·w·√(π/4ln2) + η·πw/2；
+    拖尾部分 T·∫₀^∞ (1−u)e^{−d/τ} dd = T·(τ − ∫₀^∞ u·e^{−d/τ} dd)，后者在 [0, 30τ] 上用非均匀网格积分。"""
+    w, tau = max(fwhm, 1e-3), max(tau, 1e-3)
+    eta = min(max(lor / 100.0, 0.0), 1.0)
+    area = (1 - eta) * w * np.sqrt(np.pi / (4 * LN2)) + eta * np.pi * w / 2
+    if tail > 0:
+        L = 30 * tau
+        a = min(6 * w, L)
+        d = np.concatenate([np.linspace(0, a, 240), np.linspace(a, L, 400)[1:]]) if L > a else np.linspace(0, L, 240)
+        u = _unit_height(d, 0.0, w, lor)
+        area += tail * (tau - float(_TRAPZ(u * np.exp(-d / tau), d)))
     return area
 
 
@@ -129,8 +145,52 @@ def snip_background(x, y, width_ev=12.0):
     return np.minimum(bg, ys)
 
 
+def _shirley(x, y, yl, yh, ys=None):
+    bg = np.full_like(y, yl)
+    for _ in range(200):
+        s = np.clip(y - bg, 0, None)
+        cum = np.concatenate([[0.0], np.cumsum(0.5 * (s[1:] + s[:-1]) * np.diff(x))])
+        tot = cum[-1]
+        new = yl + (yh - yl) * (cum / tot if tot else np.zeros_like(cum))
+        if ys is not None:
+            new = np.minimum(new, ys)
+        if np.max(np.abs(new - bg)) < 1e-6 * max(1.0, abs(yh)):
+            return new
+        bg = new
+    return bg
+
+
+def tilt_shape(x, y, yl, yh, t=0.0):
+    """主动 Shirley：背景 = 线性斜坡 t·(x−x₀) + 自洽的 Shirley 台阶（在扣除斜坡后的数据上计算），两端接在数据上。
+    返回 (D, bg)：bg 为斜坡 t 下的背景；D = ∂bg/∂t ≈ (x−x₀) − W·F(x)（F 为台阶形状 0→1），用于拟合中线性化。"""
+    W = x[-1] - x[0] or 1.0
+    lin = t * (x - x[0])
+    step = yh - yl - t * W
+    st = _shirley(x, y - lin, yl, yl + step)
+    F = (st - yl) / step if abs(step) > 1e-9 else (x - x[0]) / W
+    return (x - x[0]) - W * F, st + lin
+
+
+def tilt_bounds(x, y, yl, yh, D, sh, t=0.0, tol=None):
+    """修正量 c 的允许范围（背景 ≈ sh + c·D）：任何一处不高于（平滑后的）数据 + tol（默认 3σ 噪声），
+    且总斜坡 t + c 不使 Shirley 台阶为负。|D| 很小的点（两端附近）不参与：那里的约束只反映噪声。"""
+    ys = smooth(y)
+    if tol is None:
+        tol = 3.0 * float(np.std(y - ys))
+    room = ys + tol - sh
+    W = x[-1] - x[0] or 1.0
+    eps = 0.05 * (np.max(np.abs(D)) or 1.0)
+    neg, pos = D < -eps, D > eps
+    lo = float(np.max(room[neg] / D[neg])) if neg.any() else -np.inf
+    hi = float(np.min(room[pos] / D[pos])) if pos.any() else np.inf
+    hi = min(hi, (yh - yl) / W - t)       # Shirley 台阶不能为负（背景随 BE 不减）
+    if lo > hi:                           # 无解（窗口内有其他谱线等）：取物理上限，显示时仍限制为不高于数据
+        lo = hi
+    return lo, hi
+
+
 def background(x, y, kind="Shirley", navg=3, tougaard_B=2866.0, tougaard_C=1643.0, ylo=None, yhi=None,
-               points=None, interp="smooth"):
+               points=None, interp="smooth", tilt=None):
     """x 为升序 BE。返回与 y 同长的背景。
     ylo / yhi：手动指定低 BE 端 / 高 BE 端的背景强度（None = 端点若干点平均）。
     Smart：Shirley，但任何位置都不高于（平滑后的）数据。"""
@@ -158,13 +218,16 @@ def background(x, y, kind="Shirley", navg=3, tougaard_B=2866.0, tougaard_C=1643.
             # 累积面积：从低 BE 端积到 x 处
             cum = np.concatenate([[0.0], np.cumsum(0.5 * (s[1:] + s[:-1]) * np.diff(x))])
             tot = cum[-1]
-            new = yl + (yh - yl) * (cum / tot if tot else 0)
+            new = yl + (yh - yl) * (cum / tot if tot else np.zeros_like(cum))
             if ys is not None:
                 new = np.minimum(new, ys)
             if np.max(np.abs(new - bg)) < 1e-6 * max(1.0, abs(yh)):
                 bg = new; break
             bg = new
         return bg
+    if kind == "SlopeShirley":            # 主动 Shirley：斜坡 t 随峰一起拟合（见 Spectrum.do_fit）
+        _, bg = tilt_shape(x, y, yl, yh, float(tilt or 0.0))
+        return np.minimum(bg, smooth(y))
     if kind == "Tougaard":
         # 通用 Tougaard 两参数：B·T/(C+T²)²，T = 能量损失。高 BE 侧的强度来自低 BE 侧的非弹性散射
         s = y - yl
@@ -309,9 +372,17 @@ def init_areas(x, s, peaks, w=None):
         peaks[i]["area"]["value"] = float(min(max(ai, mn, floor), mx))
 
 
-def fit(x, y, bg, peaks, max_nfev=4000):
-    """原地更新 peaks 中自由参数。返回 dict(chi2, rchi2, success, message)。"""
+def fit(x, y, bg, peaks, max_nfev=4000, bg_shape=None, tilt0=0.0, tilt_bounds=None):
+    """原地更新 peaks 中自由参数。返回 dict(chi2, rchi2, success, message)。
+    bg_shape 不为 None 时：背景 = bg + t·bg_shape，t 作为额外参数在 tilt_bounds 内与峰一起拟合（结果在 "tilt"）。"""
     x = np.asarray(x, float); s = np.asarray(y, float) - bg
+    D = None if bg_shape is None else np.asarray(bg_shape, float)
+    t_fixed = 0.0
+    if D is not None:
+        tl, th = tilt_bounds or (-np.inf, np.inf)
+        if th - tl < 1e-12 * (abs(tl) + 1):      # 范围退化：固定
+            t_fixed, D = tl, None
+            s = s - t_fixed * np.asarray(bg_shape, float)
     try:
         init_areas(x, s, peaks, 1.0 / np.sqrt(np.clip(np.asarray(y, float), 1.0, None)))
     except Exception:
@@ -351,15 +422,24 @@ def fit(x, y, bg, peaks, max_nfev=4000):
                 layout.append((i, "L:" + k)); x0.append(v); lo.append(mn); hi.append(mx)
     # 泊松权重：sigma ~ sqrt(counts)
     w = 1.0 / np.sqrt(np.clip(np.asarray(y, float), 1.0, None))
+    npk = len(layout)
+    if D is not None:
+        t0 = min(max(float(tilt0 or 0.0), tl), th)
+        if t0 <= tl: t0 = tl + 1e-9 * (abs(tl) + 1)
+        if t0 >= th: t0 = th - 1e-9 * (abs(th) + 1)
+        x0.append(t0); lo.append(tl); hi.append(th)
 
     def resid(v):
-        _, env = model(x, peaks, resolve(peaks, v, layout))
-        return (s - env) * w
+        _, env = model(x, peaks, resolve(peaks, v[:npk], layout))
+        return (s - (v[npk] * D if D is not None else 0.0) - env) * w
 
-    if layout:
+    tilt = t_fixed
+    if x0:
         r = least_squares(resid, np.array(x0), bounds=(np.array(lo), np.array(hi)),
                           max_nfev=max_nfev, x_scale="jac")
-        for (i, k), v in zip(layout, r.x):
+        if D is not None:
+            tilt = float(r.x[npk])
+        for (i, k), v in zip(layout, r.x[:npk]):
             if k.startswith("L:"):
                 peaks[i]["link"][k[2:]] = float(v)
             else:
@@ -372,10 +452,15 @@ def fit(x, y, bg, peaks, max_nfev=4000):
         for k in PARAMS:
             p[k]["value"] = float(v[k])
     cur = lambda i, k: peaks[i]["link"][k[2:]] if k.startswith("L:") else peaks[i][k]["value"]
-    res = resid(np.array([cur(i, k) for i, k in layout])) if layout else (s - model(x, peaks)[1]) * w
+    vv = [cur(i, k) for i, k in layout] + ([tilt] if D is not None else [])
+    res = resid(np.array(vv)) if vv else (s - model(x, peaks)[1]) * w
     chi2 = float(np.sum(res ** 2))
-    dof = max(1, len(x) - len(layout))
-    return {"chi2": chi2, "rchi2": chi2 / dof, "success": ok, "message": str(msg), "nfree": len(layout)}
+    nfree = len(vv)
+    dof = max(1, len(x) - nfree)
+    out = {"chi2": chi2, "rchi2": chi2 / dof, "success": ok, "message": str(msg), "nfree": nfree}
+    if bg_shape is not None:
+        out["tilt"] = tilt
+    return out
 
 
 # ------------------------------------------------------------------ 默认分析窗口（BE, eV）
@@ -441,17 +526,34 @@ class Spectrum:
         x, y = self.be[m], self.y[m]
         bg = background(x, y, self.bg["type"], int(self.bg.get("navg", 3)),
                         ylo=self.bg.get("ylo"), yhi=self.bg.get("yhi"),
-                        points=self.bg.get("points"), interp=self.bg.get("interp", "smooth"))
+                        points=self.bg.get("points"), interp=self.bg.get("interp", "smooth"),
+                        tilt=self.bg.get("tilt"))
         comps, env = model(x, self.peaks)
         return x, y, bg, comps, env
 
-    def do_fit(self):
+    def do_fit(self, max_nfev=4000):
         m = self.region()
         x, y = self.be[m], self.y[m]
+        if self.bg["type"] == "SlopeShirley":     # 主动 Shirley：斜坡改正量与峰一起拟合，背景不高于数据
+            yl, yh = _ends(x, y, int(self.bg.get("navg", 3)))
+            if self.bg.get("ylo") is not None: yl = float(self.bg["ylo"])
+            if self.bg.get("yhi") is not None: yh = float(self.bg["yhi"])
+            t = float(self.bg.get("tilt") or 0.0)
+            for _ in range(3):                    # 外层迭代：在当前斜坡处重算台阶形状，拟合修正量 c
+                D, sh = tilt_shape(x, y, yl, yh, t)
+                tb = tilt_bounds(x, y, yl, yh, D, sh, t)
+                self.last_fit = fit(x, y, sh, self.peaks, max_nfev=max_nfev, bg_shape=D, tilt0=0.0, tilt_bounds=tb)
+                c = self.last_fit.get("tilt", 0.0)
+                t += c
+                if abs(c) * (x[-1] - x[0]) < 0.002 * max(abs(yh - yl), float(np.ptp(y)) * 0.01, 1.0):
+                    break
+            self.bg["tilt"] = t
+            self.last_fit["tilt"] = t
+            return self.last_fit
         bg = background(x, y, self.bg["type"], int(self.bg.get("navg", 3)),
                         ylo=self.bg.get("ylo"), yhi=self.bg.get("yhi"),
                         points=self.bg.get("points"), interp=self.bg.get("interp", "smooth"))
-        self.last_fit = fit(x, y, bg, self.peaks)
+        self.last_fit = fit(x, y, bg, self.peaks, max_nfev=max_nfev)
         return self.last_fit
 
     def raw_area(self):
@@ -482,6 +584,41 @@ def guess_orbital(name):
 
 
 # ------------------------------------------------------------------ 参数表 / 定量
+# 峰颜色：同一组（主峰 + 自旋轨道副峰 + 多重分裂分量 + 卫星）同色；主峰可存自定义颜色 p["color"]
+PALETTE = ["#3B6EA8", "#C4553A", "#4E9A6A", "#8A63B8", "#D08A2E", "#7A5C4F", "#C76B9E", "#3A9AA8",
+           "#6F7FB8", "#A86A3C", "#6E8F3A", "#B07A8A"]
+UNKNOWN_COLOR = "#9A9891"
+
+
+def group_root(peaks, j):
+    """峰 j 所属组的主峰序号：沿双峰副峰 / 卫星的绑定关系向上找。"""
+    names = {p["name"]: k for k, p in enumerate(peaks)}
+    seen = set()
+    while j not in seen:
+        seen.add(j)
+        p = peaks[j]
+        r = names.get((p.get("link") or {}).get("ref"))
+        if r is None or not (p.get("pair") or p.get("role") == "satellite"):
+            break
+        j = r
+    return j
+
+
+def peak_colors(peaks):
+    roots = [group_root(peaks, j) for j in range(len(peaks))]
+    order = []
+    for r in roots:
+        if r not in order and peaks[r].get("role", "main") != "unknown":
+            order.append(r)
+    out = []
+    for r in roots:
+        c = peaks[r].get("color")
+        if not c:
+            c = UNKNOWN_COLOR if peaks[r].get("role", "main") == "unknown" else PALETTE[order.index(r) % len(PALETTE)]
+        out.append(c)
+    return out
+
+
 def counted(p):
     """未知重叠峰不计入面积% 与定量。"""
     return p.get("role", "main") != "unknown"
@@ -510,15 +647,11 @@ def state_name(name):
 
 def chemical_states(spec):
     """把双峰副峰、卫星峰并入所属主峰，返回 [(化学态名, 面积)]；未知重叠峰不计。"""
-    by = {p["name"]: p for p in spec.peaks}
     order, area = [], {}
-    for p in spec.peaks:
+    for j, p in enumerate(spec.peaks):
         if not counted(p):
             continue
-        owner = p
-        ln = p.get("link") or {}
-        if (p.get("pair") or p.get("role") == "satellite") and ln.get("ref") in by:
-            owner = by[ln["ref"]]
+        owner = spec.peaks[group_root(spec.peaks, j)]      # 沿双峰副峰 / 卫星的绑定链找到主峰
         key = state_name(owner["name"])
         if key not in area:
             order.append(key); area[key] = 0.0
@@ -615,6 +748,12 @@ def builtin_templates():
                                           + doublet("Ti2+ 2p", 455.5, 5.8, 0.5, 1.6)
                                           + doublet("Ti3+ 2p", 457.3, 5.7, 0.5, 1.6)
                                           + doublet("Ti4+ 2p", 458.8, 5.7, 0.5, 1.2))
+    # Fe2p 物相模板（与一键拟合相同的约束：多重分裂包络 + 随主峰移动的卫星峰）
+    from . import autofit
+    t["Fe2p: Fe⁰ + Fe₂O₃/FeOOH（卫星 +8 eV）"] = autofit.fe_model(True, ("Fe2O3",))
+    t["Fe2p: Fe⁰ + Fe₃O₄（无明显卫星）"] = autofit.fe_model(True, ("Fe3O4",))
+    t["Fe2p: Fe⁰ + FeO（卫星 +6 eV）"] = autofit.fe_model(True, ("FeO",))
+    t["Fe2p: Fe₃O₄ + Fe₂O₃"] = autofit.fe_model(False, ("Fe3O4", "Fe2O3"))
     return t
 
 

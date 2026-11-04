@@ -58,7 +58,6 @@ KNOWN_STATES = {
     "Cr2p": [("Cr6+", 579.0, 580.6)],
     "Cu2p": [("Cu2+", 933.3, 934.6)],
     "Ti2p": [("Ti4+", 458.4, 459.2), ("Ti3+", 456.7, 457.7), ("Ti2+", 455.0, 455.9), ("TiN", 454.8, 455.3)],
-    "Fe2p": [("Fe3+", 710.5, 711.5), ("Fe2+", 709.2, 710.2)],
     "Ni2p": [("NiO", 853.5, 854.3), ("Ni(OH)2", 855.2, 856.2)],
     "Mn2p": [("Mn2+", 640.6, 641.4), ("Mn4+", 642.0, 642.6)],
     "C1s": [("CO3", 289.5, 290.5)],
@@ -68,7 +67,7 @@ KNOWN_STATES = {
 # 必须伴随卫星峰的化学态：卫星区间（eV）内没有信号就不能加入（如 Cu²⁺：940–946 eV）
 REQUIRES_SAT = {"Cu2+": (940.0, 946.0), "Ni2+": (859.0, 864.0)}
 # 哪些化学态可以带卫星峰（正则匹配主峰名）；未列出的元素：任何主峰都可以
-SAT_PARENT = {"Cu": r"2\+|CuO|Cu\(OH\)", "C": r"C-C|graph|sp2"}
+SAT_PARENT = {"Cu": r"2\+|CuO|Cu\(OH\)", "C": r"C-C|graph|sp2", "Fe": r"Fe[23]\+|FeO|Fe2O3|Fe3O4|FeOOH"}
 
 
 # ------------------------------------------------------------------ 构件
@@ -110,6 +109,159 @@ def _SAT(name, ref, c, w, lo, hi, wmax=8.0, ratio=None, wmin=None):
     return p
 
 
+def _SATR(name, ref, c_ref, dE, w, dE_rng, ratio, wmin=2.0, wmax=6.0):
+    """位置跟随主峰的卫星峰：ΔE 与面积比都在给定范围内拟合（如 Fe²⁺ +6 eV、Fe³⁺ +8 eV）。"""
+    p = _P(name, c_ref + dE, w, 0, role="satellite", wmin=wmin, wmax=wmax)
+    p["link"] = {"ref": ref, "dE": dE, "dE_fit": True, "dE_min": dE_rng[0], "dE_max": dE_rng[1],
+                 "area_ratio": (ratio[0] + ratio[1]) / 2, "area_ratio_fit": True,
+                 "area_ratio_min": ratio[0], "area_ratio_max": ratio[1]}
+    return p
+
+
+# Fe 氧化物按“物相”建模：三种物相的 Fe2p 包络位置与卫星特征不同（Biesinger 2011；Yamashita & Hayes 2008；
+# Grosvenor 2004；McIntyre & Zetaruk 1977）。
+# 每个物相的 2p3/2 多重分裂包络用两条关联的 GL 线近似（主线 + 高 BE 多重分裂线：间距 1.0–2.6 eV、
+# 面积比 0.25–1.2、宽度比 1.0–1.8），低 BE 边陡、高 BE 侧宽；2p1/2 受 Coster–Kronig 展宽，用一个宽峰。
+# 卫星：FeO（+6 eV）与 Fe₂O₃（+8 eV）是清楚的独立峰；Fe₃O₄ 的 Fe²⁺/Fe³⁺ 卫星弱且连成一片平台（宽而弱）。
+# 名称: (主线峰位, 范围, 卫星 ΔE（相对主线）, ΔE 范围, 卫星/主线面积比范围, 卫星 FWHM 范围, Fe²⁺ 占比)
+FE_PHASES = {
+    "FeO":   (709.3, (708.7, 709.9), 6.2, (5.4, 7.0), (0.2, 1.0), (2.0, 4.5), 1.0),
+    "Fe3O4": (710.1, (709.6, 710.6), 7.0, (5.5, 8.8), (0.0, 0.2), (3.0, 6.5), 1.0 / 3),
+    "Fe2O3": (710.6, (710.1, 711.3), 8.4, (7.6, 9.2), (0.12, 0.7), (2.0, 4.5), 0.0),
+}
+FE_COMBOS = [("Fe2O3",), ("Fe3O4",), ("FeO",), ("Fe3O4", "Fe2O3"), ("FeO", "Fe3O4")]
+
+
+def fe_phase_peaks(name):
+    c, (lo, hi), dsat, drng, rr, (swl, swh), _ = FE_PHASES[name]
+    main = _P("%s 2p3/2" % name, c, 1.8, lo=lo, hi=hi, wmin=1.2, wmax=2.4)
+    mult = _P("%s 2p3/2 m" % name, c + 1.6, 2.2, wmin=1.2, wmax=3.4)
+    mult["link"] = {"ref": main["name"], "dE": 1.6, "dE_fit": True, "dE_min": 1.0, "dE_max": 2.2,
+                    "area_ratio": 0.55, "area_ratio_fit": True, "area_ratio_min": 0.3, "area_ratio_max": 0.8,
+                    "fwhm_ratio": 1.2, "fwhm_ratio_fit": True, "fwhm_ratio_min": 1.0, "fwhm_ratio_max": 1.4, "lor_same": True}
+    half = _P("%s 2p1/2" % name, c + 14.2, 3.2, wmin=1.6, wmax=5.0)
+    half["link"] = {"ref": main["name"], "dE": 14.2, "dE_fit": True, "dE_min": 13.6, "dE_max": 14.8,
+                    "area_ratio": 0.8, "area_ratio_fit": True, "area_ratio_min": 0.5, "area_ratio_max": 1.1,
+                    "fwhm_ratio": 1.8, "fwhm_ratio_fit": True, "fwhm_ratio_min": 1.2, "fwhm_ratio_max": 2.5, "lor_same": True}
+    mult["pair"] = half["pair"] = True
+    s1 = _SATR("%s sat. 2p3/2" % name, main["name"], c, dsat, (swl + swh) / 2, drng, rr, wmin=swl, wmax=swh)
+    s2 = _P("%s sat. 2p1/2" % name, c + 13.6 + dsat, (swl + swh) / 2, 0, role="satellite", wmin=swl, wmax=swh)
+    s2["link"] = {"ref": s1["name"], "dE": 13.6, "dE_fit": True, "dE_min": 13.3, "dE_max": 13.9,
+                  "area_ratio": 0.5, "fwhm_ratio": 1.0}
+    g = [main, mult, half, s1, s2]
+    for p in g:
+        p["fe_phase"] = name
+    return g
+
+
+def fe_model(metal=True, phases=("Fe3O4",)):
+    m = []
+    if metal:
+        m += _D("Fe0", 706.7, 13.1, 0.5, 1.0, shape="Asym", lo=706.3, hi=707.2, wmin=0.7, wmax=1.8,
+                split_rng=(12.95, 13.3), ratio_rng=(0.45, 0.55), fwr=(1.0, 1.5))
+    for ph in phases:
+        m += fe_phase_peaks(ph)
+    return m
+
+
+def _seed(s, peaks):
+    """新加入的峰：按数据高度估算初始面积（与套用模板相同）。"""
+    x, y, bg, _, _ = s.compute()
+    sig = y - bg
+    out = copy.deepcopy(peaks)
+    for p in out:
+        core.ensure_peak(p)
+        if "area" in core.linked_params(p):
+            continue
+        c, w = p["center"]["value"], p["fwhm"]["value"]
+        h = float(np.interp(c, x, sig)) if x[0] <= c <= x[-1] else 0.0
+        p["area"]["value"] = max(h, 0.05 * max(sig.max(), 1)) * w * 1.064
+    return out
+
+
+def fe_select(s, log):
+    """Fe 物相选择。① 三个单相模型按 BIC 选主物相（默认显示）；② 两相模型（Fe₃O₄+Fe₂O₃、FeO+Fe₃O₄）
+    因包络形状是近似，几乎总能拟合得更好，不能单凭拟合优度确认混合——只用来给出 Fe²⁺ 比例的范围。"""
+    base = [p for p in s.peaks if not p.get("fe_phase")]
+    res = []
+    for combo in FE_COMBOS:
+        s.peaks = copy.deepcopy(base) + _seed(s, [q for ph in combo for q in fe_phase_peaks(ph)])
+        r = staged_fit(s, max_nfev=400)       # 比较阶段限制迭代；选中的模型再完整拟合
+        d = fe_phases(s)
+        res.append({"bic": bic(s, r), "combo": combo, "peaks": copy.deepcopy(s.peaks), "x2": d["x2"], "phases": d["phases"]})
+    singles = sorted((t for t in res if len(t["combo"]) == 1), key=lambda t: t["bic"])
+    best = singles[0]
+    s.peaks = best["peaks"]
+    r = s.do_fit()
+    b = bic(s, r)
+    x2 = fe_phases(s)["x2"]
+    log("Fe 单相模型（BIC，越小越好）：%s → 主物相 %s（Fe²⁺ 占氧化 Fe 的 %.0f%%）"
+        % ("；".join("%s %.0f" % (t["combo"][0], t["bic"]) for t in singles), best["combo"][0], 100 * x2))
+    alts = [t for t in res if len(t["combo"]) == 2 and best["combo"][0] in t["combo"]
+            and min(t["phases"].get(k, 0) for k in t["combo"]) >= 0.1]
+    s.fe_alt = None
+    if alts:
+        a = min(alts, key=lambda t: t["bic"])
+        lo, hi = sorted((x2, a["x2"]))
+        s.fe_alt = {"default": best["combo"], "combo": a["combo"], "x2": a["x2"], "range": (lo, hi),
+                    "phases": a["phases"]}
+        log("两相模型 %s（%s）：Fe²⁺ 占 %.0f%%。两相模型多出一整套峰，几乎总能拟合得更好，不能据此确认混合"
+            " → 默认显示单相；Fe²⁺ 比例报告为 %.0f–%.0f%%"
+            % (" + ".join(a["combo"]), " + ".join("%s %.0f%%" % (k, 100 * a["phases"][k]) for k in a["combo"]),
+               100 * a["x2"], 100 * lo, 100 * hi))
+    return b, r
+
+
+def fe_phases(s):
+    """各 Fe 物相 / 氧化态在氧化 Fe 中的占比，推算 Fe²⁺ 占比 x2、金属 Fe⁰ 占比 f0。"""
+    st = core.chemical_states(s)
+    tot = sum(a for _, a in st) or 1.0
+    f0 = sum(a for n, a in st if n.startswith("Fe0")) / tot
+    share = {}
+    for n, a in st:
+        for k in ("Fe3O4", "Fe2O3", "FeO", "Fe2+", "Fe3+"):   # Fe3O4 / Fe2O3 要先于 FeO 匹配
+            if n.startswith(k):
+                share[k] = share.get(k, 0.0) + a
+                break
+    ox = sum(share.values())
+    if ox <= 0:
+        return {"phases": {}, "x2": None, "f0": f0, "ox": 0.0}
+    fe2 = {"FeO": 1.0, "Fe3O4": 1.0 / 3, "Fe2O3": 0.0, "Fe2+": 1.0, "Fe3+": 0.0}
+    x2 = sum(a * fe2[k] for k, a in share.items()) / ox
+    return {"phases": {k: a / ox for k, a in share.items()}, "x2": x2, "f0": f0, "ox": ox / tot}
+
+
+PHASE_LABEL = {"FeO": "FeO（Fe₁₋ₓO）", "Fe3O4": "Fe₃O₄", "Fe2O3": "Fe₂O₃（或 FeOOH）", "Fe2+": "Fe²⁺", "Fe3+": "Fe³⁺"}
+
+
+def interpret(s):
+    """按拟合结果给出化合物解读（目前用于 Fe2p：FeO / Fe3O4 / Fe2O3·FeOOH）。返回文字或 None。"""
+    if s.element != "Fe2p" or not s.peaks:
+        return None
+    d = fe_phases(s)
+    if d["x2"] is None:
+        return "Fe：只有金属 Fe⁰" if d["f0"] > 0 else None
+    ph = sorted(d["phases"].items(), key=lambda kv: -kv[1])
+    x2 = d["x2"]
+    out = "物相 %s；推算 Fe²⁺:Fe³⁺ = %s（Fe²⁺ 占氧化 Fe 的 %.0f%%）" % (
+        " + ".join("%s %.0f%%" % (PHASE_LABEL[k], 100 * v) for k, v in ph),
+        "1:%.1f" % ((1 - x2) / x2) if x2 > 0.02 else "0:1", 100 * x2)
+    if any(k in d["phases"] for k in ("Fe2+", "Fe3+")):     # 手动按氧化态拟合时，按比例给出参考物相
+        what = ("Fe₂O₃ 或 FeOOH" if x2 < 0.12 else "Fe₂O₃ + Fe₃O₄" if x2 < 0.22 else "Fe₃O₄" if x2 <= 0.45
+                else "Fe₃O₄ + FeO" if x2 < 0.75 else "FeO")
+        out += " → 与 %s 一致" % what
+    alt = getattr(s, "fe_alt", None)
+    if alt and tuple(sorted(d["phases"])) == tuple(sorted(alt["default"])):
+        out += "；若为 %s 混合，Fe²⁺ 约 %.0f%%（报告范围 %.0f–%.0f%%）" % (
+            " + ".join(PHASE_LABEL[k].split("（")[0] for k in alt["combo"]), 100 * alt["x2"],
+            100 * alt["range"][0], 100 * alt["range"][1])
+    if "Fe2O3" in d["phases"]:
+        out += "；Fe₂O₃ 与 FeOOH 的 Fe2p 几乎相同，请看 O1s 中 ~531.2 eV 的 OH 组分"
+    if d["f0"] > 0.02:
+        out += "；另有金属 Fe⁰ %.0f%%（占 Fe2p 总面积）" % (100 * d["f0"])
+    return out
+
+
 def _signal(s, lo, hi):
     """区间内扣背景后的信号面积 / 全谱信号面积。"""
     x, y, bg, _, _ = s.compute()
@@ -149,6 +301,17 @@ def recipe(s, log):
         else:
             log("Cu2p：940–946 eV 无卫星信号（%.1f%%）→ 不加 Cu²⁺，只用 Cu⁰/Cu⁺" % (100 * f))
         return m
+    if el == "Fe2p":
+        f0 = _signal(s, 705.8, 707.6)
+        fox = _signal(s, 708.6, 713.0)
+        metal = f0 > 0.03
+        if fox < 0.03:
+            log("Fe2p：708.6–713 eV 几乎没有氧化态信号（%.1f%%）→ 只用金属 Fe⁰（不对称双峰 Δ12.95–13.3）" % (100 * fox))
+            return fe_model(metal=True, phases=())
+        log("Fe2p：%s氧化物按物相建模——FeO ~709.6（卫星 +6 eV）、Fe₃O₄ ~710.5（几乎无卫星）、Fe₂O₃/FeOOH ~711.0"
+            "（卫星 +8 eV）；2p3/2 多重分裂包络用两条关联峰近似，2p1/2 用一个宽峰"
+            % ("Fe⁰ 不对称双峰 Δ12.95–13.3；" if metal else "705.8–707.6 eV 无明显金属峰，不加 Fe⁰；"))
+        return fe_model(metal=metal)
     if el == "O1s":
         log("O1s：晶格 O / 缺陷·羟基 / C–O·吸附水 三组分")
         return [_P("O lattice (M-O)", 530.2, 1.3, lo=529.4, hi=531.0), _P("O defect / M-OH", 531.5, 1.6, lo=530.9, hi=532.2),
@@ -206,12 +369,16 @@ def auto_anchors(s, x, y):
     edges = [(float(x[0]), 0.4)] + [(float(x[j]), m) for j, m in zip(k, margins)] + [(float(x[-1]), 0.4)]
     pts = []
     for (a, ma), (b, mb) in zip(edges[:-1], edges[1:]):
-        seg = [(a, b, ma, mb)] if b - a < 10 else [(a, (a + b) / 2, ma, 0.0), ((a + b) / 2, b, 0.0, mb)]
+        mid = (a + b) / 2
+        seg = [(a, b, ma, mb)] if b - a < 10 else [(a, mid, ma, 0.0), (mid, b, 0.0, mb)]
         for lo, hi, mlo, mhi in seg:
             m = (x >= lo + mlo) & (x <= hi - mhi)
             if m.sum() < 3:
                 continue
             j = np.where(m)[0][np.argmin(ys[m])]
+            # 长空当被一分为二时，最低点若落在分割处，说明那里是斜坡（如卫星峰的侧坡）而不是谷底 → 不取
+            if len(seg) == 2 and abs(float(x[j]) - mid) < 3 * step:
+                continue
             pts.append([float(x[j]), float(ys[j])])
     for j in (0, len(x) - 1):            # 两端
         pts.append([float(x[j]), float(ys[j])])
@@ -221,6 +388,11 @@ def auto_anchors(s, x, y):
         if not out or p[0] - out[-1][0] > 0.6:
             out.append(p)
     return out
+
+
+def _el(s):
+    m = re.match(r"[A-Z][a-z]?", s.element or "")
+    return m.group(0) if m else ""
 
 
 def choose_background(s, log):
@@ -237,6 +409,12 @@ def choose_background(s, log):
         s.bg.update({"type": "Points", "points": pts, "interp": "smooth"})
         log("背景：低 BE 端（%.0f）高于高 BE 端（%.0f），本底反向，Shirley 不适用 → 自定义点背景（%d 个平坦区最低点）"
             % (lo_end, hi_end, len(pts)))
+    elif s.element == "Fe2p":
+        # 主峰之间是卫星结构，不能用点背景，也不宜让 Smart 贴着数据走（会吃掉卫星）。
+        # 本底在 Shirley 台阶之外常有线性斜坡 → 主动 Shirley：斜坡改正量随峰一起拟合，且背景不高于数据
+        s.bg.update({"type": "SlopeShirley", "tilt": 0.0})
+        log("背景：%sFe2p 主峰之间是卫星结构 → 主动 Shirley（Shirley 台阶 + 线性斜坡，斜坡随峰一起拟合，背景不高于数据）"
+            % ("Shirley 会高于数据 %.0f（%.0fσ）；" % (over, over / noise) if over > noise else ""))
     elif over > 5 * noise:
         pts = auto_anchors(s, x, y)
         s.bg.update({"type": "Points", "points": pts, "interp": "smooth"})
@@ -352,17 +530,17 @@ def co_alternative(s, r, log):
     return s.do_fit()
 
 
-def staged_fit(s):
+def staged_fit(s, max_nfev=4000):
     """两步拟合：① 不对称峰的拖尾固定在典型值（T=0.25, τ=1.2 eV），先让各组分定位；② 再放开拖尾（在常见范围内）。"""
     asym = [p for p in s.peaks if p.get("shape") == "Asym" and "tail" not in core.linked_params(p)]
     saved = [(p["tail"]["fixed"], p["tau"]["fixed"]) for p in asym]
     for p in asym:
-        p["tail"]["value"], p["tau"]["value"] = 0.25, 1.2
+        p["tail"]["value"], p["tau"]["value"] = p.get("tail0", 0.25), p.get("tau0", 1.2)
         p["tail"]["fixed"] = p["tau"]["fixed"] = True
-    s.do_fit()
+    s.do_fit(max_nfev)
     for p, (a, b) in zip(asym, saved):
         p["tail"]["fixed"], p["tau"]["fixed"] = a, b
-    return s.do_fit()
+    return s.do_fit(max_nfev)
 
 
 def test_known_states(s, b0, r, log):
@@ -538,7 +716,11 @@ def run(s, sample_elements=(), ref=None, max_add=4):
     # 候选组分：与去掉它们的模型比较 BIC
     for tag in sorted({p.get("optional") for p in s.peaks if p.get("optional")}):
         import copy as _c
+        if not any(p.get("optional") == tag for p in s.peaks):
+            continue
         keep = _c.deepcopy(s.peaks)
+        if not any(p.get("role", "main") == "main" and p.get("optional") != tag for p in s.peaks):
+            continue                          # 去掉后没有主峰了：不测试
         s.peaks = [p for p in s.peaks if p.get("optional") != tag]
         r_wo = staged_fit(s)
         b_wo = bic(s, r_wo)
@@ -555,8 +737,11 @@ def run(s, sample_elements=(), ref=None, max_add=4):
                 log("候选 %s：BIC 虽更好，但 %d 个参数卡在约束边界（在填补背景/其他信号，不像真实的 %s）→ 不保留" % (tag, pinned, tag))
             else:
                 for p in s.peaks:
-                    p.pop("optional", None)
+                    if p.get("optional") == tag:
+                        p.pop("optional")
                 log("候选 %s：保留后拟合明显更好（BIC），参数都在合理范围内 → 保留" % tag)
+    if s.element == "Fe2p" and any(p.get("fe_phase") for p in s.peaks):
+        b0, r = fe_select(s, log)
     b0, r = test_known_states(s, b0, r, log)
     # 预置的重叠峰若拟合后面积很小（<1%），去掉
     tot = sum(p["area"]["value"] for p in s.peaks) or 1.0
@@ -611,6 +796,9 @@ def run(s, sample_elements=(), ref=None, max_add=4):
         log("多起点拟合：约化 χ² %.3g → %.3g" % (r["rchi2"], r_ms["rchi2"]))
     r = r_ms
     q = quality(s)
+    it = interpret(s)
+    if it:
+        log("解读：" + it)
     for w_ in q["warnings"]:
         log("⚠ " + w_)
     log("完成：约化 χ² %.3g，残差 RMS / 峰高 %.1f%%" % (r["rchi2"], 100 * q["rel_rms"]))
@@ -624,6 +812,7 @@ def quality(s):
     noise = float(np.std(y - ys)) or 1.0
     over = float(np.max(bg - ys))
     warns = []
+    by = {p["name"]: p for p in s.peaks}
     if over > 0.5 * noise:
         warns.append("背景在某处高于数据 %.0f（噪声 σ≈%.0f）" % (over, noise))
     for p in s.peaks:
@@ -634,11 +823,17 @@ def quality(s):
             if min(abs(par["value"] - par["min"]), abs(par["value"] - par["max"])) < 1e-3:
                 warns.append("%s 的%s卡在边界（%.2f）" % (p["name"], "峰位" if k == "center" else " FWHM ", par["value"]))
         ln = p.get("link") or {}
-        if p.get("pair") and ln.get("area_ratio") is not None:
+        R = ln.get("ref", "")
+        if p.get("pair") and ln.get("area_ratio") is not None and not p["name"].startswith(R + " "):
             el = (s.element or "x")[-1]
             th = RATIO.get(el)
-            if th and abs(ln["area_ratio"] - th) / th > 0.15:
-                warns.append("%s 面积比 %.2f 偏离理论值 %.2f 超过 15%%（背景或重叠可能有问题）" % (p["name"], ln["area_ratio"], th))
+            ratio = ln["area_ratio"]
+            # 2p3/2 用“主线 + 多重分裂分量（名称为 主线名 + ' m' / ' l'）”描述时，比的是整个 2p3/2 包络
+            parts = [q for q in s.peaks if q is not p and (q.get("link") or {}).get("ref") == R and q["name"].startswith(R + " ")]
+            if parts and R in by:
+                ratio = p["area"]["value"] / max(by[R]["area"]["value"] + sum(q["area"]["value"] for q in parts), 1e-9)
+            if th and abs(ratio - th) / th > 0.15:
+                warns.append("%s 面积比 %.2f 偏离理论值 %.2f 超过 15%%（背景或重叠可能有问题）" % (p["name"], ratio, th))
     rel = float(np.sqrt(np.mean((y - bg - env) ** 2)) / max(float(np.max(y - bg)), 1.0)) if s.peaks else 0.0
     return {"warnings": warns, "bg_over": over, "noise": noise, "rel_rms": rel}
 

@@ -7,6 +7,23 @@ import re
 
 # ------------------------------------------------------------------ 整句 / 词组
 PHRASES = {
+    "颜色": "Color", "自动": "Auto", "自定义颜色": "Custom color", "整组同色": "whole group shares this color",
+    "点击选择颜色（整组同色）": "Click to choose a color (applies to the whole group)",
+    "在中段偏离本底": "deviate from the background in the middle", "已限制为不高于数据": "clamped to never exceed the data", "未高于数据": "never above the data",
+    "主动 Shirley（台阶 + 线性斜坡，斜坡随峰拟合）": "Active Shirley (step + linear slope fitted with the peaks)",
+    "Fe2p：705.8–707.6 eV 无明显金属峰，不加 Fe⁰；氧化物按物相建模——FeO ~709.6（卫星 +6 eV）、Fe₃O₄ ~710.5（几乎无卫星）、Fe₂O₃/FeOOH ~711.0（卫星 +8 eV）；2p3/2 多重分裂包络用两条关联峰近似，2p1/2 用一个宽峰":
+        "Fe2p: no clear metal peak at 705.8–707.6 eV, Fe⁰ not added; oxides modelled as phases — FeO ~709.6 (satellite +6 eV), Fe₃O₄ ~710.5 (no distinct satellite), Fe₂O₃/FeOOH ~711.0 (satellite +8 eV); the 2p3/2 multiplet envelope is approximated by two linked lines, 2p1/2 by one broad peak",
+    "Fe2p：Fe⁰ 不对称双峰 Δ12.95–13.3；氧化物按物相建模——FeO ~709.6（卫星 +6 eV）、Fe₃O₄ ~710.5（几乎无卫星）、Fe₂O₃/FeOOH ~711.0（卫星 +8 eV）；2p3/2 多重分裂包络用两条关联峰近似，2p1/2 用一个宽峰":
+        "Fe2p: Fe⁰ asymmetric doublet Δ12.95–13.3; oxides modelled as phases — FeO ~709.6 (satellite +6 eV), Fe₃O₄ ~710.5 (no distinct satellite), Fe₂O₃/FeOOH ~711.0 (satellite +8 eV); the 2p3/2 multiplet envelope is approximated by two linked lines, 2p1/2 by one broad peak",
+    "Fe₂O₃ 与 FeOOH 的 Fe2p 几乎相同，请看 O1s 中 ~531.2 eV 的 OH 组分": "Fe₂O₃ and FeOOH have nearly identical Fe2p — check the OH component at ~531.2 eV in O1s",
+    "Fe：只有金属 Fe⁰": "Fe: metallic Fe⁰ only",
+    "（或 FeOOH）": " (or FeOOH)", "Fe₂O₃ 或 FeOOH": "Fe₂O₃ or FeOOH",
+    "Fe2p: Fe⁰ + Fe₂O₃/FeOOH（卫星 +8 eV）": "Fe2p: Fe⁰ + Fe₂O₃/FeOOH (satellite +8 eV)",
+    "Fe2p: Fe⁰ + Fe₃O₄（无明显卫星）": "Fe2p: Fe⁰ + Fe₃O₄ (no distinct satellite)",
+    "Fe2p: Fe⁰ + FeO（卫星 +6 eV）": "Fe2p: Fe⁰ + FeO (satellite +6 eV)",
+    "文献范围": "literature range", "文献": "lit.", "篇文献": "references",
+    "文献汇总（Biesinger 2011；Yamashita & Hayes 2008；Grosvenor 2004；McIntyre & Zetaruk 1977），非 NIST；导入 NIST 的 Fe 数据后自动替换":
+        "Literature compilation (Biesinger 2011; Yamashita & Hayes 2008; Grosvenor 2004; McIntyre & Zetaruk 1977), not NIST; replaced automatically when NIST Fe data are imported",
     "不对称峰": "Asymmetric peak", "（分量）": " (partner)",
     "导入 NIST XPS 数据库导出的 zip / csv，用于推荐峰位": "Import a zip / csv exported from the NIST XPS database for reference positions",
     "点“＋ 单峰”后在图上点击，或套用模板": "Click “＋ Add peak” then click on the plot, or apply a template",
@@ -133,12 +150,35 @@ PHRASES = {
     "峰位": "position", " FWHM ": " FWHM ", "，金属态用不对称峰": ", asymmetric shape for the metal",
     "语言": "Language", "手动调整": "Manual adjustments", "化学态": "Chemical states", "拟合质量": "Fit quality",
     "批量": "Batch", "暂无拟合结果": "No fit yet", "第 1 步": "Step 1", "第 2 步": "Step 2", "第 3 步": "Step 3",
-    "打开样品文件夹": "Open a sample folder", "⚡ 一键拟合（自动选背景、建模、区分重叠/卫星）": "⚡ One-click fit (background, model, overlap/satellite)",
+    "打开样品文件夹": "Open a sample folder",
     "检查报告，按需微调，导出": "Check the report, fine-tune if needed, export",
 }
 
 # ------------------------------------------------------------------ 含变量的句子：中文 printf 模板 → 英文（{0}{1}… 为各变量，变量本身也会递归翻译）
 TEMPLATES = [
+    ("背景：%sFe2p 主峰之间是卫星结构 → 主动 Shirley（Shirley 台阶 + 线性斜坡，斜坡随峰一起拟合，背景不高于数据）",
+     "Background: {0}the Fe2p region between the main lines holds satellites → active Shirley (Shirley step + linear slope fitted together with the peaks, never above the data)"),
+    ("Shirley 会高于数据 %.0f（%.0fσ）；", "Shirley would exceed the data by {0} ({1}σ); "),
+    ("背景：两端平坦区显示本底有线性斜坡 %+.0f /eV（±%.0f），Shirley 会%s → Shirley + 斜坡（%s）",
+     "Background: the flat ends show a linear background slope of {0} /eV (±{1}); Shirley would {2} → Shirley + slope ({3})"),
+    ("高于数据 %.0f（%.0fσ）", "exceed the data by {0} ({1}σ)"),
+    ("背景：Shirley 会高于数据 %.0f（%.0fσ），本底除台阶外还有线性斜坡 → Shirley + 斜坡（斜率取自低 BE 端平坦区；高于数据 %.0f，已限制为不高于数据）",
+     "Background: Shirley would exceed the data by {0} ({1}σ); the background has a linear slope besides the step → Shirley + slope (slope from the flat low-BE end; exceeds data by {2}, clamped to never exceed the data)"),
+    ("背景：Shirley 会高于数据 %.0f（%.0fσ）；本元素主峰之间是卫星结构，不宜用点背景 → Smart（不高于数据）",
+     "Background: Shirley would exceed the data by {0} ({1}σ); the region between the main lines holds satellites, so a point background is unsuitable → Smart (never above data)"),
+    ("Fe2p：708.6–713 eV 几乎没有氧化态信号（%.1f%%）→ 只用金属 Fe⁰（不对称双峰 Δ12.95–13.3）",
+     "Fe2p: almost no oxide signal at 708.6–713 eV ({0}%) → metallic Fe⁰ only (asymmetric doublet Δ12.95–13.3)"),
+    ("Fe 单相模型（BIC，越小越好）：%s → 主物相 %s（Fe²⁺ 占氧化 Fe 的 %.0f%%）",
+     "Fe single-phase models (BIC, lower is better): {0} → main phase {1} (Fe²⁺ = {2}% of oxidized Fe)"),
+    ("两相模型 %s（%s）：Fe²⁺ 占 %.0f%%。两相模型多出一整套峰，几乎总能拟合得更好，不能据此确认混合 → 默认显示单相；Fe²⁺ 比例报告为 %.0f–%.0f%%",
+     "two-phase model {0} ({1}): Fe²⁺ {2}%. A two-phase model adds a whole extra set of peaks and almost always fits better, so this does not prove a mixture → the single phase is shown by default; Fe²⁺ fraction reported as {3}–{4}%"),
+    ("若为 %s 混合，Fe²⁺ 约 %.0f%%（报告范围 %.0f–%.0f%%）", "if a {0} mixture, Fe²⁺ ≈ {1}% (reported range {2}–{3}%)"),
+    ("解读：%s", "Interpretation: {0}"),
+    ("物相 %s", "Phases {0}"),
+    ("推算 Fe²⁺:Fe³⁺ = %s（Fe²⁺ 占氧化 Fe 的 %.0f%%） → 与 %s 一致", "estimated Fe²⁺:Fe³⁺ = {0} (Fe²⁺ = {1}% of oxidized Fe) → consistent with {2}"),
+    ("推算 Fe²⁺:Fe³⁺ = %s（Fe²⁺ 占氧化 Fe 的 %.0f%%）", "estimated Fe²⁺:Fe³⁺ = {0} (Fe²⁺ = {1}% of oxidized Fe)"),
+    ("另有金属 Fe⁰ %.0f%%（占 Fe2p 总面积）", "plus metallic Fe⁰ {0}% (of the total Fe2p area)"),
+    ("文献 · %d 种化合物 %s", "Literature · {0} compounds {1}"),
     ("+%d 条提示", "+{0} more notes"),
     ("%s\n双击重命名，右键移除", "{0}\nDouble-click to rename, right-click to remove"),
     ("（样品元素：%s）", "(sample elements: {0})"),

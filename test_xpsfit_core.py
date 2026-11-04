@@ -255,6 +255,46 @@ class Core(unittest.TestCase):
         self.assertEqual(conf, {"C", "O", "Co"})
         self.assertFalse(any(e["el"] in ("Fe", "Ta") for e in r["elements"]))   # Co 俄歇≠Fe2p，O2s≠Ta4f
 
+    def test_peak_colors_group(self):
+        from xpsfit import autofit
+        pk = autofit.fe_model(True, ("Fe2O3",))
+        cols = core.peak_colors(pk)
+        self.assertEqual(len(set(cols[:2])), 1)                 # Fe0 两个分量同色
+        self.assertEqual(len(set(cols[2:])), 1)                 # Fe2O3 主线 / 多重分裂 / 2p1/2 / 两个卫星同色
+        self.assertNotEqual(cols[0], cols[2])
+        pk[2]["color"] = "#123456"
+        self.assertEqual(set(core.peak_colors(pk)[2:]), {"#123456"})
+        s = core.Spectrum("Fe2p", np.arange(700, 740, 0.1), np.ones(400))
+        s.peaks = pk
+        self.assertEqual([n for n, _ in core.chemical_states(s)], ["Fe0 2p", "Fe2O3 2p"])   # 2p1/2 卫星归到主峰
+
+    def test_active_shirley_recovers_slope(self):
+        """本底 = 常数 + 线性斜坡 + Shirley 台阶：主动 Shirley 拟合出的斜坡接近真实值，背景不高于数据。"""
+        x = np.arange(700, 740.01, 0.1)
+        pk = core.doublet("A", 710.0, 13.6, 0.5, 2.5, 60000, 30)
+        _, env = core.model(x, pk)
+        cum = np.concatenate([[0], np.cumsum(0.5 * (env[1:] + env[:-1]) * np.diff(x))])
+        y = np.random.default_rng(1).poisson(20000 + 60.0 * (x - 700) + 0.15 * cum + env).astype(float)
+        s = core.Spectrum("A", x, y)
+        s.bg.update({"type": "SlopeShirley", "navg": 5})
+        s.peaks = core.doublet("A", 709.5, 13.6, 0.5, 2.0, 50000, 30)
+        s.do_fit()
+        self.assertAlmostEqual(s.bg["tilt"], 60.0, delta=12.0)
+        xx, yy, bg, _, _ = s.compute()
+        self.assertLessEqual(float(np.max(bg - core.smooth(yy))), 1e-6)
+        self.assertAlmostEqual(s.peaks[0]["area"]["value"] / 60000, 1.0, delta=0.05)
+
+    def test_fe_phase_interpretation(self):
+        from xpsfit import autofit
+        s = core.Spectrum("Fe2p Scan", np.arange(700, 740, 0.1), np.ones(400))
+        s.element = "Fe2p"
+        s.peaks = autofit.fe_model(False, ("Fe3O4",))
+        d = autofit.fe_phases(s)
+        self.assertAlmostEqual(d["x2"], 1 / 3, places=6)
+        self.assertIn("Fe₃O₄", autofit.interpret(s))
+        s.peaks = autofit.fe_model(False, ("FeO",))
+        self.assertAlmostEqual(autofit.fe_phases(s)["x2"], 1.0, places=6)
+
 
 class Api(unittest.TestCase):
     """不开窗口，直接调用后端 API 走一遍完整流程。"""

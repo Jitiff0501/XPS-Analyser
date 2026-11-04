@@ -205,7 +205,7 @@ def for_orbital(orbital, user_dir=None):
     o = ref["orbitals"].get(orbital)
     if not o:
         return {"element": m.group(1), "orbital": orbital, "missing": True, "have": sorted(ref["orbitals"])}
-    return dict(o, element=m.group(1), orbital=orbital, auger=ref.get("auger"), source=ref["source"])
+    return dict(o, element=m.group(1), orbital=orbital, auger=ref.get("auger"), source=ref["source"], curated=bool(ref.get("curated")))
 
 
 if __name__ == "__main__":

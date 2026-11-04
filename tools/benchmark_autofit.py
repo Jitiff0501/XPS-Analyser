@@ -9,6 +9,7 @@
 """
 import copy
 import os
+import re
 import sys
 import time
 
@@ -158,6 +159,59 @@ def case_c(rng, carbide):
     return s, bg, ["C", "O", "Cr"], {"frac": ("M-C carbide", fc), "expect": set()}
 
 
+# Fe 氧化态的“真实”谱：Gupta–Sen 型多重分裂包络（5 条窄线，强度递减、向高 BE 拖尾），
+# 刻意与拟合模型（每个氧化态一个宽峰）不同，用来检验模型在线形不匹配时的可靠性。
+FE_MULT = {"Fe2+": ([-1.2, -0.3, 0.6, 1.6, 2.8], [0.30, 0.30, 0.20, 0.12, 0.08]),
+           "Fe3+": ([-1.1, -0.2, 0.7, 1.7, 2.9], [0.27, 0.30, 0.22, 0.13, 0.08])}
+FE_POS = {"Fe2+": (709.6, 6.0), "Fe3+": (711.0, 8.0)}     # 表观峰位（重心）、卫星 ΔE
+
+
+def fe_state(tag, A, r_sat, rng):
+    """一个 Fe 氧化态：2p3/2 多重分裂 + 2p1/2 宽峰 + 两个卫星；A 为该态总面积（含卫星）。"""
+    off, w = FE_MULT[tag]
+    c0, dsat = FE_POS[tag]
+    c0 += rng.normal(0, 0.1); dsat += rng.normal(0, 0.25)
+    cen = c0 - float(np.dot(off, w))                   # 让重心 = c0
+    M = A / (1.5 * (1 + r_sat))
+    pk = []
+    for k, (o, f) in enumerate(zip(off, w)):
+        pk.append(core.new_peak("%s m%d" % (tag, k), cen + o, 1.3, M * f, 30))
+    pk.append(core.new_peak("%s 1/2" % tag, c0 + 13.6, 3.6, 0.5 * M, 30))
+    pk.append(core.new_peak("%s sat a" % tag, c0 + dsat, 3.8, r_sat * M, 0, role="satellite"))
+    pk.append(core.new_peak("%s sat b" % tag, c0 + 13.6 + dsat, 3.8, 0.5 * r_sat * M, 0, role="satellite"))
+    return W(pk, *([1.3] * 5 + [3.6, 3.8, 3.8]))
+
+
+def case_fe(rng, kind):
+    """kind: Fe2O3 / Fe+Fe2O3 / Fe3O4 / Fe+Fe3O4 / FeO。返回真实 Fe²⁺/(Fe²⁺+Fe³⁺)、Fe⁰ 比例与应得的化合物。"""
+    x = np.arange(700, 740.01, 0.1)
+    f0 = rng.uniform(0.2, 0.6) if kind.startswith("Fe+") else 0.0
+    ox = kind.replace("Fe+", "")
+    pk = []
+    if ox == "Fe3O4+Fe2O3":                               # 真实混合：Fe₃O₄ 份额 m，其余 Fe₂O₃
+        m = rng.uniform(0.35, 0.65)
+        pk += fe_state("Fe2+", m / 3, rng.uniform(0.12, 0.2), rng)
+        pk += fe_state("Fe3+", 2 * m / 3, rng.uniform(0.06, 0.1), rng)
+        pk += [dict(p, name=p["name"].replace("Fe3+", "Fe3+b")) for p in fe_state("Fe3+", 1 - m, rng.uniform(0.15, 0.25), rng)]
+        y, bg, sig, _ = make(x, pk, rng, rng.uniform(2e4, 5e4), rng.uniform(-20, 20), rng.uniform(0.1, 0.3), rng.uniform(2e4, 6e4))
+        s = core.Spectrum("Fe2p Scan", x, y)
+        return s, bg, ["Fe", "O"], {"fe": (m / 3, 0.0, "mix"), "expect": set()}
+    x2 = {"Fe2O3": 0.0, "Fe3O4": 1 / 3, "FeO": rng.uniform(0.85, 0.95)}[ox]
+    weak = ox == "Fe3O4"                                  # 磁铁矿的卫星不明显
+    if f0:
+        fe0 = W(core.doublet("Fe0", 706.7 + rng.normal(0, 0.05), 13.1, 0.5, 0.95, f0, 20, shape="Asym"), 0.95, 1.3)
+        fe0[0]["tail"]["value"], fe0[0]["tau"]["value"] = rng.uniform(0.2, 0.4), rng.uniform(1.0, 2.0)
+        pk += fe0
+    if x2 > 0:
+        pk += fe_state("Fe2+", (1 - f0) * x2, rng.uniform(0.12, 0.2) if weak else rng.uniform(0.3, 0.45), rng)
+    if x2 < 1:
+        pk += fe_state("Fe3+", (1 - f0) * (1 - x2), rng.uniform(0.06, 0.1) if weak else rng.uniform(0.15, 0.25), rng)
+    y, bg, sig, _ = make(x, pk, rng, rng.uniform(2e4, 5e4), rng.uniform(-20, 20), rng.uniform(0.1, 0.3), rng.uniform(2e4, 6e4))
+    s = core.Spectrum("Fe2p Scan", x, y)
+    expect = ox
+    return s, bg, ["Fe", "O"], {"fe": (x2, f0, expect), "expect": set(), **({"split": ("Fe0", 13.1), "asym": "Fe0"} if f0 else {})}
+
+
 def case_survey(rng):
     x = np.arange(0, 1350.01, 0.5)
     present = {"C": [(284.8, 1.0)], "O": [(531.0, 3.0)], "Al": [(74.5, 0.25), (118.5, 0.18)],
@@ -207,7 +261,20 @@ def run_region(builder, n, rng, label):
             m = [p for p in s.peaks if p["name"].startswith(truth["asym"]) and not p.get("pair")]
             r["asym_ok"] = bool(m and m[0].get("shape") == "Asym" and m[0]["tail"]["value"] > 0.03)
             ox = [p for p in s.peaks if p.get("role", "main") == "main" and not p.get("pair") and not p["name"].startswith(truth["asym"])]
-            r["oxide_sym"] = all(p.get("shape", "GL") == "GL" for p in ox)
+            # Fe²⁺/Fe³⁺ 是多重分裂包络，按设计用不对称线形；其余元素的氧化物应为对称峰
+            r["oxide_sym"] = all(p.get("shape", "GL") == "GL" for p in ox if not re.match(r"Fe[23]\+", p["name"]))
+        if "fe" in truth:
+            x2, f0, expect = truth["fe"]
+            d = autofit.fe_phases(s)
+            r["x2_err"] = abs((d["x2"] if d["x2"] is not None else 0.0) - x2)
+            r["f0_err"] = abs(d["f0"] - f0)
+            main = max(d["phases"].items(), key=lambda kv: kv[1])[0] if d["phases"] else "Fe0"
+            r["compound_ok"] = main in ("Fe3O4", "Fe2O3") if expect == "mix" else main == expect
+            alt = getattr(s, "fe_alt", None)
+            lo, hi = alt["range"] if alt else (d["x2"] or 0.0, d["x2"] or 0.0)
+            r["range_ok"] = lo - 0.05 <= x2 <= hi + 0.05
+            r["interp"] = autofit.interpret(s) or ""
+            r["false_metal"] = (f0 == 0 and d["f0"] > 0.02)
         added = {("overlap" if ("重叠峰" in t or "同一重叠来源" in t) else "satellite" if "→ 卫星峰" in t else
                   "main" if "新化学态" in t else "unknown")
                  for t in rep if (t.startswith("残差峰") or t.startswith("预置重叠") or t.startswith("化学态测试")) and "不保留" not in t and "去掉" not in t}
@@ -257,6 +324,18 @@ def summarize(rows):
             ("%d/%d · %d/%d" % (sum(r["asym_ok"] for r in asym), len(asym), sum(r["oxide_sym"] for r in asym), len(asym))) if asym else "—",
             ("%d/%d" % (sum(r.get("class_ok", True) for r in rs), len(rs))) if any("class_ok" in r for r in rs) else "—",
             "、".join("%s×%d" % kv for kv in types.items())))
+    fe = [r for r in rows if "x2_err" in r]
+    if fe:
+        out.append("")
+        out.append("| Fe 场景 | 次数 | 主物相正确 | Fe²⁺/(Fe²⁺+Fe³⁺) 误差（默认模型） | 真值落在报告范围内（±0.05） | Fe⁰ 比例误差 | 误报金属 Fe⁰ |")
+        out.append("|---|---|---|---|---|---|---|")
+        for k in dict.fromkeys(r["case"] for r in fe):
+            rs = [r for r in fe if r["case"] == k]
+            out.append("| %s | %d | %d/%d | %.3f（最大 %.3f） | %d/%d | %.3f（最大 %.3f） | %d 次 |" % (
+                k, len(rs), sum(r["compound_ok"] for r in rs), len(rs),
+                np.mean([r["x2_err"] for r in rs]), np.max([r["x2_err"] for r in rs]),
+                sum(r["range_ok"] for r in rs), len(rs),
+                np.mean([r["f0_err"] for r in rs]), np.max([r["f0_err"] for r in rs]), sum(r["false_metal"] for r in rs)))
     sv = [r for r in rows if r["case"] == "Survey"]
     if sv:
         out.append("")
@@ -280,6 +359,8 @@ def main(n=12, out=None, seed=1):
     rows += run_region(lambda r: case_cr(r, False), n, rng, "Cr2p")
     rows += run_region(case_o, n, rng, "O1s")
     rows += run_region(lambda r: case_c(r, True), n, rng, "C1s 含碳化物")
+    for kind in ("Fe2O3", "Fe+Fe2O3", "Fe3O4", "Fe+Fe3O4", "FeO", "Fe3O4+Fe2O3"):
+        rows += run_region(lambda r, k=kind: case_fe(r, k), n, rng, "Fe2p " + kind)
     rows += run_survey(n, rng)
     md = summarize(rows)
     if out:
@@ -289,6 +370,22 @@ def main(n=12, out=None, seed=1):
     return rows
 
 
+def main_fe(n=10, seed=3, kinds=("Fe2O3", "Fe+Fe2O3", "Fe3O4", "Fe+Fe3O4", "FeO", "Fe3O4+Fe2O3"), verbose=False):
+    rng = np.random.default_rng(seed)
+    rows = []
+    for kind in kinds:
+        rr = run_region(lambda r, k=kind: case_fe(r, k), n, rng, "Fe2p " + kind)
+        if verbose:
+            for r in rr:
+                print(kind, "x2err %.3f f0err %.3f ok=%s range=%s | %s" % (r["x2_err"], r["f0_err"], r["compound_ok"], r["range_ok"], r["interp"][:150]))
+        rows += rr
+    print(summarize(rows))
+    return rows
+
+
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "fe":
+        main_fe(int(sys.argv[2]) if len(sys.argv) > 2 else 10, verbose=True)
+        sys.exit()
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 12
     main(n, sys.argv[2] if len(sys.argv) > 2 else None)

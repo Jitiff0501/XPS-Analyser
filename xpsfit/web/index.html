@@ -153,6 +153,16 @@ details.sec>summary .sub{font-weight:400;color:var(--ink3);font-size:12px;overfl
 .step{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
 .step b{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px}
 .step span{color:var(--ink2);font-size:13px;line-height:1.5}
+.palette{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.palette .c{width:22px;height:22px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+.palette .c.on{box-shadow:0 0 0 2px var(--ink)}
+.palette .auto{font-size:12px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:var(--panel);cursor:pointer;color:var(--ink2)}
+.palette .auto.on{border-color:var(--ink);color:var(--ink)}
+.palette input[type=color]{width:26px;height:24px;border:none;padding:0;background:none;cursor:pointer}
+#cpop{position:fixed;z-index:60;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:var(--shadow);width:200px}
+#cpop .t{font-size:12px;color:var(--ink3);margin-bottom:6px}
+.ptab .sw{cursor:pointer}
+.summary .interp{margin-top:4px;padding:8px 10px;border-radius:9px;background:var(--sunk);font-size:12px;line-height:1.5;color:var(--ink2)}
 #qwarn details.more summary{cursor:pointer;color:var(--ink3);font-size:12px;margin-top:2px}
 .qwarn{border:1px solid #F0D9C9;background:#FBF3EE;border-radius:10px;padding:8px 10px;font-size:12px;color:#8A4A2E;max-height:140px;overflow:auto}
 .qwarn div{margin:2px 0}
@@ -304,7 +314,7 @@ input[type=checkbox]{accent-color:var(--accent)}
     </details>
     <details class="sec" data-sec="bg"><summary>背景 <span class="sub" id="bgsum"></span></summary>
       <div class="row"><label>类型</label>
-        <select class="in" id="bgtype" onchange="setBg()"><option>Shirley</option><option value="Smart">Smart（Shirley，不高于数据）</option><option value="Points">自定义点（在图上点选）</option><option value="SNIP">SNIP（全谱）</option><option>Linear</option><option>Tougaard</option><option>None</option></select></div>
+        <select class="in" id="bgtype" onchange="setBg()"><option>Shirley</option><option value="Smart">Smart（Shirley，不高于数据）</option><option value="SlopeShirley">主动 Shirley（台阶 + 线性斜坡，斜坡随峰拟合）</option><option value="Points">自定义点（在图上点选）</option><option value="SNIP">SNIP（全谱）</option><option>Linear</option><option>Tougaard</option><option>None</option></select></div>
       <div class="row"><label>BE 范围</label><input class="in num" id="bglo"><span style="color:var(--ink3)">–</span><input class="in num" id="bghi"></div>
       <div class="row"><label>端点平均</label><input class="in num" id="bgn"><button class="btn sm" onclick="setBg()">应用</button></div>
       <div id="bgauto_box">
@@ -337,6 +347,7 @@ input[type=checkbox]{accent-color:var(--accent)}
   <h4>编辑峰</h4>
   <div class="row"><label>名称</label><input class="in" id="pe_name"></div>
   <div class="row"><label>峰型</label><select class="in" id="pe_shape" onchange="peShape()"><option value="GL">对称 GL</option><option value="Asym">不对称（高 BE 侧拖尾，金属态）</option></select></div>
+  <div class="row"><label>颜色</label><div class="palette" id="pe_colors"></div></div>
   <div class="row"><label>类型</label><select class="in" id="pe_role"><option value="main">主峰（计入面积%）</option><option value="satellite">卫星峰（计入面积%）</option><option value="unknown">未知重叠峰（不计入面积% 与定量）</option></select></div>
   <table class="ptab"><thead><tr><th></th><th>数值</th><th>固定</th><th>最小</th><th>最大</th></tr></thead><tbody id="pe_rows"></tbody></table>
   <div class="box"><div class="t">约束：绑定到另一个峰（自旋轨道双峰、等宽…）</div>
@@ -589,6 +600,7 @@ function renderPeaks(){
     if(atB){const w=document.createElement("span");w.className="pk-warn";w.textContent="⚠";w.title="峰位或 FWHM 卡在约束边界";tr.children[0].append(w)}
     tr.onclick=()=>{S.sel=j;renderPeaks();draw()};
     tr.ondblclick=()=>{S.sel=j;editPeak()};
+    const sw=tr.querySelector(".sw");sw.title="点击选择颜色（整组同色）";sw.onclick=e=>{e.stopPropagation();openColorPop(e,j)};
     tb.append(tr);
   });
   if(!S.v.peaks.length)tb.innerHTML='<tr><td colspan="5" class="empty" style="text-align:center">点“＋ 单峰”后在图上点击，或套用模板</td></tr>';
@@ -732,7 +744,26 @@ window.addEventListener("mouseup",async()=>{
   if(!D.moved)return;
   await act("update_peak",{j:D.j,peak:S.v.peaks[D.j]});
 });
-function pcol(p,j){return (p.role==="unknown")?"#9A9891":COLORS[j%8]}
+function pcol(p,j){const c=S.v&&S.v.colors&&S.v.colors[j];return c||((p.role==="unknown")?"#9A9891":COLORS[j%8])}
+/* ---------- 峰颜色：同组（双峰、多重分裂分量、卫星）同色，可自选 ---------- */
+const PALETTE=["#3B6EA8","#C4553A","#4E9A6A","#8A63B8","#D08A2E","#7A5C4F","#C76B9E","#3A9AA8","#6F7FB8","#A86A3C","#6E8F3A","#B07A8A"];
+function rootOf(j){const P=S.v.peaks,N={};P.forEach((p,k)=>N[p.name]=k);const seen=new Set();
+  while(!seen.has(j)){seen.add(j);const p=P[j],r=N[(p.link||{}).ref];if(r==null||!(p.pair||p.role==="satellite"))break;j=r}return j}
+function renderPalette(box,j,after){
+  const r=rootOf(j),custom=S.v.peaks[r].color,cur=S.v.colors[j];
+  box.innerHTML=PALETTE.map(c=>`<button class="c ${custom&&custom.toLowerCase()===c.toLowerCase()?"on":""}" data-c="${c}" style="background:${c}" title="${c}"></button>`).join("")
+    +`<input type="color" value="${cur}" title="自定义颜色"><button class="auto ${custom?"":"on"}" data-c="">自动</button>`;
+  const set=async c=>{await act("set_color",{j,color:c||null});renderPalette(box,j,after);after&&after()};
+  box.querySelectorAll("button").forEach(b=>b.onclick=e=>{e.stopPropagation();set(b.dataset.c)});
+  box.querySelector("input").onchange=e=>set(e.target.value)}
+function openColorPop(e,j){
+  let pop=$("cpop");if(!pop){pop=document.createElement("div");pop.id="cpop";document.body.append(pop);
+    const h=ev=>{if(!pop.contains(ev.target)){pop.remove();document.removeEventListener("mousedown",h,true)}};
+    document.addEventListener("mousedown",h,true)}
+  pop.innerHTML=`<div class="t"></div><div class="palette"></div>`;
+  pop.querySelector(".t").textContent=S.v.peaks[rootOf(j)].name+" · "+TR("整组同色");
+  pop.style.left=Math.min(e.clientX,innerWidth-220)+"px";pop.style.top=Math.min(e.clientY+10,innerHeight-140)+"px";
+  renderPalette(pop.querySelector(".palette"),j)}
 function hex(c,a){const n=parseInt(c.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`}
 
 /* ---------- modes ---------- */
@@ -794,7 +825,7 @@ function editPeak(){
   $("pe_ref").value=ln.ref||"";
   for(const k of["dE","area_ratio","fwhm_ratio"]){$("pe_"+k+"_on").checked=ln[k]!=null;$("pe_"+k).value=ln[k]!=null?+(+ln[k]).toPrecision(6):(k==="dE"?"":"1");
     $("pe_"+k+"_lock").checked=!ln[k+"_fit"];$("pe_"+k+"_min").value=ln[k+"_min"]??"";$("pe_"+k+"_max").value=ln[k+"_max"]??""}
-  $("pe_lor_same").checked=!!ln.lor_same;peShape();
+  $("pe_lor_same").checked=!!ln.lor_same;peShape();renderPalette($("pe_colors"),S.sel);
   const lk={center:"dE",area:"area_ratio",fwhm:"fwhm_ratio"};
   const upd=()=>{for(const k in lk){const on=$("pe_ref").value&&$("pe_"+lk[k]+"_on").checked;["v","f","min","max"].forEach(f=>$(`pe_${k}_${f}`).disabled=!!on);
       $(`pe_${k}_v`).title=on?"由绑定关系决定":""}
@@ -910,7 +941,8 @@ function renderSummary(v){
     box.innerHTML=`<div class="note" style="margin:0">${esc(E.join(" · ")||"—")}</div>`;return}
   const st=(v.states||[]).filter(x=>x[1]>0.0005);
   if(!st.length||!v.peaks.length){box.innerHTML='<div class="note" style="margin:0">暂无拟合结果</div>';return}
-  box.innerHTML=st.map(([n,f],k)=>`<div class="srow"><span class="nm" title="${esc(n)}">${esc(n)}</span><span class="pc">${(100*f).toFixed(1)}%</span><div class="sbar"><i style="width:${(100*f).toFixed(1)}%;background:${COLORS[k%8]}"></i></div></div>`).join("")}
+  box.innerHTML=st.map(([n,f],k)=>`<div class="srow"><span class="nm" title="${esc(n)}">${esc(n)}</span><span class="pc">${(100*f).toFixed(1)}%</span><div class="sbar"><i style="width:${(100*f).toFixed(1)}%;background:${(st[k]&&st[k][2])||COLORS[k%8]}"></i></div></div>`).join("")
+    +(v.interp?`<div class="interp">${esc(v.interp)}</div>`:"")}
 function renderSurvey(){
   const v=S.v,b=$("refbody");$("refsrc").textContent="全谱识别";
   const E=(v.ident&&v.ident.elements)||[];
@@ -926,24 +958,24 @@ function renderRef(){
   const idn0=S.v&&S.v.ident;const an0=idn0&&idn0.auto&&idn0.candidates&&idn0.candidates.length?`<p class="note" style="margin:0 0 6px;color:var(--accent-h)">已根据谱图识别为 <b>${esc(idn0.candidates[0][0])}</b>（${esc(idn0.candidates[0][2])}）</p>`:"";
   if(!r){$("refsrc").textContent="";b.innerHTML=an0+`<p class="note" style="margin:0">暂无 ${esc(REF.orbital||"该元素")} 的参考数据。已有：${REF.available.join("、")||"无"}。可点顶部“导入 NIST”导入 NIST XPS 数据库导出的文件。</p>`;return}
   if(r.missing){$("refsrc").textContent="NIST";b.innerHTML=`<p class="note" style="margin:0">${esc(r.element)} 的参考数据里没有 ${esc(REF.orbital)}（有：${r.have.join("、")}）。</p>`;return}
-  $("refsrc").textContent=`NIST · ${r.n_records} 条 ${r.line}`;
+  $("refsrc").textContent=r.curated?`文献 · ${r.states.length} 种化合物 ${r.line}`:`NIST · ${r.n_records} 条 ${r.line}`;
   const idn=S.v&&S.v.ident;const autoNote=idn&&idn.auto&&idn.candidates&&idn.candidates.length?`<div class="refbar" style="color:var(--accent-h)">已根据谱图识别为 <b>${esc(idn.candidates[0][0])}</b>（${esc(idn.candidates[0][2])}）；不对的话双击左侧名称重命名</div>`:"";
-  const sp=r.split?`双峰间距 <b>${r.split.median}</b> eV（${r.split.n} 条，${r.split.min}–${r.split.max}）· 面积比 ${+(r.ratio||0).toFixed(3)}`:"单峰轨道";
-  const rows=r.states.filter(st=>REFALL||st.n>=6);
+  const sp=r.split?`双峰间距 <b>${r.split.median}</b> eV（${r.curated?"文献范围":r.split.n+" 条"}，${r.split.min}–${r.split.max}）· 面积比 ${+(r.ratio||0).toFixed(3)}`:"单峰轨道";
+  const rows=r.states.filter(st=>r.curated||REFALL||st.n>=6);
   b.innerHTML=autoNote+`<div class="refbar"><span>${sp}</span></div>
    <div class="refbar" style="color:var(--ink3)"><span><span style="color:var(--ok);font-size:9px">●</span> = 数据中 ±0.3 eV 内有峰</span></div>
    <div class="refbar"><span>勾选的化合物在图上显示</span><a style="cursor:pointer;color:var(--accent-h)" id="ref_allon">全选</a><a style="cursor:pointer;color:var(--ink3)" id="ref_alloff">清除</a>
-   <label class="switch" style="margin-left:auto"><input type="checkbox" id="ref_all" ${REFALL?"checked":""}> 含少见（n&lt;6）</label></div>
-   <table class="rt"><tbody>${rows.map((st,k)=>`<tr data-f="${esc(st.formula)}" class="${marks().has(st.formula)?"mk":""}" title="${esc(st.name)}\n中位 ${st.median} eV，四分位 ${st.q1}–${st.q3}，全部 ${st.min}–${st.max}，${st.n} 条记录">
+   ${r.curated?"":`<label class="switch" style="margin-left:auto"><input type="checkbox" id="ref_all" ${REFALL?"checked":""}> 含少见（n&lt;6）</label>`}</div>
+   <table class="rt"><tbody>${rows.map((st,k)=>`<tr data-f="${esc(st.formula)}" class="${marks().has(st.formula)?"mk":""}" title="${esc(st.name)}\n中位 ${st.median} eV，四分位 ${st.q1}–${st.q3}，全部 ${st.min}–${st.max}，${st.n} ${r.curated?"篇文献":"条记录"}">
      <td style="width:20px"><input type="checkbox" class="mkc" ${marks().has(st.formula)?"checked":""}></td>
-     <td class="f">${esc(st.formula)}${st.near?'<span class="near" title="数据中 ±0.3 eV 内有峰">●</span>':""}</td><td class="r">${st.median.toFixed(2)}</td><td class="r" style="font-size:11px">${st.q1.toFixed(1)}–${st.q3.toFixed(1)}</td><td class="r" style="font-size:11px">n=${st.n}</td>
+     <td class="f">${esc(st.formula)}${st.near?'<span class="near" title="数据中 ±0.3 eV 内有峰">●</span>':""}</td><td class="r">${st.median.toFixed(2)}</td><td class="r" style="font-size:11px">${st.q1.toFixed(1)}–${st.q3.toFixed(1)}</td><td class="r" style="font-size:11px">${r.curated?"文献":"n="+st.n}</td>
      <td style="text-align:right"><button class="add" title="按此化学态添加${r.split?"双峰":"峰"}">＋</button></td></tr>`).join("")}</tbody></table>
-   ${r.satellites&&r.satellites.length?`<table class="rt" style="margin-top:4px"><tbody>${r.satellites.map(x=>`<tr data-sat="${esc(x.formula)}"><td style="width:20px"><input type="checkbox" class="mks" ${marks().has("sat:"+x.formula)?"checked":""}></td><td class="f">${esc(x.formula)} 卫星峰</td><td class="r">${x.median.toFixed(1)}</td><td class="r" style="font-size:11px">${x.min}–${x.max}</td><td class="r" style="font-size:11px">n=${x.n}</td><td></td></tr>`).join("")}</tbody></table>`:""}
+   ${r.satellites&&r.satellites.length?`<table class="rt" style="margin-top:4px"><tbody>${r.satellites.map(x=>`<tr data-sat="${esc(x.formula)}"><td style="width:20px"><input type="checkbox" class="mks" ${marks().has("sat:"+x.formula)?"checked":""}></td><td class="f">${esc(x.formula)} 卫星峰</td><td class="r">${x.median.toFixed(1)}</td><td class="r" style="font-size:11px">${x.min}–${x.max}</td><td class="r" style="font-size:11px">${r.curated?"文献":"n="+x.n}</td><td></td></tr>`).join("")}</tbody></table>`:""}
    ${r.auger&&r.auger.rows.length?`<details class="aug"><summary>俄歇 ${esc(r.auger.line)} 与修正俄歇参数 α′（区分峰位重合的化学态）</summary>
      <table class="rt"><tbody><tr><td class="r" style="text-align:left">化合物</td><td class="r">KE (eV)</td><td class="r">α′ (eV)</td><td class="r">n</td></tr>${r.auger.rows.map(x=>`<tr><td class="f">${esc(x.formula)}</td><td class="r">${x.ke.toFixed(2)}</td><td class="r">${x.alpha?x.alpha.toFixed(2):"—"}</td><td class="r">${x.n}</td></tr>`).join("")}</tbody></table>
      <p class="note" style="margin:4px 0 0">α′ = KE(俄歇) + BE(${esc(r.auger.rows.find(x=>x.alpha_line)?.alpha_line||"主峰")})，不受荷电影响。</p></details>`:""}
    <p class="note" style="margin:6px 0 0">${esc(r.source)}。各文献荷电参考不同，数值为文献分布（中位数 / 四分位范围），仅作拟合起点。</p>`;
-  $("ref_all").onchange=e=>{REFALL=e.target.checked;renderRef()};
+  if($("ref_all"))$("ref_all").onchange=e=>{REFALL=e.target.checked;renderRef()};
   $("ref_allon").onclick=()=>{rows.forEach(st=>marks().add(st.formula));renderRef();draw()};
   $("ref_alloff").onclick=()=>{marks().clear();renderRef();draw()};
   b.querySelectorAll("tr[data-f]").forEach(tr=>{const st=r.states.find(x=>x.formula===tr.dataset.f);

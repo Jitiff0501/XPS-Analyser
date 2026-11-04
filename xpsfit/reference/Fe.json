@@ -1,0 +1,151 @@
+{
+ "element": "Fe",
+ "source": "文献汇总（Biesinger 2011；Yamashita & Hayes 2008；Grosvenor 2004；McIntyre & Zetaruk 1977），非 NIST；导入 NIST 的 Fe 数据后自动替换",
+ "curated": true,
+ "records": 0,
+ "orbitals": {
+  "Fe2p": {
+   "line": "2p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 13.6,
+    "n": 4,
+    "min": 13.1,
+    "max": 13.9
+   },
+   "states": [
+    {
+     "formula": "Fe",
+     "name": "iron metal (ΔE 13.1 eV, asymmetric)",
+     "median": 706.7,
+     "q1": 706.6,
+     "q3": 706.9,
+     "min": 706.4,
+     "max": 707.2,
+     "n": 4,
+     "refs": [
+      "https://doi.org/10.1016/j.apsusc.2010.10.051",
+      "https://doi.org/10.1016/j.apsusc.2007.09.063",
+      "https://doi.org/10.1002/sia.1984",
+      "https://doi.org/10.1021/ac50019a016"
+     ]
+    },
+    {
+     "formula": "FeS2",
+     "name": "pyrite (low-spin Fe2+, narrow)",
+     "median": 707.3,
+     "q1": 707.2,
+     "q3": 707.4,
+     "min": 706.9,
+     "max": 707.6,
+     "n": 1,
+     "refs": [
+      "https://doi.org/10.1002/sia.1984"
+     ]
+    },
+    {
+     "formula": "FeO",
+     "name": "wüstite Fe1-xO (Fe2+; satellite ~715.5)",
+     "median": 709.6,
+     "q1": 709.4,
+     "q3": 709.9,
+     "min": 709.1,
+     "max": 710.2,
+     "n": 3,
+     "refs": [
+      "https://doi.org/10.1016/j.apsusc.2010.10.051",
+      "https://doi.org/10.1016/j.apsusc.2007.09.063",
+      "https://doi.org/10.1021/ac50019a016"
+     ]
+    },
+    {
+     "formula": "Fe3O4",
+     "name": "magnetite (Fe2+:Fe3+ = 1:2; no distinct satellite)",
+     "median": 710.5,
+     "q1": 710.3,
+     "q3": 710.7,
+     "min": 710.0,
+     "max": 710.9,
+     "n": 4,
+     "refs": [
+      "https://doi.org/10.1016/j.apsusc.2010.10.051",
+      "https://doi.org/10.1016/j.apsusc.2007.09.063",
+      "https://doi.org/10.1002/sia.1984",
+      "https://doi.org/10.1021/ac50019a016"
+     ]
+    },
+    {
+     "formula": "α-Fe2O3",
+     "name": "hematite (Fe3+; satellite ~719.0)",
+     "median": 710.9,
+     "q1": 710.7,
+     "q3": 711.1,
+     "min": 710.5,
+     "max": 711.4,
+     "n": 4,
+     "refs": [
+      "https://doi.org/10.1016/j.apsusc.2010.10.051",
+      "https://doi.org/10.1016/j.apsusc.2007.09.063",
+      "https://doi.org/10.1002/sia.1984",
+      "https://doi.org/10.1021/ac50019a016"
+     ]
+    },
+    {
+     "formula": "γ-Fe2O3",
+     "name": "maghemite (Fe3+; satellite ~719.0)",
+     "median": 710.9,
+     "q1": 710.7,
+     "q3": 711.1,
+     "min": 710.5,
+     "max": 711.3,
+     "n": 2,
+     "refs": [
+      "https://doi.org/10.1016/j.apsusc.2007.09.063",
+      "https://doi.org/10.1002/sia.1984"
+     ]
+    },
+    {
+     "formula": "α-FeOOH",
+     "name": "goethite (Fe3+; satellite ~719.5)",
+     "median": 711.3,
+     "q1": 711.1,
+     "q3": 711.6,
+     "min": 710.9,
+     "max": 711.9,
+     "n": 3,
+     "refs": [
+      "https://doi.org/10.1016/j.apsusc.2010.10.051",
+      "https://doi.org/10.1002/sia.1984",
+      "https://doi.org/10.1021/ac50019a016"
+     ]
+    }
+   ],
+   "satellites": [
+    {
+     "formula": "FeO",
+     "median": 715.5,
+     "min": 714.8,
+     "max": 716.0,
+     "n": 3
+    },
+    {
+     "formula": "Fe2O3",
+     "median": 719.0,
+     "min": 718.6,
+     "max": 719.5,
+     "n": 4
+    },
+    {
+     "formula": "FeOOH",
+     "median": 719.6,
+     "min": 719.2,
+     "max": 720.0,
+     "n": 2
+    }
+   ],
+   "n_records": 0
+  }
+ },
+ "auger": null
+}

@@ -126,7 +126,7 @@ class State:
                 "peaks": peaks, "fit": s.last_fit, "region": [float(x.min()), float(x.max())],
                 "window": [s.window[0] + s.shift, s.window[1] + s.shift],
                 "kind": getattr(s, "kind", "region"), "ident": getattr(s, "ident", None),
-                "states": _states(s)}
+                "states": _states(s), "interp": _interp(s), "colors": core.peak_colors(s.peaks)}
 
 
 ST = State()
@@ -145,7 +145,14 @@ def load_lang():
 
 
 ST.lang = load_lang()
-_LOC_KEYS = {"msg", "steps", "warnings", "errors", "error", "imported", "message"}
+def _interp(s):
+    try:
+        return autofit.interpret(s)
+    except Exception:
+        return None
+
+
+_LOC_KEYS = {"interp", "msg", "steps", "warnings", "errors", "error", "imported", "message"}
 
 
 def localize(obj, key=None):
@@ -284,6 +291,8 @@ def api(method, a):
         core.ensure_peak(new)
         if s.peaks[j].get("pair"):
             clean["pair"] = True
+        if s.peaks[j].get("color"):
+            clean["color"] = s.peaks[j]["color"]
         for k in core.PARAMS:
             clean[k] = {f: new[k][f] for f in ("value", "fixed", "min", "max")}
         s.peaks[j] = clean
@@ -291,6 +300,15 @@ def api(method, a):
             for q in s.peaks:
                 if (q.get("link") or {}).get("ref") == old:
                     q["link"]["ref"] = clean["name"]
+    elif method == "set_color":
+        # 颜色作用于整组：存到主峰上，组内其他峰的自定义颜色清除；color 为空 = 恢复自动配色
+        j = core.group_root(s.peaks, int(a["j"]))
+        c = a.get("color")
+        for k, q in enumerate(s.peaks):
+            if core.group_root(s.peaks, k) == j:
+                q.pop("color", None)
+        if c and re.fullmatch(r"#[0-9a-fA-F]{6}", c):
+            s.peaks[j]["color"] = c
     elif method == "delete_peak":
         p = s.peaks.pop(int(a["j"]))
         # 双峰副峰随主峰一起删除；卫星峰等解除绑定
@@ -445,7 +463,11 @@ def _states(s):
     except Exception:
         return []
     tot = sum(a for _, a in st) or 1.0
-    return [[n, a / tot] for n, a in st]
+    cols = core.peak_colors(s.peaks)
+    col = {}
+    for j, p in enumerate(s.peaks):           # 化学态 → 其主峰的颜色
+        col.setdefault(core.state_name(s.peaks[core.group_root(s.peaks, j)]["name"]), cols[j])
+    return [[n, a / tot, col.get(n, core.UNKNOWN_COLOR)] for n, a in st]
 
 
 def auto_identify(t):
@@ -624,15 +646,22 @@ def _arrow_labels(ax, fig, x, bg, comps, env, peaks, cols, o, ylim, yraw=None):
     big = max((float(np.max(c)) for c in comps), default=1.0) or 1.0
     names = {p["name"]: k for k, p in enumerate(peaks)}
     merged = {}                                  # 主峰 -> 合并后的曲线
+    small, parts = set(), set()
     for k, p in enumerate(peaks):
         ln = p.get("link") or {}
-        if p.get("pair") and ln.get("ref") in names and abs(ln.get("dE") or 9) < 1.0:
-            merged.setdefault(names[ln["ref"]], comps[names[ln["ref"]]].copy())
-            merged[names[ln["ref"]]] += comps[k]
+        R = ln.get("ref")
+        if not (p.get("pair") and R in names):
+            continue
+        if abs(ln.get("dE") or 9) < 1.0:         # 分裂很小的双峰：合并，名称去掉 3/2
+            small.add(names[R])
+        elif not p["name"].startswith(R + " "):  # 多重分裂分量（名称 = 主线名 + " m"）也并入主线；普通 1/2 分量单独标
+            continue
+        merged.setdefault(names[R], comps[names[R]].copy())
+        merged[names[R]] += comps[k]
+        parts.add(k)
     items = []
     for k, (p, c) in enumerate(zip(peaks, comps)):
-        ln = p.get("link") or {}
-        if p.get("pair") and abs(ln.get("dE") or 9) < 1.0:
+        if k in parts:
             continue
         if p["name"].endswith("（续）"):           # 同一重叠来源的附属片段不单独标
             continue
@@ -640,7 +669,7 @@ def _arrow_labels(ax, fig, x, bg, comps, env, peaks, cols, o, ylim, yraw=None):
         if float(np.max(cc)) < 0.03 * big:
             continue                             # 很小的峰不标
         kk = int(np.argmax(cc))
-        name = re.sub(r"\s*\d/2\s*$", "", p["name"]) if k in merged else p["name"]
+        name = re.sub(r"\s*\d/2\s*$", "", p["name"]) if k in small else p["name"]
         items.append((float(x[kk]), float(bg[kk] + cc[kk]), pretty_label(name), k))
     fs = float(o["font"]) * 0.8
     renderer = fig.canvas.get_renderer()
@@ -662,8 +691,7 @@ def _arrow_labels(ax, fig, x, bg, comps, env, peaks, cols, o, ylim, yraw=None):
         return T.transform((x[0], v))[1]
 
     for xa, ya, lab, k in sorted(items, key=lambda t: -t[1]):
-        role = peaks[k].get("role", "main")
-        col = "#7A7A7A" if role == "unknown" else cols[k % len(cols)]
+        col = cols[k]
         ann = ax.annotate(lab, xy=(xa, ya), xytext=(xa, ya), textcoords="data", ha="center", va="bottom",
                           fontsize=fs, color=col, annotation_clip=False,
                           arrowprops=dict(arrowstyle="-|>", color=col, lw=0.6, shrinkA=1, shrinkB=1.5, mutation_scale=6))
@@ -711,7 +739,7 @@ def figure(s, path, opts=None, dpi=None):
                                                     "PingFang SC", "Hiragino Sans GB", "Arial Unicode MS",
                                                     "Noto Sans CJK SC", "WenQuanYi Zen Hei", "DejaVu Sans"],
                                 "xtick.direction": "in", "ytick.direction": "in"})
-    cols = ["#3B6EA8", "#C4553A", "#4E9A6A", "#8A63B8", "#D08A2E", "#7A5C4F", "#C76B9E", "#3A9AA8"]
+    cols = core.peak_colors(s.peaks)          # 同组同色，含自定义颜色
     x, y, bg, comps, env = s.compute()
     from matplotlib.backends.backend_agg import FigureCanvasAgg
     fig = Figure(figsize=(float(o["width_cm"]) / 2.54, float(o["height_cm"]) / 2.54))
@@ -725,7 +753,7 @@ def figure(s, path, opts=None, dpi=None):
         ax.plot(x, bg, "-", color="#888", lw=0.8, label="Background")
     for i, (p, c) in enumerate(zip(s.peaks, comps)):
         role = p.get("role", "main")
-        col = "#9A9A9A" if role == "unknown" else cols[i % len(cols)]
+        col = cols[i]
         ls = "--" if role == "unknown" else (":" if role == "satellite" else "-")
         if o["fill"]:
             ax.fill_between(x, bg, bg + c, color=col, alpha=0.18 if role != "main" else 0.3, lw=0)
