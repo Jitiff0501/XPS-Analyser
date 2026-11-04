@@ -787,6 +787,36 @@ def _arrow_labels(ax, fig, x, bg, comps, env, peaks, cols, o, ylim, yraw=None):
     return top
 
 
+# 西文用 Arial（Windows / macOS 自带）；没有 Arial 的系统用度量相同的 Liberation Sans / Arimo；中文逐字回退到雅黑 / 黑体等
+FONT_SANS = ["Arial", "Helvetica", "Liberation Sans", "Arimo", "Microsoft YaHei", "SimHei", "PingFang SC",
+             "Hiragino Sans GB", "Arial Unicode MS", "Noto Sans CJK SC", "WenQuanYi Zen Hei", "DejaVu Sans"]
+_LATIN = []
+
+
+def _latin_font():
+    """FONT_SANS 中本机第一个可用的西文字体（数学文本 $…$ 也用它，与正文同一字体）。"""
+    if not _LATIN:
+        from matplotlib import font_manager as fm
+        names = {f.name for f in fm.fontManager.ttflist}
+        _LATIN.append(next((n for n in FONT_SANS[:4] if n in names), "DejaVu Sans"))
+    return _LATIN[0]
+
+
+def _font_rc(size):
+    f = _latin_font()
+    return {"font.family": "sans-serif", "font.size": float(size), "font.sans-serif": FONT_SANS,
+            "xtick.direction": "in", "ytick.direction": "in",
+            "mathtext.fontset": "custom", "mathtext.rm": f, "mathtext.it": f + ":italic", "mathtext.bf": f + ":bold",
+            "mathtext.sf": f, "mathtext.default": "regular"}
+
+
+def _inner_title(ax, text, size):
+    """图名放在坐标框内左上角，左对齐；离框边 6 pt（避开朝内的刻度线）。"""
+    from matplotlib.transforms import offset_copy
+    ax.text(0, 1, text, transform=offset_copy(ax.transAxes, fig=ax.figure, x=6, y=-5, units="points"),
+            ha="left", va="top", fontsize=size, zorder=7)
+
+
 def figure(s, path, opts=None, dpi=None, annots=True):
     """论文图。opts 见 FIG_DEFAULTS：x 范围/主刻度间距/次刻度数、y 轴数字开关等。返回坐标轴位置（_geo）。
     annots=False 时不画标注（导出预览由页面叠加标注，便于直接在预览上编辑）。"""
@@ -795,12 +825,7 @@ def figure(s, path, opts=None, dpi=None, annots=True):
     from matplotlib.figure import Figure
     from matplotlib.ticker import MultipleLocator, AutoMinorLocator, NullLocator
     o = dict(FIG_DEFAULTS); o.update({k: v for k, v in (opts or {}).items() if v is not None and v != ""})
-    matplotlib.rcParams.update({"font.family": "sans-serif", "font.size": float(o["font"]),
-                                # 西文用 Arial；中文峰名逐字回退到雅黑/黑体等
-                                "font.sans-serif": ["Arial", "Helvetica", "Microsoft YaHei", "SimHei",
-                                                    "PingFang SC", "Hiragino Sans GB", "Arial Unicode MS",
-                                                    "Noto Sans CJK SC", "WenQuanYi Zen Hei", "DejaVu Sans"],
-                                "xtick.direction": "in", "ytick.direction": "in", "mathtext.default": "regular"})
+    matplotlib.rcParams.update(_font_rc(o["font"]))
     cols = core.peak_colors(s.peaks)          # 同组同色，含自定义颜色
     x, y, bg, comps, env = s.compute()
     from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -835,7 +860,7 @@ def figure(s, path, opts=None, dpi=None, annots=True):
             if s.peaks and o["envelope"]:
                 hi = max(hi, float((bg + env)[mr].max()))
         pad = 0.06 * (hi - lo or 1)
-        ax.set_ylim(lo - pad, hi + pad * (3 if o["legend"] and o["legend_loc"] != "outside" else 1.5))
+        ax.set_ylim(lo - pad, hi + pad * (3 if (o["legend"] and o["legend_loc"] != "outside") or o["title"] else 1.5))  # 图名在框内左上角，留出空间
     if o["xstep"]:
         ax.xaxis.set_major_locator(MultipleLocator(float(o["xstep"])))
     n = int(o["xminor"] or 0)
@@ -846,7 +871,7 @@ def figure(s, path, opts=None, dpi=None, annots=True):
     ax.tick_params(axis="both", which="both", top=False, right=False)
     ax.set_xlabel(o["xlabel"]); ax.set_ylabel(o["ylabel"])
     if o["title"]:
-        ax.set_title(s.name, fontsize=float(o["font"]))
+        _inner_title(ax, s.name, float(o["font"]))
     if o["legend"]:
         fs = float(o["font"]) * 0.75
         if o["legend_loc"] == "outside":
@@ -871,11 +896,11 @@ def figure(s, path, opts=None, dpi=None, annots=True):
 # 坐标：x 为 BE（eV），y 为坐标轴高度 %（0 = 坐标轴底部）。尺寸（字号、线宽、虚线段长 / 间隔、箭头大小）都是导出图里的 pt。
 # 文字：{type:"text", text, x, y, size, color, bold}；上标写 ^{…}，下标写 _{…}
 # 垂直线：{type:"vline", x, len(%), width, dash, gap, color}（底端固定在坐标轴底部；dash=0 为实线）
-# 箭头：{type:"arrow", x0, y0（尾）, x1, y1（头）, width, head(filled/open/none), size（箭头长度）, color}
+# 箭头：{type:"arrow", x0, y0（尾）, x1, y1（头）, width, head(filled/open/none), size（箭头长）, hw（箭头宽）, color}
 ANN_DEFAULTS = {"text": {"text": "", "x": 0.0, "y": 90.0, "size": 24.0, "color": "#333333", "bold": False},
                 "vline": {"x": 0.0, "len": 85.0, "width": 1.5, "dash": 10.0, "gap": 5.0, "color": "#666666"},
-                "arrow": {"x0": 0.0, "y0": 80.0, "x1": 0.0, "y1": 60.0, "width": 1.5, "head": "filled", "size": 10.0,
-                          "color": "#333333"}}
+                "arrow": {"x0": 0.0, "y0": 80.0, "x1": 0.0, "y1": 60.0, "width": 1.5, "head": "filled", "size": 7.0,
+                          "hw": 5.0, "color": "#333333"}}
 ARROW_HEADS = ("filled", "open", "none")
 
 
@@ -903,7 +928,7 @@ def clean_annots(items):
             else:
                 d[k] = str(it[k])[:200]
         for k, lo, hi in (("y", -20, 120), ("y0", -20, 120), ("y1", -20, 120), ("len", 0, 100), ("width", 0.1, 10),
-                          ("dash", 0, 40), ("gap", 0, 40)):
+                          ("dash", 0, 40), ("gap", 0, 40), ("hw", 0.5, 60)):
             if k in d:
                 d[k] = min(max(d[k], lo), hi)
         if "size" in d:
@@ -912,34 +937,90 @@ def clean_annots(items):
     return out
 
 
-def mathtext(t):
-    """Co^{2+} → Co$^{2+}$，2p_{3/2} → 2p$_{3/2}$（matplotlib 数学文本）。"""
-    t = str(t).replace("$", r"\$")
-    t = re.sub(r"\^\{([^{}]*)\}", lambda m: "$^{%s}$" % m.group(1).replace(" ", r"\ "), t)
-    t = re.sub(r"_\{([^{}]*)\}", lambda m: "$_{%s}$" % m.group(1).replace(" ", r"\ "), t)
-    return t.replace("$$", "")
+# 上下标：字号为正文的 65%，上标基线抬高 0.34 倍字号，下标降低 0.14 倍字号（与 Word / Origin 接近）。
+# 文字的锚点是大写字母高度的中点（基线在锚点下方 0.36 倍字号）。页面预览用同样的数值。
+SUP_SCALE, SUP_RISE, SUB_DROP, BASE_DROP = 0.65, 0.34, 0.14, 0.36
+
+
+def ann_segments(t):
+    """Co^{2+} 2p_{3/2} → [("Co", 0), ("2+", 1), (" 2p", 0), ("3/2", -1)]（1 上标，-1 下标）。"""
+    out, pos = [], 0
+    for m in re.finditer(r"(\^|_)\{([^{}]*)\}", str(t)):
+        if m.start() > pos:
+            out.append((t[pos:m.start()], 0))
+        out.append((m.group(2), 1 if m.group(1) == "^" else -1))
+        pos = m.end()
+    if pos < len(t):
+        out.append((t[pos:], 0))
+    return [(x, k) for x, k in out if x]
+
+
+def _rich_text(ax, tr, x, y, text, size, color, bold):
+    """逐段画文字（同一字体），上下标手动排版；水平居中于 x，大写字母高度的中点在 y。"""
+    from matplotlib.transforms import offset_copy
+    fig = ax.figure
+    r = fig.canvas.get_renderer()
+    k = fig.dpi / 72.0
+    arts = []
+    for seg, kind in ann_segments(text):
+        t = ax.text(x, y, seg.replace("$", r"\$"), transform=tr, fontsize=size * (SUP_SCALE if kind else 1.0),
+                    color=color, fontweight="bold" if bold else "normal", ha="left", va="baseline", zorder=6, clip_on=False)
+        arts.append((t, kind, t.get_window_extent(r).width / k))
+    dx = -sum(w for _, _, w in arts) / 2.0
+    for t, kind, w in arts:
+        dy = -BASE_DROP * size + (SUP_RISE * size if kind == 1 else -SUB_DROP * size if kind == -1 else 0.0)
+        t.set_transform(offset_copy(tr, fig=fig, x=dx, y=dy, units="points"))
+        dx += w
+
+
+def _arrow(ax, tr, a):
+    """箭头：箭杆 + 实心三角（无描边）/ 开口 / 无。箭头长 size、宽 hw（pt）。
+    几何在当前排版下换算到（数据 x，坐标轴 y）坐标，与导出 dpi 无关。"""
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Polygon
+    fig = ax.figure
+    k = fig.dpi / 72.0
+    T = np.asarray(tr.transform((a["x0"], a["y0"] / 100.0)))
+    H = np.asarray(tr.transform((a["x1"], a["y1"] / 100.0)))
+    L = float(np.hypot(*(H - T)))
+    if L < 1e-9:
+        return
+    u = (H - T) / L
+    nv = np.array([-u[1], u[0]])
+    hl, hw = a["size"] * k, a["hw"] * k / 2.0
+    base = H - u * hl
+    inv = tr.inverted()
+    pts = lambda *P: inv.transform(np.array(P))
+    lw = a["width"]
+    if a["head"] == "filled":
+        end = H - u * min(hl * 0.5, L)                  # 箭杆伸进箭头一半，被实心三角盖住，不留缝
+        ax.add_patch(Polygon(pts(H, base + nv * hw, base - nv * hw), closed=True, transform=tr, facecolor=a["color"],
+                             edgecolor="none", lw=0, zorder=6, clip_on=False))
+    else:
+        end = H
+        if a["head"] == "open":
+            q = pts(base + nv * hw, H, base - nv * hw)
+            ax.add_line(Line2D(q[:, 0], q[:, 1], transform=tr, color=a["color"], lw=lw, solid_joinstyle="miter",
+                               solid_capstyle="butt", zorder=6, clip_on=False))
+    q = pts(T, end)
+    ax.add_line(Line2D(q[:, 0], q[:, 1], transform=tr, color=a["color"], lw=lw, solid_capstyle="butt", zorder=6, clip_on=False))
 
 
 def draw_annots(ax, items):
-    """尺寸都是 pt。"""
+    """尺寸都是 pt。在排版（tight_layout、y 范围）全部完成后调用。"""
     from matplotlib.transforms import blended_transform_factory
     if not items:
         return
     tr = blended_transform_factory(ax.transData, ax.transAxes)
-    k = 1.0
     for a in items:
         if a["type"] == "vline":
             ls = (0, (a["dash"] / a["width"], max(a["gap"], 0.01) / a["width"])) if a["dash"] > 0 else "-"
-            ax.axvline(a["x"], ymin=0, ymax=a["len"] / 100.0, color=a["color"], lw=a["width"] * k, linestyle=ls, zorder=5)
+            ax.axvline(a["x"], ymin=0, ymax=a["len"] / 100.0, color=a["color"], lw=a["width"], linestyle=ls,
+                       dash_capstyle="butt", zorder=5)
         elif a["type"] == "arrow":
-            style = {"filled": "-|>", "open": "->", "none": "-"}[a["head"]]
-            ax.annotate("", xy=(a["x1"], a["y1"] / 100.0), xytext=(a["x0"], a["y0"] / 100.0), xycoords=tr, textcoords=tr,
-                        annotation_clip=False, zorder=6,
-                        arrowprops=dict(arrowstyle=style, lw=a["width"] * k, color=a["color"], shrinkA=0, shrinkB=0,
-                                        mutation_scale=a["size"] * k / 0.4))
+            _arrow(ax, tr, a)
         elif a.get("text"):
-            ax.text(a["x"], a["y"] / 100.0, mathtext(a["text"]), transform=tr, ha="center", va="center",
-                    fontsize=a["size"] * k, color=a["color"], fontweight="bold" if a["bold"] else "normal", zorder=6, clip_on=False)
+            _rich_text(ax, tr, a["x"], a["y"] / 100.0, a["text"], a["size"], a["color"], a["bold"])
 
 
 # ------------------------------------------------------------------ 多样品同一轨道堆叠对比
@@ -999,11 +1080,7 @@ def export_stack(i, a, out=None, annots=True):
     if not items:
         raise ValueError("没有可堆叠的谱")
     n = len(items)
-    matplotlib.rcParams.update({"font.family": "sans-serif", "font.size": float(o["font"]),
-                                "font.sans-serif": ["Arial", "Helvetica", "Microsoft YaHei", "SimHei", "PingFang SC",
-                                                    "Hiragino Sans GB", "Arial Unicode MS", "Noto Sans CJK SC",
-                                                    "WenQuanYi Zen Hei", "DejaVu Sans"],
-                                "xtick.direction": "in", "ytick.direction": "in", "mathtext.default": "regular"})
+    matplotlib.rcParams.update(_font_rc(o["font"]))
     hcm = float(o["height_cm"] or (4.0 + 2.3 * n))
     fig = Figure(figsize=(float(o["width_cm"]) / 2.54, hcm / 2.54))
     FigureCanvasAgg(fig)
@@ -1031,7 +1108,7 @@ def export_stack(i, a, out=None, annots=True):
     ax.set_ylabel("Intensity (a.u.)" if d["mode"] != "raw" else "Intensity (CPS)")
     if d["mode"] != "raw":
         ax.set_yticks([])
-    ax.set_title(d["element"], fontsize=float(o["font"]))
+    _inner_title(ax, d["element"], float(o["font"]))
     top = (n - 1) * step + 1.25 * span
     ax.set_ylim(ax.get_ylim()[0], max(ax.get_ylim()[1], top))
     fig.tight_layout()

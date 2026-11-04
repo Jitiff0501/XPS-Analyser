@@ -406,7 +406,8 @@ class Api(unittest.TestCase):
             d = server.clean_annots([{"type": "text", "text": "x"}, {"type": "vline", "x": 73}, {"type": "arrow"}])
             self.assertEqual((d[0]["size"], d[0]["bold"]), (24.0, False))
             self.assertEqual((d[1]["width"], d[1]["dash"], d[1]["gap"]), (1.5, 10.0, 5.0))
-            self.assertEqual((d[2]["width"], d[2]["head"]), (1.5, "filled"))
+            self.assertEqual((d[2]["width"], d[2]["head"], d[2]["size"], d[2]["hw"]), (1.5, "filled", 7.0, 5.0))
+            self.assertEqual(server.ann_segments("Co^{2+} 2p_{3/2}"), [("Co", 0), ("2+", 1), (" 2p", 0), ("3/2", -1)])
             from matplotlib.figure import Figure
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             fig = Figure(); FigureCanvasAgg(fig); ax = fig.add_subplot(111)

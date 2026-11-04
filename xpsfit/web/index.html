@@ -1150,7 +1150,9 @@ async function loadRef(){
 // 预览上叠加的 SVG 以 pt 为单位（viewBox = 整张图的 pt 尺寸），与导出图 1:1。
 const ANN_DEF={text:{type:"text",text:"",x:0,y:90,size:24,color:"#333333",bold:false},
   vline:{type:"vline",x:0,len:85,width:1.5,dash:10,gap:5,color:"#666666"},
-  arrow:{type:"arrow",x0:0,y0:80,x1:0,y1:60,width:1.5,head:"filled",size:10,color:"#333333"}};
+  arrow:{type:"arrow",x0:0,y0:80,x1:0,y1:60,width:1.5,head:"filled",size:7,hw:5,color:"#333333"}};
+// 上下标排版，与导出（server._rich_text）相同：字号 65%，上标抬高 0.34、下标降低 0.14 倍字号；锚点在大写字母高度中点
+const SUP_SCALE=0.65,SUP_RISE=0.34,SUB_DROP=0.14,BASE_DROP=0.36;
 S.annOpen=new Set();
 function annItems(){if(!S.v)return [];const k=S.ex.ctx==="stack"?"stack_annots":"annots";if(!S.v[k])S.v[k]=[];return S.v[k]}
 let annTimer=null,annPending=null;
@@ -1185,7 +1187,7 @@ function annRows(a){const n=(k,lab,st)=>`<label>${lab} <input class="in num" dat
   if(a.type==="vline")return `<div class="ann-r">${n("x","x","0.1")}${n("len","长度%","1")}${col}</div>
     <div class="ann-r">${n("width","线宽 pt","0.1")}${n("dash","段长 pt","1")}${n("gap","间隔 pt","1")}</div>`;
   return `<div class="ann-r">${n("x1","头 x","0.1")}${n("y1","头 y%","1")}</div><div class="ann-r">${n("x0","尾 x","0.1")}${n("y0","尾 y%","1")}</div>
-    <div class="ann-r">${n("width","线宽 pt","0.1")}${n("size","大小 pt","1")}${col}</div>
+    <div class="ann-r">${n("width","线宽 pt","0.1")}${col}</div><div class="ann-r">${n("size","箭头长 pt","0.5")}${n("hw","箭头宽 pt","0.5")}</div>
     <div class="ann-r"><label>箭头 <select class="in" data-k="head" style="width:auto"><option value="filled">实心三角</option><option value="open">开口</option><option value="none">无</option></select></label></div>`}
 function renderAnn(){const box=$("annlist");box.innerHTML="";if(!S.v)return;
   annItems().forEach((a,k)=>{const d=document.createElement("details");d.className="ann"+(k===S.ex.sel?" on":"");d.dataset.i=k;d.open=S.annOpen.has(k);
@@ -1204,11 +1206,12 @@ function renderAnn(){const box=$("annlist");box.innerHTML="";if(!S.v)return;
 function exG(){const g=S.ex.geo,st=$("exstage");if(!g||st.hidden||!st.clientWidth)return null;const[x0,y0,x1,y1]=g.ax,[l,r]=g.xlim;
   const AX0=x0*g.w,AX1=x1*g.w,AT=(1-y1)*g.h,AB=(1-y0)*g.h;
   return {AX0,AX1,AT,AB,hp:g.w/st.clientWidth,X:x=>AX0+(x-l)/(r-l)*(AX1-AX0),Y:y=>AB-y/100*(AB-AT),x:X=>l+(X-AX0)/(AX1-AX0)*(r-l),y:Y=>(AB-Y)/(AB-AT)*100}}
-function annSvgText(t){let out="",last=0,m;const re=/(\^|_)\{([^{}]*)\}/g;
-  while((m=re.exec(t))){if(m.index>last)out+=`<tspan>${esc(t.slice(last,m.index))}</tspan>`;
-    out+=`<tspan baseline-shift="${m[1]==="^"?"super":"sub"}" font-size="70%">${esc(m[2])}</tspan>`;last=re.lastIndex}
-  if(last<t.length)out+=`<tspan>${esc(t.slice(last))}</tspan>`;return out}
-const ANN_FONT="Arial, Helvetica, 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif";
+function annSegs(t){const out=[];let last=0,m;const re=/(\^|_)\{([^{}]*)\}/g;
+  while((m=re.exec(t))){if(m.index>last)out.push([t.slice(last,m.index),0]);out.push([m[2],m[1]==="^"?1:-1]);last=re.lastIndex}
+  if(last<t.length)out.push([t.slice(last),0]);return out.filter(s=>s[0])}
+function annSvgText(t,size){let cur=0;return annSegs(t).map(([s,k])=>{const off=k===1?-SUP_RISE*size:k===-1?SUB_DROP*size:0,dy=off-cur;cur=off;
+  return `<tspan dy="${+dy.toFixed(3)}"${k?` font-size="${+(size*SUP_SCALE).toFixed(3)}"`:""}>${esc(s)}</tspan>`}).join("")}
+const ANN_FONT="Arial, Helvetica, 'Liberation Sans', Arimo, 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif";
 let ovRaf=0;
 function drawOverlayRaf(){if(ovRaf)return;ovRaf=requestAnimationFrame(()=>{ovRaf=0;drawOverlay()})}
 function drawOverlay(){const svg=$("exsvg"),G=exG();if(!G){svg.innerHTML="";return}const hp=G.hp,f=v=>+v.toFixed(3);
@@ -1218,12 +1221,12 @@ function drawOverlay(){const svg=$("exsvg"),G=exG();if(!G){svg.innerHTML="";retu
       out.push(`<g data-k="${k}" class="ai${sel}"><line x1="${f(X)}" x2="${f(X)}" y1="${f(G.AB)}" y2="${f(yt)}" stroke="${a.color}" stroke-width="${a.width}"${da} clip-path="url(#exclip)"/>`+
         `<line class="hit" data-part="body" x1="${f(X)}" x2="${f(X)}" y1="${f(G.AB)}" y2="${f(yt)}" stroke-width="${f(10*hp)}" style="cursor:ew-resize"/>${hd("top",X,yt,"ns-resize")}</g>`)}
     else if(a.type==="arrow"){const tx=G.X(a.x0),ty=G.Y(a.y0),hx=G.X(a.x1),hy=G.Y(a.y1),dx=hx-tx,dy=hy-ty,L=Math.hypot(dx,dy)||1e-6,ux=dx/L,uy=dy/L;
-      const bx=hx-ux*a.size,by=hy-uy*a.size,px=-uy*a.size/2,py=ux*a.size/2,st=`stroke="${a.color}" stroke-width="${a.width}"`;
-      let body=a.head==="filled"?`<line x1="${f(tx)}" y1="${f(ty)}" x2="${f(bx)}" y2="${f(by)}" ${st}/><polygon points="${f(hx)},${f(hy)} ${f(bx+px)},${f(by+py)} ${f(bx-px)},${f(by-py)}" fill="${a.color}" ${st} stroke-linejoin="miter"/>`
-        :`<line x1="${f(tx)}" y1="${f(ty)}" x2="${f(hx)}" y2="${f(hy)}" ${st}/>`+(a.head==="open"?`<polyline points="${f(bx+px)},${f(by+py)} ${f(hx)},${f(hy)} ${f(bx-px)},${f(by-py)}" fill="none" ${st}/>`:"");
+      const hw=(a.hw??5)/2,bx=hx-ux*a.size,by=hy-uy*a.size,px=-uy*hw,py=ux*hw,st=`stroke="${a.color}" stroke-width="${a.width}"`,e=Math.min(a.size*0.5,L);
+      let body=a.head==="filled"?`<line x1="${f(tx)}" y1="${f(ty)}" x2="${f(hx-ux*e)}" y2="${f(hy-uy*e)}" ${st}/><polygon points="${f(hx)},${f(hy)} ${f(bx+px)},${f(by+py)} ${f(bx-px)},${f(by-py)}" fill="${a.color}" stroke="none"/>`
+        :`<line x1="${f(tx)}" y1="${f(ty)}" x2="${f(hx)}" y2="${f(hy)}" ${st}/>`+(a.head==="open"?`<polyline points="${f(bx+px)},${f(by+py)} ${f(hx)},${f(hy)} ${f(bx-px)},${f(by-py)}" fill="none" ${st} stroke-linejoin="miter"/>`:"");
       out.push(`<g data-k="${k}" class="ai${sel}">${body}<line class="hit" data-part="body" x1="${f(tx)}" y1="${f(ty)}" x2="${f(hx)}" y2="${f(hy)}" stroke-width="${f(10*hp)}" style="cursor:move"/>`+
         `${hd("tail",tx,ty,"crosshair")}${hd("head",hx,hy,"crosshair")}</g>`)}
-    else if(a.text){out.push(`<g data-k="${k}" class="ai${sel}"><text x="${f(G.X(a.x))}" y="${f(G.Y(a.y))}" font-size="${a.size}" fill="${a.color}" font-weight="${a.bold?700:400}" text-anchor="middle" dominant-baseline="central" font-family="${ANN_FONT}" style="white-space:pre;cursor:move" data-part="text">${annSvgText(a.text)}</text></g>`)}});
+    else if(a.text){out.push(`<g data-k="${k}" class="ai${sel}"><text x="${f(G.X(a.x))}" y="${f(G.Y(a.y)+BASE_DROP*a.size)}" font-size="${a.size}" fill="${a.color}" font-weight="${a.bold?700:400}" text-anchor="middle" font-family="${ANN_FONT}" style="white-space:pre;cursor:move" data-part="text">${annSvgText(a.text,a.size)}</text></g>`)}});
   svg.innerHTML=out.join("");
   svg.querySelectorAll("g.ai").forEach(gr=>{const t=gr.querySelector("text"),NS="http://www.w3.org/2000/svg";
     if(t){const b=t.getBBox(),r=document.createElementNS(NS,"rect");Object.entries({x:b.x,y:b.y,width:b.width,height:b.height,class:"hb","data-part":"text",style:"cursor:move"}).forEach(([k,v])=>r.setAttribute(k,v));gr.insertBefore(r,t)}

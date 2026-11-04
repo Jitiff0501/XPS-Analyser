@@ -238,7 +238,7 @@ PHRASES = {
     "在预览图上按住从箭尾拖到箭头，可连续添加；Esc 结束": "Press at the arrow tail and drag to the head; Esc to finish",
     "还没有标注。用预览图上方的“加线 / 加文字 / 拉箭头”，在预览图上点击或拖动添加。":
         "No annotations yet. Use “Add line / Add text / Draw arrow” above the preview, then click or drag on it.",
-    "大小 pt": "Size pt",
+    "大小 pt": "Size pt", "箭头长 pt": "Head length pt", "箭头宽 pt": "Head width pt",
     "在每个主峰（含 1/2 分量，不含卫星和重叠峰）的峰位加垂直线": "Add a vertical line at every main peak (incl. 1/2 components, excl. satellites and overlaps)",
     # 内置模板名（下拉框只翻显示文字，值仍为中文键）
     "Al2p: Al 金属 + Al2O3": "Al2p: Al metal + Al2O3", "Al2p: 单一 Al2O3": "Al2p: Al2O3 only",
