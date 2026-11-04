@@ -164,7 +164,7 @@ details.sec>summary .sub{font-weight:400;color:var(--ink3);font-size:12px;overfl
 .palette .auto{font-size:12px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:var(--panel);cursor:pointer;color:var(--ink2)}
 .palette .auto.on{border-color:var(--ink);color:var(--ink)}
 .palette input[type=color]{width:26px;height:24px;border:none;padding:0;background:none;cursor:pointer}
-#cpop{position:fixed;z-index:60;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:var(--shadow);width:200px}
+#cpop{position:fixed;z-index:70;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:var(--shadow);width:200px}
 #cpop .t{font-size:12px;color:var(--ink3);margin-bottom:6px}
 .ptab .sw{cursor:pointer}
 .oxrow{display:flex;align-items:center;gap:8px}
@@ -173,6 +173,7 @@ details.sec>summary .sub{font-weight:400;color:var(--ink3);font-size:12px;overfl
 .annlist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .ann{border:1px solid var(--line);border-radius:10px;padding:0 8px;background:var(--panel)}
 .ann[open]{padding-bottom:6px}
+.ann.on{border-color:var(--accent)}
 .ann>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 0;font-size:12.5px}
 .ann>summary::-webkit-details-marker{display:none}
 .ann>summary .sw{width:10px;height:10px;border-radius:3px;flex:none}
@@ -210,9 +211,30 @@ details.sec>summary .sub{font-weight:400;color:var(--ink3);font-size:12px;overfl
 .kind b{display:block;font-weight:600;margin-bottom:2px}
 .kind span{font-size:11.5px;color:var(--ink3)}
 .kind.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 3px rgba(201,100,66,.12)}
-.exgrid{display:grid;grid-template-columns:300px 1fr;gap:18px}
-.exprev{background:var(--bg);border:1px solid var(--line);border-radius:10px;display:grid;place-items:center;min-height:360px;padding:8px}
-.exprev img{max-width:100%;max-height:440px}
+.exgrid{display:grid;grid-template-columns:250px minmax(0,1fr) 270px;gap:16px;align-items:start}
+.exmodal{width:min(1360px,98vw)!important;max-height:95vh!important}
+.exopts,.exside{max-height:calc(95vh - 130px);overflow:auto;padding-right:4px}
+.exopts .opt>span:first-child{min-width:78px}
+.exmid{display:flex;flex-direction:column;gap:8px;min-width:0}
+.extool{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.exbtns{display:flex;gap:6px;flex-wrap:wrap}
+@media (max-width:1100px){.exgrid{grid-template-columns:240px minmax(0,1fr)}.exside{grid-column:1/-1;max-height:none}}
+#ex_modes button.on{background:var(--ink);color:#fff}
+.exstage{position:relative;line-height:0;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.exstage img{width:100%;height:100%;display:block;max-width:none;max-height:none}
+#exsvg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;touch-action:none;user-select:none}
+#exsvg.add{cursor:crosshair}
+#exsvg .hit{stroke:transparent;fill:none;pointer-events:stroke}
+#exsvg .hb{fill:transparent;pointer-events:all}
+#exsvg .hd{fill:transparent;stroke:none;pointer-events:all}
+#exsvg .sel .hd{fill:#fff;stroke:var(--accent)}
+#exsvg .selbox{fill:none;stroke:var(--accent);stroke-dasharray:3 2;pointer-events:none}
+.exhint{font-size:12px;color:var(--ink3);min-height:16px}
+.excols{display:flex;flex-direction:column;gap:2px}
+.excols .r{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:8px;cursor:pointer;font-size:12.5px}
+.excols .r:hover{background:var(--sunk)}
+.excols .r .sw{width:16px;height:16px;border-radius:5px;flex:none}
+.exprev{background:var(--bg);border:1px solid var(--line);border-radius:10px;display:grid;place-items:center;min-height:380px;height:calc(95vh - 190px);padding:14px;overflow:hidden}
 .opt{display:flex;align-items:center;gap:8px;margin:7px 0}
 .opt>span:first-child{min-width:92px;color:var(--ink2);font-size:12.5px}
 .opt .in.num{width:72px}
@@ -262,7 +284,7 @@ input[type=checkbox]{accent-color:var(--accent)}
   <div class="menu" id="expmenu">
     <button class="btn" onclick="toggleMenu(event)">导出 ▾</button>
     <div class="pop">
-      <button onclick="openExport()">拟合图…（PNG / SVG / TIFF / PDF）</button>
+      <button onclick="openExport()">拟合图…（预览、加标注、改颜色后导出）</button>
       <button onclick="exp('excel',{})">全部峰参数 + 曲线 → Excel</button>
       <button onclick="exp('csv',{})">当前谱曲线 CSV（Origin）</button>
       <button onclick="exp('txt',{})">当前谱 XPSPEAK txt</button>
@@ -311,9 +333,6 @@ input[type=checkbox]{accent-color:var(--accent)}
           <button data-m="view" class="on">浏览</button>
           <button data-m="peak">点击加峰</button>
           <button data-m="bg">选背景范围</button>
-          <button data-m="vline" title="在图上点击加垂直线（底端固定在 x 轴上，可拖动、拉长）">加线</button>
-          <button data-m="text" title="在图上点击加文字（可拖动）">加文字</button>
-          <button data-m="arrow" title="在图上按住拖动画箭头（从尾到头）">拉箭头</button>
         </div>
       </div>
       <div class="stackbar" id="stackbar" hidden>
@@ -327,9 +346,7 @@ input[type=checkbox]{accent-color:var(--accent)}
         <label class="switch"><input type="checkbox" id="stk_states"> 化学态比例</label>
         <span class="stk-m" id="stk_members"></span>
         <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
-          <select class="in" id="stk_fmt" style="width:auto"><option value="png">PNG</option><option value="svg">SVG</option><option value="pdf">PDF</option><option value="tif">TIFF</option></select>
-          <span class="seg" id="stk_ann"><button data-annm="vline" onclick="annSetMode('vline')">加线</button><button data-annm="text" onclick="annSetMode('text')">加文字</button><button data-annm="arrow" onclick="annSetMode('arrow')">拉箭头</button></span>
-          <button class="btn sm primary" onclick="exportStack()">导出堆叠图</button>
+          <button class="btn sm primary" onclick="openExport('stack')" title="预览，可加线、文字、箭头，改峰颜色，确认后导出">导出堆叠图…</button>
           <button class="btn sm ghost" onclick="toggleStack()">返回单谱</button>
         </span>
       </div>
@@ -381,18 +398,6 @@ input[type=checkbox]{accent-color:var(--accent)}
         <button class="btn sm" onclick="saveTpl()">存为模板</button>
       </div>
       <div class="row" style="margin-top:10px"><select class="in" id="tpl"></select><button class="btn sm" onclick="useTpl()">套用</button></div>
-    </details>
-    <details class="sec" data-sec="annot"><summary>标注 <span class="sub" id="annctx"></span></summary>
-      <div class="grid3">
-        <button class="btn sm" data-annm="vline" onclick="annSetMode('vline')" title="然后在图上点击加线">点击加线</button>
-        <button class="btn sm" data-annm="text" onclick="annSetMode('text')" title="然后在图上点击加文字">点击加文字</button>
-        <button class="btn sm" data-annm="arrow" onclick="annSetMode('arrow')" title="然后在图上按住拖动画箭头">拉箭头</button>
-        <button class="btn sm" onclick="annPeakLines()" title="在当前谱每个主峰（含 1/2 分量，不含卫星和重叠峰）的峰位加垂直线">主峰位置加线</button>
-        <button class="btn sm" onclick="annCorner()" title="在左上角加图角标，如 (a)">图角标 (a)</button>
-        <button class="btn sm ghost" onclick="annClear()">全部清除</button>
-      </div>
-      <div id="annlist" class="annlist"></div>
-      <p class="note" style="margin:6px 0 0">图上操作：拖线身左右移动、拖线的上端拉长（底端固定在 x 轴）；拖箭头的头 / 尾改变指向，拖中间整体移动；文字直接拖。点开每一项可改参数。上标写 Co^{2+}，下标写 2p_{3/2}。字号、线宽、段长、间隔、箭头大小都是导出图里的 pt；屏幕按导出图的比例预览，所见即所得。</p>
     </details>
     <details class="sec" data-sec="bg"><summary>背景 <span class="sub" id="bgsum"></span></summary>
       <div class="row"><label>类型</label>
@@ -500,10 +505,20 @@ input[type=checkbox]{accent-color:var(--accent)}
 </div></div>
 
 <!-- export -->
-<div class="scrim" id="exm"><div class="modal" style="width:min(980px,96vw)">
-  <h4>导出拟合图</h4>
+<div class="scrim" id="exm"><div class="modal exmodal">
+  <h4 id="exm_t">导出拟合图</h4>
   <div class="exgrid">
-    <div>
+    <div class="exopts">
+    <div id="exo_stack" hidden>
+      <div class="egrp">X 轴（结合能）</div>
+      <div class="opt"><span>范围 (eV)</span><input class="in num" id="x_xmax" placeholder="高"><span style="min-width:0;color:var(--ink3)">→</span><input class="in num" id="x_xmin" placeholder="低"></div>
+      <div class="egrp">尺寸与格式</div>
+      <div class="opt"><span>宽 × 高 (cm)</span><input class="in num" id="x_width_cm" value="8.5"><span style="min-width:0">×</span><input class="in num" id="x_height_cm" placeholder="自动"></div>
+      <div class="opt"><span>字号 / DPI</span><input class="in num" id="x_font" value="9"><input class="in num" id="x_dpi" value="600"></div>
+      <div class="opt"><span>格式</span><select class="in" id="x_fmt" style="width:120px"><option value="png">PNG</option><option value="tif">TIFF</option><option value="svg">SVG（矢量）</option><option value="pdf">PDF（矢量）</option></select></div>
+      <p class="note">纵轴方式、间距、包络、分峰、样品名、参与的样品在堆叠工具条里设置。</p>
+    </div>
+    <div id="exo_spec">
       <div class="egrp">X 轴（结合能）</div>
       <div class="opt"><span>范围 (eV)</span><input class="in num" id="e_xmax" placeholder="高"><span style="min-width:0;color:var(--ink3)">→</span><input class="in num" id="e_xmin" placeholder="低"></div>
       <div class="opt"><span>主刻度间距</span><input class="in num" id="e_xstep" placeholder="自动"><span style="min-width:0;color:var(--ink3)">eV</span></div>
@@ -514,7 +529,7 @@ input[type=checkbox]{accent-color:var(--accent)}
       <div class="opt"><span>标题</span><input class="in" id="e_ylabel" value="Intensity (CPS)"></div>
       <div class="egrp">内容</div>
       <div class="opt" style="flex-wrap:wrap;gap:10px 14px">
-        <label class="switch"><input type="checkbox" id="e_legend" checked> 图例</label>
+        <label class="switch"><input type="checkbox" id="e_legend"> 图例</label>
         <select class="in" id="e_legend_loc" style="width:96px;padding:3px 4px"><option value="best">自动位置</option><option value="upper left">左上</option><option value="upper right">右上</option><option value="outside">图外右侧</option></select>
         <label class="switch"><input type="checkbox" id="e_title" checked> 图名</label>
         <label class="switch"><input type="checkbox" id="e_background" checked> 背景</label>
@@ -528,9 +543,28 @@ input[type=checkbox]{accent-color:var(--accent)}
       <div class="opt"><span>字号 / DPI</span><input class="in num" id="e_font" value="9"><input class="in num" id="e_dpi" value="600"></div>
       <div class="opt"><span>格式</span><select class="in" id="e_fmt" style="width:120px"><option value="png">PNG</option><option value="tif">TIFF</option><option value="svg">SVG（矢量）</option><option value="pdf">PDF（矢量）</option></select></div>
     </div>
-    <div class="exprev" id="exprev"><span class="note">预览生成中…</span></div>
+    </div>
+    <div class="exmid">
+      <div class="extool">
+        <span class="seg" id="ex_modes"><button data-am="select" class="on" title="选择、拖动已有的标注">选择</button><button data-am="vline" title="在预览图上点击加垂直线（底端在 x 轴上）">加线</button><button data-am="text" title="在预览图上点击加文字">加文字</button><button data-am="arrow" title="在预览图上按住从箭尾拖到箭头">拉箭头</button></span>
+        <span class="exhint" id="exhint"></span>
+      </div>
+      <div class="exprev" id="exprev"><div class="exstage" id="exstage" hidden><img id="eximg" alt=""><svg id="exsvg" xmlns="http://www.w3.org/2000/svg"></svg></div><span class="note" id="exwait">预览生成中…</span></div>
+    </div>
+    <div class="exside">
+      <div class="egrp" style="margin-top:0">标注</div>
+      <div class="exbtns">
+        <button class="btn sm ghost" id="ex_peaklines" onclick="annPeakLines()" title="在每个主峰（含 1/2 分量，不含卫星和重叠峰）的峰位加垂直线">主峰位置加线</button>
+        <button class="btn sm ghost" onclick="annCorner()" title="在左上角加图角标，如 (a)">图角标 (a)</button>
+        <button class="btn sm ghost" onclick="annClear()">清除</button>
+      </div>
+      <div id="annlist" class="annlist"></div>
+      <p class="note" style="margin:6px 0 0">上标写 Co^{2+}，下标写 2p_{3/2}。点开每一项可改参数；选中后按 Delete 删除。</p>
+      <div class="egrp">峰颜色 <span class="sub" id="excol_note"></span></div>
+      <div id="excols" class="excols"></div>
+    </div>
   </div>
-  <div class="foot"><button class="btn ghost" onclick="closeM('exm')">取消</button><button class="btn primary" onclick="doExport()">导出</button></div>
+  <div class="foot"><span class="note" style="margin:0 auto 0 0">预览即导出效果。标注的字号、线宽等单位是 pt。</span><button class="btn ghost" onclick="closeM('exm')">取消</button><button class="btn primary" onclick="doExport()">确认导出</button></div>
 </div></div>
 
 <!-- quant -->
@@ -665,7 +699,7 @@ function setView(v){
   if(isP){$("bginterp").value=v.bg.interp||"smooth";$("bgpts_n").textContent=`${(v.bg.points||[]).length} 个点`+((v.bg.points||[]).length<2?"（至少 2 个）":"")}
   const man=v.bg.ylo!=null||v.bg.yhi!=null;$("bgends").textContent=man?`手动（低 BE 端 ${v.bgline[0]?.toFixed(0)} · 高 BE 端 ${v.bgline[v.bgline.length-1]?.toFixed(0)}）`:"自动（端点平均）";$("bgauto").disabled=!man;$("bglo").value=v.region[0].toFixed(2);$("bghi").value=v.region[1].toFixed(2);$("bgn").value=v.bg.navg||3;
   const f=v.fit;$("fitinfo").textContent=f?`约化 χ² ${fmt(f.rchi2,3)}${f.rel_rms!=null?`   残差 RMS ${(100*f.rel_rms).toFixed(1)}%`:""}   自由参数 ${f.nfree}${f.success?"":"   ⚠ "+f.message}`:"";
-  renderSummary(v);renderRelax(v);renderAnn();setTimeout(placePlot,0);
+  renderSummary(v);renderRelax(v);setTimeout(placePlot,0);
   $("bgsum").textContent=v.bg.type+(v.bg.type!=="None"&&v.region?` · ${v.region[0].toFixed(1)}–${v.region[1].toFixed(1)} eV`:"");
   const qw=$("qwarn"),W=(f&&f.warnings)||[];qw.hidden=!W.length;qw.innerHTML=W.slice(0,3).map(w=>`<div>⚠ ${esc(w)}</div>`).join("")+(W.length>3?`<details class="more"><summary>+${W.length-3} 条提示</summary>${W.slice(3).map(w=>`<div>⚠ ${esc(w)}</div>`).join("")}</details>`:"");
   if(S.sel!==null&&S.sel>=v.peaks.length)S.sel=null;
@@ -695,17 +729,15 @@ function stackOpts(){const st=S.stack;return {mode:st.mode,offset:+$("stk_off").
   states:$("stk_states").checked,names:$("stk_names").checked,members:st.members}}
 async function toggleStack(){
   if(S.stack){S.stack=null;S.stackData=null;$("stackbar").hidden=true;$("stackbtn").classList.remove("on");$("modes").hidden=false;
-    draw();renderAnn();placePlot();return}
+    draw();placePlot();return}
   if(S.cur===null)return;setMode("view");
-  S.stack={mode:"bgsub",members:null};$("stackbar").hidden=false;setTimeout(renderAnn,0);$("stackbtn").classList.add("on");$("modes").hidden=true;
+  S.stack={mode:"bgsub",members:null};$("stackbar").hidden=false;$("stackbtn").classList.add("on");$("modes").hidden=true;
   $("clickkind").hidden=$("clickasym").hidden=true;placeStackBar();await loadStack()}
 function placePlot(){const h=$("plothead"),b=$("stackbar"),el=b&&!b.hidden?b:h;if(!el||h.hidden)return;
-  const t=(el.offsetTop+el.offsetHeight+6)+"px";if($("plot").style.top!==t){$("plot").style.top=t;setTimeout(()=>{if(!$("plot")._fullLayout)return;Plotly.Plots.resize("plot");if(S.v&&annItems().length)redrawAnn()},0)}}
+  const t=(el.offsetTop+el.offsetHeight+6)+"px";if($("plot").style.top!==t){$("plot").style.top=t;setTimeout(()=>$("plot")._fullLayout&&Plotly.Plots.resize("plot"),0)}}
 function placeStackBar(){placePlot()}
-let annRT=0;
-window.addEventListener("resize",()=>{placePlot();clearTimeout(annRT);annRT=setTimeout(()=>{if(S.v&&annItems().length)redrawAnn()},200)});
-document.addEventListener("change",e=>{if(e.target.id&&e.target.id.startsWith("e_")&&!S.stack)annMetrics()});
-async function loadStack(){if(!S.stack)return;const d=await call("stack",Object.assign({i:S.cur},stackOpts()));S.stackData=d;annMetrics();
+window.addEventListener("resize",placePlot);
+async function loadStack(){if(!S.stack)return;const d=await call("stack",Object.assign({i:S.cur},stackOpts()));S.stackData=d;
   const box=$("stk_members");box.innerHTML="";
   d.all.forEach(m=>{const l=document.createElement("label");const c=document.createElement("input");c.type="checkbox";
     c.checked=!S.stack.members||S.stack.members.includes(m.i);c.onchange=()=>{const on=[...box.querySelectorAll("input")].map((x,k)=>x.checked?d.all[k].i:null).filter(v=>v!==null);
@@ -735,11 +767,7 @@ function drawStack(){
     xaxis:{range:[xmax,xmin],title:{text:"Binding Energy (eV)"},showgrid:false,zeroline:false,linecolor:"#D9D5C8",ticks:"outside",tickcolor:"#D9D5C8"},
     yaxis:{title:{text:raw?"Intensity (CPS)":"Intensity (a.u.)"},showticklabels:raw,gridcolor:"#F1EFE8",zeroline:false,linecolor:"#D9D5C8",
       range:[ylo-0.04*(yhi-ylo),yhi+0.14*(yhi-ylo)]},uirevision:"stack:"+d.element+":"+d.mode};
-  if(S.annPlace){L.hovermode=false;L.dragmode=false}
-  annApply(L);
-  Plotly.react("plot",T,L,{displaylogo:false,displayModeBar:false,responsive:true,doubleClick:"reset",edits:{annotationPosition:true}});
-  annEvents(()=>{})}
-async function exportStack(){const r=await call("export_stack",Object.assign({i:S.cur,fmt:$("stk_fmt").value,screen_h:screenAxisH()},stackOpts()));toast(r.msg,r.path)}
+  Plotly.react("plot",T,L,{displaylogo:false,displayModeBar:false,responsive:true,doubleClick:"reset"})}
 document.querySelectorAll("#stk_mode button").forEach(b=>b.onclick=()=>{S.stack.mode=b.dataset.v;
   document.querySelectorAll("#stk_mode button").forEach(x=>x.classList.toggle("on",x===b));loadStack()});
 ["stk_off","stk_fit","stk_states","stk_names"].forEach(id=>$(id).addEventListener("input",()=>S.stack&&drawStack()));
@@ -762,7 +790,7 @@ function draw(){
     yaxis:{domain:[.24,1],title:{text:"Intensity (CPS)"},gridcolor:"#F1EFE8",zeroline:false,linecolor:"#D9D5C8"},
     yaxis2:{domain:[0,.17],title:{text:TR("残差"),font:{size:11}},gridcolor:"#F1EFE8",zeroline:true,zerolinecolor:"#D9D5C8",linecolor:"#D9D5C8"},
     legend:{traceorder:"normal",orientation:"h",x:0,y:1.02,yanchor:"bottom",font:{size:11.5},bgcolor:"rgba(0,0,0,0)"},
-    hovermode:(S.mode==="bgpts"||ANN_MODES.includes(S.mode))?false:"x",dragmode:S.mode==="view"?"zoom":S.mode==="bg"?"select":false,selectdirection:"h",shapes,showlegend:true,uirevision:v.i};
+    hovermode:S.mode==="bgpts"?false:"x",dragmode:S.mode==="view"?"zoom":S.mode==="bg"?"select":false,selectdirection:"h",shapes,showlegend:true,uirevision:v.i};
   // 峰顶拖动手柄
   const hx=[],hy=[],hc=[],hj=[];
   v.peaks.forEach((p,j)=>{if(!canMove(p).x&&!canMove(p).h)return;const c=v.comps[j];let k=0;for(let i=1;i<c.length;i++)if(c[i]-v.bgline[i]>c[k]-v.bgline[k])k=i;
@@ -784,9 +812,8 @@ function draw(){
   else if(S.full){L.uirevision=v.i+":full:"+(S.resetN||0)}
   else if(!S.full&&v.window){const[lo,hi]=v.window,yr=winY(v,lo,hi);L.xaxis.autorange=false;L.xaxis.range=[hi+0.3,lo-0.3];
     if(yr){L.yaxis.autorange=false;L.yaxis.range=yr}L.uirevision=v.i+":"+lo+":"+hi+":"+S.resetN}
-  annApply(L);
-  Plotly.react("plot",T,L,{displaylogo:false,displayModeBar:false,responsive:true,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"],edits:{annotationPosition:true}});
-  const pl=$("plot");annEvents(onClick);
+  Plotly.react("plot",T,L,{displaylogo:false,displayModeBar:false,responsive:true,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]});
+  const pl=$("plot");if(pl.removeAllListeners){pl.removeAllListeners("plotly_click");pl.on("plotly_click",onClick)}
   pl.removeAllListeners&&pl.removeAllListeners("plotly_selected");
   pl.on("plotly_selected",ev=>{if(S.mode!=="bg"||!ev||!ev.range||!ev.range.x)return;const[a,b]=ev.range.x.slice().sort((a,b)=>a-b);
     $("bglo").value=a.toFixed(2);$("bghi").value=b.toFixed(2);setMode("view");setBg()});
@@ -894,17 +921,18 @@ function renderPalette(box,j,after){
   const r=rootOf(j),custom=S.v.peaks[r].color,cur=S.v.colors[j];
   box.innerHTML=PALETTE.map(c=>`<button class="c ${custom&&custom.toLowerCase()===c.toLowerCase()?"on":""}" data-c="${c}" style="background:${c}" title="${c}"></button>`).join("")
     +`<input type="color" value="${cur}" title="自定义颜色"><button class="auto ${custom?"":"on"}" data-c="">自动</button>`;
-  const set=async c=>{await act("set_color",{j,color:c||null});renderPalette(box,j,after);after&&after()};
+  const set=async c=>{await annFlush();const all=S.ex.ctx==="stack"&&$("exm").classList.contains("open");
+    await act("set_color",{j,color:c||null,all});renderPalette(box,j,after);after&&after()};
   box.querySelectorAll("button").forEach(b=>b.onclick=e=>{e.stopPropagation();set(b.dataset.c)});
   box.querySelector("input").onchange=e=>set(e.target.value)}
-function openColorPop(e,j){
+function openColorPop(e,j,after){
   let pop=$("cpop");if(!pop){pop=document.createElement("div");pop.id="cpop";document.body.append(pop);
     const h=ev=>{if(!pop.contains(ev.target)){pop.remove();document.removeEventListener("mousedown",h,true)}};
     document.addEventListener("mousedown",h,true)}
   pop.innerHTML=`<div class="t"></div><div class="palette"></div>`;
   pop.querySelector(".t").textContent=S.v.peaks[rootOf(j)].name+" · "+TR("整组同色");
   pop.style.left=Math.min(e.clientX,innerWidth-220)+"px";pop.style.top=Math.min(e.clientY+10,innerHeight-140)+"px";
-  renderPalette(pop.querySelector(".palette"),j)}
+  renderPalette(pop.querySelector(".palette"),j,after)}
 function hex(c,a){const n=parseInt(c.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${a})`}
 
 /* ---------- modes ---------- */
@@ -924,13 +952,12 @@ function setMode(m){
   $("clickkind").hidden=m!=="peak";$("clickasym").hidden=m!=="peak";
   document.querySelectorAll("#clickkind button").forEach(x=>x.classList.toggle("on",x.dataset.k===CK));
   document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
-  $("hint").textContent={view:"拖峰顶圆点移动 · 上下改高度 · Shift+拖改宽度 · 双击复位",peak:CK==="doublet"?(()=>{const d=dblDefaults(S.v.element);return d?(S.v.so?`点击添加双峰（${S.v.element}：分裂、面积比、FWHM 倍率在文献范围内拟合，起点 ${d.split} eV / ${+d.ratio.toFixed(3)}）；Esc 结束`:`点击添加双峰（${S.v.element}：分裂 ${d.split} eV、面积比 ${+d.ratio.toFixed(3)}，锁定；可在“编辑”中修改）；Esc 结束`):"当前谱不是 p/d/f 轨道，将使用 2p 默认值（5.7 eV / 0.5）；Esc 结束"})():"点击添加单峰，可连续添加；Esc 结束",bg:"在图上横向拖动框选背景范围，或点击两个端点",bgpts:"点击添加背景点 · 拖动移动 · 右键/双击删除 · Esc 完成",
-    vline:"在图上点击加线，可连续添加；拖线身移动、拖上端拉长；Esc 结束",text:"在图上点击加文字，可连续添加；文字可拖动；Esc 结束",arrow:"在图上按住拖动画箭头（从尾到头）；拖头 / 尾调整；Esc 结束"}[m];
-  syncAnnButtons();
+  $("hint").textContent={view:"拖峰顶圆点移动 · 上下改高度 · Shift+拖改宽度 · 双击复位",peak:CK==="doublet"?(()=>{const d=dblDefaults(S.v.element);return d?(S.v.so?`点击添加双峰（${S.v.element}：分裂、面积比、FWHM 倍率在文献范围内拟合，起点 ${d.split} eV / ${+d.ratio.toFixed(3)}）；Esc 结束`:`点击添加双峰（${S.v.element}：分裂 ${d.split} eV、面积比 ${+d.ratio.toFixed(3)}，锁定；可在“编辑”中修改）；Esc 结束`):"当前谱不是 p/d/f 轨道，将使用 2p 默认值（5.7 eV / 0.5）；Esc 结束"})():"点击添加单峰，可连续添加；Esc 结束",bg:"在图上横向拖动框选背景范围，或点击两个端点",bgpts:"点击添加背景点 · 拖动移动 · 右键/双击删除 · Esc 完成"}[m];
   draw();
 }
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){document.querySelectorAll(".scrim.open").forEach(s=>s.classList.remove("open"));
-  if(S.stack&&S.annPlace){S.annPlace=null;syncAnnButtons();drawStack()}else setMode("view")}});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;
+  if($("exm").classList.contains("open")&&S.ex.mode!=="select"){exMode("select");return}   // 导出预览：先退出放置模式
+  document.querySelectorAll(".scrim.open").forEach(s=>s.classList.remove("open"));setMode("view")});
 async function onClick(ev){
   const x=ev.points[0].x;
   if(S.mode==="peak"){
@@ -1067,19 +1094,43 @@ async function addPeak(){
   closeM("addm");await act("add_peak",a);S.sel=S.v.peaks.length-(AK==="doublet"?2:1);renderPeaks();draw()}
 /* ---------- export ---------- */
 const EOPTS=["xmin","xmax","xstep","xminor","xlabel","ynumbers","ylabel","legend","legend_loc","labels","title","background","envelope","fill","raw","width_cm","height_cm","font","dpi","fmt"];
-function screenAxisH(){const f=$("plot")._fullLayout;return f&&f.yaxis?f.yaxis._length:null}
-function eopts(){const o={screen_h:screenAxisH()};for(const k of EOPTS){const e=$("e_"+k);o[k]=e.type==="checkbox"?e.checked:(e.value.trim()===""?null:(isNaN(+e.value)||["fmt","raw","xlabel","ylabel","legend_loc","labels"].includes(k)?e.value:+e.value))}return o}
+const XOPTS=["xmin","xmax","width_cm","height_cm","font","dpi","fmt"],EXKEY="xpsfit_export3";
+S.ex={ctx:"spec",mode:"select",sel:null,geo:null};
+function eopts(){const o={};for(const k of EOPTS){const e=$("e_"+k);o[k]=e.type==="checkbox"?e.checked:(e.value.trim()===""?null:(isNaN(+e.value)||["fmt","raw","xlabel","ylabel","legend_loc","labels"].includes(k)?e.value:+e.value))}return o}
+function xopts(){const o={};for(const k of XOPTS){const v=$("x_"+k).value.trim();o[k]=v===""?null:(k==="fmt"?v:+v)}return o}
 function yLabelAuto(){const y=$("e_ylabel");if(!$("e_ynumbers").checked&&y.value==="Intensity (CPS)")y.value="Intensity (a.u.)";
   else if($("e_ynumbers").checked&&y.value==="Intensity (a.u.)")y.value="Intensity (CPS)"}
-let prevT;
-function openExport(){if(!S.v){toast("请先打开数据");return}
-  try{const o=JSON.parse(localStorage.getItem("xpsfit_export2")||"{}");for(const k in o){const e=$("e_"+k);if(e&&!["xmin","xmax"].includes(k)){e.type==="checkbox"?e.checked=o[k]:e.value=o[k]??""}}}catch(e){}
-  const W=S.v.window||[Math.min(...S.v.be),Math.max(...S.v.be)];$("e_xmax").value=(+W[1]).toFixed(1);$("e_xmin").value=(+W[0]).toFixed(1);
-  $("exm").classList.add("open");preview()}
-document.querySelectorAll("#exm input,#exm select").forEach(e=>e.addEventListener(e.type==="checkbox"||e.tagName==="SELECT"?"change":"input",()=>{clearTimeout(prevT);prevT=setTimeout(preview,350)}));
-async function preview(){const o=eopts();try{localStorage.setItem("xpsfit_export2",JSON.stringify(o))}catch(e){}
-  const r=await call("preview_figure",{i:S.cur,opts:o});$("exprev").innerHTML=`<img src="data:image/png;base64,${r.png}">`}
-async function doExport(){const r=await call("export_figure",{i:S.cur,opts:eopts()});closeM("exm");toast(r.msg,r.path)}
+let prevT,prevN=0;
+// 导出：先出预览（与导出的图相同），可在预览上加线、文字、箭头，改峰颜色，确认后导出
+function openExport(ctx){if(!S.v){toast("请先打开数据");return}
+  ctx=ctx==="stack"&&S.stack?"stack":"spec";Object.assign(S.ex,{ctx,sel:null,geo:null});S.annOpen.clear();
+  $("exo_spec").hidden=ctx!=="spec";$("exo_stack").hidden=ctx!=="stack";$("ex_peaklines").hidden=ctx!=="spec";
+  $("exm_t").textContent=ctx==="stack"?TR("导出堆叠对比图")+" · "+S.v.element:TR("导出拟合图");
+  if(ctx==="spec"){
+    try{let o=JSON.parse(localStorage.getItem(EXKEY)||"null");
+      if(!o){o=JSON.parse(localStorage.getItem("xpsfit_export2")||"{}");delete o.legend}     // 旧设置沿用，但图例默认关闭
+      for(const k in o){const e=$("e_"+k);if(e&&!["xmin","xmax"].includes(k)){e.type==="checkbox"?e.checked=o[k]:e.value=o[k]??""}}}catch(e){}
+    const W=S.v.window||[Math.min(...S.v.be),Math.max(...S.v.be)];$("e_xmax").value=(+W[1]).toFixed(1);$("e_xmin").value=(+W[0]).toFixed(1)}
+  else{try{const o=JSON.parse(localStorage.getItem("xpsfit_export_stack")||"{}");for(const k in o){const e=$("x_"+k);if(e&&!["xmin","xmax"].includes(k))e.value=o[k]??""}}catch(e){}
+    $("x_xmax").value=$("x_xmin").value=""}
+  $("exstage").hidden=true;$("exwait").hidden=false;$("exsvg").innerHTML="";
+  $("exm").classList.add("open");exMode("select");renderAnn();renderExColors();preview()}
+document.querySelectorAll("#exo_spec input,#exo_spec select,#exo_stack input,#exo_stack select").forEach(e=>e.addEventListener(e.type==="checkbox"||e.tagName==="SELECT"?"change":"input",()=>{clearTimeout(prevT);prevT=setTimeout(preview,350)}));
+async function preview(){if(!$("exm").classList.contains("open"))return;const n=++prevN,box=$("exprev");
+  const px=Math.min(2600,Math.max(400,Math.round((box.clientWidth-28)*(window.devicePixelRatio||1))));let r;
+  try{if(S.ex.ctx==="stack"){const o=xopts();try{localStorage.setItem("xpsfit_export_stack",JSON.stringify(o))}catch(e){}
+      r=await call("preview_stack",Object.assign({i:S.cur,px},stackOpts(),o))}
+    else{const o=eopts();try{localStorage.setItem(EXKEY,JSON.stringify(o))}catch(e){}
+      r=await call("preview_figure",{i:S.cur,opts:o,px})}}catch(e){return}
+  if(n!==prevN)return;S.ex.geo=r.geo;const img=$("eximg");img.src="data:image/png;base64,"+r.png;
+  $("exwait").hidden=true;$("exstage").hidden=false;fitStage();drawOverlay()}
+function fitStage(){const g=S.ex.geo;if(!g)return;const box=$("exprev"),W=box.clientWidth-28,H=box.clientHeight-28,k=Math.min(W/g.w,H/g.h);
+  const st=$("exstage");st.style.width=Math.floor(g.w*k)+"px";st.style.height=Math.floor(g.h*k)+"px";$("exsvg").setAttribute("viewBox",`0 0 ${g.w} ${g.h}`)}
+window.addEventListener("resize",()=>{if($("exm").classList.contains("open")){fitStage();drawOverlay()}});
+async function doExport(){await annFlush();let r;
+  if(S.ex.ctx==="stack")r=await call("export_stack",Object.assign({i:S.cur},stackOpts(),xopts()));
+  else r=await call("export_figure",{i:S.cur,opts:eopts()});
+  closeM("exm");toast(r.msg,r.path)}
 function fillTpl(list){$("tpl").innerHTML=list.map(()=>"<option></option>").join("");[...$("tpl").options].forEach((o,k)=>o.value=o.textContent=list[k])}
 async function useTpl(){if(S.v&&S.v.peaks.length&&!confirm("替换当前的峰？"))return;S.sel=null;await act("apply_template",{name:$("tpl").value})}
 function saveTpl(){if(!S.v||!S.v.peaks.length)return;const n=prompt("模板名称",(S.v.element||"")+" 我的模板");if(n)act("save_template",{name:n})}
@@ -1094,133 +1145,126 @@ let REF=null,REFALL=false;const MARKS={};   // 每个轨道勾选显示的化合
 function marks(){const o=REF&&REF.orbital||"";return MARKS[o]||(MARKS[o]=new Set())}
 async function loadRef(){
   if(S.cur===null)return;REF=await call("reference",{i:S.cur});renderRef();draw()}
-/* ---------- 标注（单谱图与堆叠对比图通用；导出的图画法相同） ---------- */
-// x 为 BE；y 为坐标轴高度 %（0 = 坐标轴底部）；尺寸（字号、线宽、段长 / 间隔、箭头大小）是导出图里的 pt，
-// 屏幕按“屏幕坐标轴高度 px / 导出图坐标轴高度 pt”等比例预览，所见即导出所得
-const ANN_DEF={text:{type:"text",text:"",x:0,y:90,size:36,color:"#333333",bold:false},
+/* ---------- 标注：在“导出”对话框的预览图上添加、拖动，导出时画进图里（单谱图与堆叠对比图各一套，随项目保存） ---------- */
+// x 为 BE；y 为坐标轴高度 %（0 = 坐标轴底部）；字号、线宽、段长 / 间隔、箭头大小都是导出图里的 pt。
+// 预览上叠加的 SVG 以 pt 为单位（viewBox = 整张图的 pt 尺寸），与导出图 1:1。
+const ANN_DEF={text:{type:"text",text:"",x:0,y:90,size:24,color:"#333333",bold:false},
   vline:{type:"vline",x:0,len:85,width:1.5,dash:10,gap:5,color:"#666666"},
   arrow:{type:"arrow",x0:0,y0:80,x1:0,y1:60,width:1.5,head:"filled",size:10,color:"#333333"}};
-const ANN_MODES=["vline","text","arrow"];
-S.annOpen=new Set();S.axPt={};
-let annMKey="";
-async function annMetrics(){if(!S.v||S.cur===null)return;const ctx=annCtx();
-  const opts=ctx==="stack"?{mode:S.stack.mode,members:S.stack.members}:(()=>{const o=eopts();return {width_cm:o.width_cm,height_cm:o.height_cm,font:o.font,title:o.title,ynumbers:o.ynumbers,xlabel:o.xlabel,ylabel:o.ylabel}})();
-  const key=ctx+JSON.stringify(opts)+(ctx==="stack"?S.v.element:"");if(key===annMKey)return;annMKey=key;
-  try{const r=await call("ann_metrics",{i:S.cur,ctx,opts});if(key!==annMKey)return;
-    if(S.axPt[ctx]!==r.h_pt){S.axPt[ctx]=r.h_pt;if(annItems().length)redrawAnn()}}catch(e){annMKey=""}}
-function annK(){const f=$("plot")._fullLayout,h=f&&f.yaxis&&f.yaxis._length||Math.max(200,$("plot").clientHeight-90);
-  return h/(S.axPt[annCtx()]||150)}   // 屏幕 px / 导出 pt
-function annCtx(){return S.stack?"stack":"spec"}
-function annItems(){if(!S.v)return [];const k=annCtx()==="stack"?"stack_annots":"annots";if(!S.v[k])S.v[k]=[];return S.v[k]}
-let annTimer=null;
-function annSave(){clearTimeout(annTimer);const ctx=annCtx(),items=annItems(),i=S.cur;annTimer=setTimeout(()=>call("set_annots",{i,ctx,items}),250)}
+S.annOpen=new Set();
+function annItems(){if(!S.v)return [];const k=S.ex.ctx==="stack"?"stack_annots":"annots";if(!S.v[k])S.v[k]=[];return S.v[k]}
+let annTimer=null,annPending=null;
+function annSave(now){clearTimeout(annTimer);annPending={i:S.cur,ctx:S.ex.ctx,items:annItems()};if(now)return annFlush();annTimer=setTimeout(annFlush,250)}
+async function annFlush(){clearTimeout(annTimer);const a=annPending;annPending=null;if(a)await call("set_annots",a)}
 function annHtml(t){return esc(t).replace(/\^\{([^{}]*)\}/g,"<sup>$1</sup>").replace(/_\{([^{}]*)\}/g,"<sub>$1</sub>")}
-function annRange(){const l=$("plot").layout;const r=l&&l.xaxis&&l.xaxis.range;return r&&isFinite(r[0])?r:[S.v.window?S.v.window[1]:800,S.v.window?S.v.window[0]:700]}
-function annMode(){return S.stack?S.annPlace:(ANN_MODES.includes(S.mode)?S.mode:null)}
-function syncAnnButtons(){const m=annMode();document.querySelectorAll("[data-annm]").forEach(b=>b.classList.toggle("on",b.dataset.annm===m))}
-function annSetMode(m){if(!S.v)return;
-  if(S.stack){S.annPlace=S.annPlace===m?null:m;syncAnnButtons();drawStack();
-    if(S.annPlace)toast(TR({vline:"在图上点击加线，可连续添加；拖线身移动、拖上端拉长；Esc 结束",text:"在图上点击加文字，可连续添加；文字可拖动；Esc 结束",arrow:"在图上按住拖动画箭头（从尾到头）；拖头 / 尾调整；Esc 结束"}[m]))}
-  else setMode(S.mode===m?"view":m)}
-let annRaf=0;
-function redrawAnn(){if(annRaf)return;annRaf=requestAnimationFrame(()=>{annRaf=0;S.stack?drawStack():draw()})}
-function annAdd(t,props){const a=Object.assign({},ANN_DEF[t],props||{});annItems().push(a);const k=annItems().length-1;
-  if(t==="text")S.annOpen.add(k);annSave();renderAnn();redrawAnn();
+function annRange(){const g=S.ex.geo;if(g)return g.xlim;const W=S.v.window||[Math.min(...S.v.be),Math.max(...S.v.be)];return [W[1],W[0]]}
+function exMode(m){S.ex.mode=m;document.querySelectorAll("#ex_modes button").forEach(b=>b.classList.toggle("on",b.dataset.am===m));
+  $("exsvg").classList.toggle("add",m!=="select");
+  $("exhint").textContent=TR({select:"拖线身左右移动、拖线的上端拉长；拖箭头的头 / 尾改变指向、拖中间整体移动；文字直接拖",
+    vline:"在预览图上点击加线，可连续添加；Esc 结束",text:"在预览图上点击加文字，可连续添加；Esc 结束",arrow:"在预览图上按住从箭尾拖到箭头，可连续添加；Esc 结束"}[m])}
+document.querySelectorAll("#ex_modes button").forEach(b=>b.onclick=()=>exMode(S.ex.mode===b.dataset.am?"select":b.dataset.am));
+function annAdd(t,props){const a=Object.assign({},ANN_DEF[t],props||{});annItems().push(a);const k=annItems().length-1;S.ex.sel=k;
+  if(t==="text")S.annOpen.add(k);annSave(true);renderAnn();drawOverlay();
   if(t==="text")setTimeout(()=>{const inp=document.querySelector(`#annlist .ann[data-i="${k}"] input[data-k=text]`);if(inp){inp.focus();inp.select()}},60);
   return a}
-function annCorner(){if(!S.v)return;const r=annRange();annAdd("text",{text:"(a)",x:+(r[0]-0.05*(r[0]-r[1])).toFixed(2),y:93})}
+function annCorner(){const r=annRange();annAdd("text",{text:"(a)",x:+(r[0]+0.08*(r[1]-r[0])).toFixed(2),y:91})}
 function annPeakLines(){if(!S.v)return;const items=annItems();let n=0;
   S.v.peaks.forEach((p,j)=>{const ref=(p.link||{}).ref;if((p.role||"main")!=="main"||(ref&&p.name.startsWith(ref+" ")))return;
     const x=+p.center.value.toFixed(2);if(items.some(a=>a.type==="vline"&&Math.abs(a.x-x)<0.05))return;
     items.push(Object.assign({},ANN_DEF.vline,{x,color:(S.v.colors&&S.v.colors[j])||"#666666"}));n++});
-  annSave();renderAnn();redrawAnn();toast(n?TR("已加入")+" "+n:TR("没有新的主峰位置"))}
-function annDel(k){annItems().splice(k,1);S.annOpen=new Set([...S.annOpen].filter(i=>i!==k).map(i=>i>k?i-1:i));annSave();renderAnn();redrawAnn()}
-function annClear(){if(!annItems().length||!confirm("清除当前图上的全部标注？"))return;annItems().length=0;S.annOpen.clear();annSave();renderAnn();redrawAnn()}
+  annSave(true);renderAnn();drawOverlay();toast(n?TR("已加入")+" "+n:TR("没有新的主峰位置"))}
+function annDel(k){annItems().splice(k,1);S.annOpen=new Set([...S.annOpen].filter(i=>i!==k).map(i=>i>k?i-1:i));
+  S.ex.sel=S.ex.sel===k?null:(S.ex.sel>k?S.ex.sel-1:S.ex.sel);annSave(true);renderAnn();drawOverlay()}
+function annClear(){if(!annItems().length||!confirm("清除这张图上的全部标注？"))return;annItems().length=0;S.annOpen.clear();S.ex.sel=null;annSave(true);renderAnn();drawOverlay()}
 function annSummary(a){if(a.type==="text")return `<b>文字</b> <span class="d">${annHtml(a.text)||"—"}</span>`;
   if(a.type==="vline")return `<b>线</b> <span class="d">${a.x.toFixed(2)} eV · ${a.len.toFixed(0)}%</span>`;
   return `<b>箭头</b> <span class="d">${a.x0.toFixed(1)} → ${a.x1.toFixed(1)} eV</span>`}
 function annRows(a){const n=(k,lab,st)=>`<label>${lab} <input class="in num" data-k="${k}" type="number" step="${st}"></label>`,col='<input type="color" data-k="color" title="颜色">';
   if(a.type==="text")return `<div class="ann-r"><input class="in" data-k="text" placeholder="Co^{2+}"></div>
-    <div class="ann-r">${n("x","x","0.1")}${n("y","y%","1")}${n("size","字号 pt","1")}${col}<label class="switch"><input type="checkbox" data-k="bold"> 粗体</label></div>`;
+    <div class="ann-r">${n("x","x","0.1")}${n("y","y%","1")}</div><div class="ann-r">${n("size","字号 pt","1")}${col}<label class="switch"><input type="checkbox" data-k="bold"> 粗体</label></div>`;
   if(a.type==="vline")return `<div class="ann-r">${n("x","x","0.1")}${n("len","长度%","1")}${col}</div>
     <div class="ann-r">${n("width","线宽 pt","0.1")}${n("dash","段长 pt","1")}${n("gap","间隔 pt","1")}</div>`;
-  return `<div class="ann-r">${n("x1","头 x","0.1")}${n("y1","头 y%","1")}${n("x0","尾 x","0.1")}${n("y0","尾 y%","1")}</div>
-    <div class="ann-r">${n("width","线宽 pt","0.1")}<label>箭头 <select class="in" data-k="head" style="width:auto"><option value="filled">实心三角</option><option value="open">开口</option><option value="none">无</option></select></label>${n("size","大小 pt","1")}${col}</div>`}
-function renderAnn(){if(!S.v)return;$("annctx").textContent=S.stack?`堆叠对比 · ${S.v.element}`:"本谱";syncAnnButtons();annMetrics();
-  const box=$("annlist");box.innerHTML="";
-  annItems().forEach((a,k)=>{const d=document.createElement("details");d.className="ann";d.dataset.i=k;d.open=S.annOpen.has(k);
+  return `<div class="ann-r">${n("x1","头 x","0.1")}${n("y1","头 y%","1")}</div><div class="ann-r">${n("x0","尾 x","0.1")}${n("y0","尾 y%","1")}</div>
+    <div class="ann-r">${n("width","线宽 pt","0.1")}${n("size","大小 pt","1")}${col}</div>
+    <div class="ann-r"><label>箭头 <select class="in" data-k="head" style="width:auto"><option value="filled">实心三角</option><option value="open">开口</option><option value="none">无</option></select></label></div>`}
+function renderAnn(){const box=$("annlist");box.innerHTML="";if(!S.v)return;
+  annItems().forEach((a,k)=>{const d=document.createElement("details");d.className="ann"+(k===S.ex.sel?" on":"");d.dataset.i=k;d.open=S.annOpen.has(k);
     d.innerHTML=`<summary><span class="sw" style="background:${a.color}"></span>${annSummary(a)}<button class="x" title="删除">×</button></summary>${annRows(a)}`;
     d.ontoggle=()=>{d.open?S.annOpen.add(k):S.annOpen.delete(k)};
+    d.querySelector("summary").addEventListener("click",()=>{S.ex.sel=k;box.querySelectorAll(".ann").forEach(x=>x.classList.toggle("on",x===d));drawOverlay()});
     d.querySelector(".x").onclick=e=>{e.preventDefault();e.stopPropagation();annDel(k)};
     d.querySelectorAll("[data-k]").forEach(inp=>{const kk=inp.dataset.k;if(inp.type==="checkbox")inp.checked=!!a[kk];else inp.value=a[kk];
       const ev=inp.tagName==="SELECT"?"onchange":"oninput";
       inp[ev]=()=>{const v=inp.type==="checkbox"?inp.checked:(inp.type==="color"||kk==="text"||kk==="head")?inp.value:parseFloat(inp.value);
-        if(typeof v==="number"&&!isFinite(v))return;a[kk]=v;annSave();redrawAnn();
+        if(typeof v==="number"&&!isFinite(v))return;a[kk]=v;annSave();drawOverlay();
         d.querySelector("summary .d").innerHTML=annSummary(a).replace(/^.*?<span class="d">|<\/span>$/g,"");d.querySelector("summary .sw").style.background=a.color}});
-    box.append(d)})}
-function annApply(L){const items=annItems();L.annotations=L.annotations||[];L.shapes=L.shapes||[];S.annOff=L.annotations.length;S.annMap=[];
-  const K=annK(),r1=v=>+(v*K).toFixed(2);
-  items.forEach((a,k)=>{if(a.type==="vline")L.shapes.push({type:"line",xref:"x",yref:"y domain",x0:a.x,x1:a.x,y0:0,y1:a.len/100,layer:"above",
-      line:{color:a.color,width:r1(a.width),dash:a.dash>0?`${r1(a.dash)}px,${r1(a.gap)}px`:"solid"}});
-    else if(a.type==="arrow"){S.annMap.push(k);L.annotations.push({x:a.x1,y:a.y1/100,xref:"x",yref:"y domain",ax:a.x0,ay:a.y0/100,axref:"x",ayref:"y domain",
-      showarrow:true,text:"",arrowhead:{filled:2,open:4,none:0}[a.head]??2,arrowwidth:Math.max(0.1,r1(a.width)),arrowsize:Math.max(0.3,a.size/(5*a.width)),arrowcolor:a.color,
-      standoff:0,startstandoff:0,captureevents:false})}
-    else if(a.text){S.annMap.push(k);L.annotations.push({x:a.x,y:a.y/100,xref:"x",yref:"y domain",showarrow:false,xanchor:"center",yanchor:"middle",
-      text:(a.bold?"<b>":"")+annHtml(a.text)+(a.bold?"</b>":""),font:{size:r1(a.size),color:a.color},captureevents:false})}})}
-function annEvents(onclick){const pl=$("plot");if(!pl.removeAllListeners)return;
-  pl.removeAllListeners("plotly_click");pl.on("plotly_click",onclick);
-  pl.removeAllListeners("plotly_relayout");pl.on("plotly_relayout",ev=>{let ch=false;const items=annItems();
-    for(const key in ev){const m=key.match(/^annotations\[(\d+)\]\.(x|y)$/);if(!m)continue;const k=S.annMap[+m[1]-S.annOff];
-      if(k==null||!items[k]||items[k].type!=="text")continue;if(m[2]==="x")items[k].x=+(+ev[key]).toFixed(2);else items[k].y=+(100*ev[key]).toFixed(1);ch=true}
-    if(ch){annSave();renderAnn()}})}
-/* 图上直接操作：线（拖线身移动、拖上端拉长，底端固定在 x 轴）与箭头（拖头 / 尾 / 整体）；点击加线、加文字，拖动画箭头 */
-function annAxes(){const pl=$("plot"),f=pl._fullLayout;if(!f||!f.xaxis||!f.yaxis||!f.xaxis.l2p)return null;
-  const xa=f.xaxis,ya=f.yaxis,bb=pl.getBoundingClientRect(),X0=bb.left+xa._offset,Y0=bb.top+ya._offset;
-  return {px:x=>X0+xa.l2p(x),py:y=>Y0+ya._length*(1-y/100),x:cx=>xa.p2l(cx-X0),y:cy=>100*(1-(cy-Y0)/ya._length),
-    inside:(cx,cy)=>cx>=X0&&cx<=X0+xa._length&&cy>=Y0-4&&cy<=Y0+ya._length+4}}
-function segDist(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy||1,t=Math.max(0,Math.min(1,((px-ax)*dx+(py-ay)*dy)/l));return Math.hypot(px-ax-t*dx,py-ay-t*dy)}
-function annHit(cx,cy){const A=annAxes();if(!A)return null;let hit=null;
-  annItems().forEach((a,k)=>{if(hit&&hit.part!=="body")return;
-    if(a.type==="vline"){const px=A.px(a.x),top=A.py(a.len),bot=A.py(0);
-      if(Math.abs(cx-px)<=6&&cy>=top-9&&cy<=bot+4)hit={k,part:Math.abs(cy-top)<=10?"top":"body"}}
-    else if(a.type==="arrow"){const hx=A.px(a.x1),hy=A.py(a.y1),tx=A.px(a.x0),ty=A.py(a.y0);
-      if(Math.hypot(cx-hx,cy-hy)<=9)hit={k,part:"head"};else if(Math.hypot(cx-tx,cy-ty)<=9)hit={k,part:"tail"};
-      else if(!hit&&segDist(cx,cy,tx,ty,hx,hy)<=6)hit={k,part:"body"}}
-    else if(a.type==="text"&&!hit){const j=S.annMap?S.annMap.indexOf(k):-1,
-        g=j>=0&&$("plot").querySelector(`.annotation[data-index="${S.annOff+j}"] .annotation-text-g`);
-      if(g){const r=g.getBoundingClientRect();if(cx>=r.left-3&&cx<=r.right+3&&cy>=r.top-3&&cy<=r.bottom+3)hit={k,part:"text"}}
-      else{const px=A.px(a.x),py=A.py(a.y),K=annK(),w=Math.max(12,a.size*K*0.3*(a.text||"").length),h=a.size*K*0.6;
-        if(Math.abs(cx-px)<=w&&Math.abs(cy-py)<=h)hit={k,part:"text"}}}});
-  return hit}
-let annDrag=null;
-$("plot").addEventListener("mousedown",e=>{
-  if(e.button!==0||!S.v)return;const A=annAxes();if(!A||!A.inside(e.clientX,e.clientY))return;
-  const hit=annHit(e.clientX,e.clientY),m=annMode();
-  if(hit&&hit.part==="text")return;                         // 文字交给 Plotly 拖动
-  if(hit){const a=annItems()[hit.k];annDrag=Object.assign({},hit,{sx:e.clientX,sy:e.clientY,orig:Object.assign({},a)})}
-  else if(m==="vline")annAdd("vline",{x:+A.x(e.clientX).toFixed(2)});
-  else if(m==="text")annAdd("text",{text:TR("文字"),x:+A.x(e.clientX).toFixed(2),y:+A.y(e.clientY).toFixed(1)});
-  else if(m==="arrow"){const x=+A.x(e.clientX).toFixed(2),y=+A.y(e.clientY).toFixed(1);const a=annAdd("arrow",{x0:x,y0:y,x1:x,y1:y});
-    annDrag={k:annItems().indexOf(a),part:"new",sx:e.clientX,sy:e.clientY,orig:Object.assign({},a)}}
-  else return;
-  e.stopPropagation();e.preventDefault()},true);
-document.addEventListener("mousemove",e=>{const pl=$("plot");
-  if(!annDrag){if(!S.v||!pl._fullLayout)return;const A=annAxes();const dl=pl.querySelector(".nsewdrag");if(!A||!dl)return;
-    const h=A.inside(e.clientX,e.clientY)?annHit(e.clientX,e.clientY):null,m=annMode();
-    const c=h?{top:"ns-resize",body:"ew-resize",head:"move",tail:"move",text:"move"}[h.part]:(m?"crosshair":"");
-    if(h&&h.part==="body"&&annItems()[h.k].type==="arrow")dl.style.cursor="move";else dl.style.cursor=c;return}
-  const A=annAxes();if(!A)return;const a=annItems()[annDrag.k];if(!a)return;const o=annDrag.orig;
-  const x=+A.x(e.clientX).toFixed(2),y=+Math.max(-10,Math.min(115,A.y(e.clientY))).toFixed(1);
-  if(a.type==="vline"){if(annDrag.part==="top")a.len=Math.max(2,Math.min(100,y));else a.x=x}
-  else if(annDrag.part==="head"||annDrag.part==="new"){a.x1=x;a.y1=y}
-  else if(annDrag.part==="tail"){a.x0=x;a.y0=y}
-  else{const dx=x-A.x(annDrag.sx),dy=y-A.y(annDrag.sy);a.x0=+(o.x0+dx).toFixed(2);a.x1=+(o.x1+dx).toFixed(2);a.y0=+(o.y0+dy).toFixed(1);a.y1=+(o.y1+dy).toFixed(1)}
-  redrawAnn()});
-document.addEventListener("mouseup",e=>{if(!annDrag)return;const a=annItems()[annDrag.k];
-  if(a&&annDrag.part==="new"&&Math.hypot(e.clientX-annDrag.sx,e.clientY-annDrag.sy)<6){   // 只点了一下：给一个默认的箭头（从左上指向点击处）
-    const A=annAxes();if(A){a.x0=+A.x(annDrag.sx-50).toFixed(2);a.y0=+A.y(annDrag.sy-50).toFixed(1)}}
-  annDrag=null;annSave();renderAnn();redrawAnn()});
-
+    box.append(d)});
+  if(!annItems().length)box.innerHTML=`<div class="note" style="margin:2px 0">${TR("还没有标注。用预览图上方的“加线 / 加文字 / 拉箭头”，在预览图上点击或拖动添加。")}</div>`}
+/* 预览图上的 SVG 叠加层 */
+function exG(){const g=S.ex.geo,st=$("exstage");if(!g||st.hidden||!st.clientWidth)return null;const[x0,y0,x1,y1]=g.ax,[l,r]=g.xlim;
+  const AX0=x0*g.w,AX1=x1*g.w,AT=(1-y1)*g.h,AB=(1-y0)*g.h;
+  return {AX0,AX1,AT,AB,hp:g.w/st.clientWidth,X:x=>AX0+(x-l)/(r-l)*(AX1-AX0),Y:y=>AB-y/100*(AB-AT),x:X=>l+(X-AX0)/(AX1-AX0)*(r-l),y:Y=>(AB-Y)/(AB-AT)*100}}
+function annSvgText(t){let out="",last=0,m;const re=/(\^|_)\{([^{}]*)\}/g;
+  while((m=re.exec(t))){if(m.index>last)out+=`<tspan>${esc(t.slice(last,m.index))}</tspan>`;
+    out+=`<tspan baseline-shift="${m[1]==="^"?"super":"sub"}" font-size="70%">${esc(m[2])}</tspan>`;last=re.lastIndex}
+  if(last<t.length)out+=`<tspan>${esc(t.slice(last))}</tspan>`;return out}
+const ANN_FONT="Arial, Helvetica, 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif";
+let ovRaf=0;
+function drawOverlayRaf(){if(ovRaf)return;ovRaf=requestAnimationFrame(()=>{ovRaf=0;drawOverlay()})}
+function drawOverlay(){const svg=$("exsvg"),G=exG();if(!G){svg.innerHTML="";return}const hp=G.hp,f=v=>+v.toFixed(3);
+  const out=[`<defs><clipPath id="exclip"><rect x="${f(G.AX0)}" y="${f(G.AT)}" width="${f(G.AX1-G.AX0)}" height="${f(G.AB-G.AT)}"/></clipPath></defs>`];
+  annItems().forEach((a,k)=>{const sel=k===S.ex.sel?" sel":"",hd=(part,x,y,cur)=>`<circle class="hd" data-part="${part}" cx="${f(x)}" cy="${f(y)}" r="${f(5*hp)}" stroke-width="${f(1.5*hp)}" style="cursor:${cur}"/>`;
+    if(a.type==="vline"){const X=G.X(a.x),yt=G.Y(a.len),da=a.dash>0?` stroke-dasharray="${a.dash} ${Math.max(a.gap,0.01)}"`:"";
+      out.push(`<g data-k="${k}" class="ai${sel}"><line x1="${f(X)}" x2="${f(X)}" y1="${f(G.AB)}" y2="${f(yt)}" stroke="${a.color}" stroke-width="${a.width}"${da} clip-path="url(#exclip)"/>`+
+        `<line class="hit" data-part="body" x1="${f(X)}" x2="${f(X)}" y1="${f(G.AB)}" y2="${f(yt)}" stroke-width="${f(10*hp)}" style="cursor:ew-resize"/>${hd("top",X,yt,"ns-resize")}</g>`)}
+    else if(a.type==="arrow"){const tx=G.X(a.x0),ty=G.Y(a.y0),hx=G.X(a.x1),hy=G.Y(a.y1),dx=hx-tx,dy=hy-ty,L=Math.hypot(dx,dy)||1e-6,ux=dx/L,uy=dy/L;
+      const bx=hx-ux*a.size,by=hy-uy*a.size,px=-uy*a.size/2,py=ux*a.size/2,st=`stroke="${a.color}" stroke-width="${a.width}"`;
+      let body=a.head==="filled"?`<line x1="${f(tx)}" y1="${f(ty)}" x2="${f(bx)}" y2="${f(by)}" ${st}/><polygon points="${f(hx)},${f(hy)} ${f(bx+px)},${f(by+py)} ${f(bx-px)},${f(by-py)}" fill="${a.color}" ${st} stroke-linejoin="miter"/>`
+        :`<line x1="${f(tx)}" y1="${f(ty)}" x2="${f(hx)}" y2="${f(hy)}" ${st}/>`+(a.head==="open"?`<polyline points="${f(bx+px)},${f(by+py)} ${f(hx)},${f(hy)} ${f(bx-px)},${f(by-py)}" fill="none" ${st}/>`:"");
+      out.push(`<g data-k="${k}" class="ai${sel}">${body}<line class="hit" data-part="body" x1="${f(tx)}" y1="${f(ty)}" x2="${f(hx)}" y2="${f(hy)}" stroke-width="${f(10*hp)}" style="cursor:move"/>`+
+        `${hd("tail",tx,ty,"crosshair")}${hd("head",hx,hy,"crosshair")}</g>`)}
+    else if(a.text){out.push(`<g data-k="${k}" class="ai${sel}"><text x="${f(G.X(a.x))}" y="${f(G.Y(a.y))}" font-size="${a.size}" fill="${a.color}" font-weight="${a.bold?700:400}" text-anchor="middle" dominant-baseline="central" font-family="${ANN_FONT}" style="white-space:pre;cursor:move" data-part="text">${annSvgText(a.text)}</text></g>`)}});
+  svg.innerHTML=out.join("");
+  svg.querySelectorAll("g.ai").forEach(gr=>{const t=gr.querySelector("text"),NS="http://www.w3.org/2000/svg";
+    if(t){const b=t.getBBox(),r=document.createElementNS(NS,"rect");Object.entries({x:b.x,y:b.y,width:b.width,height:b.height,class:"hb","data-part":"text",style:"cursor:move"}).forEach(([k,v])=>r.setAttribute(k,v));gr.insertBefore(r,t)}
+    if(gr.classList.contains("sel")){const b=gr.getBBox(),p=3*hp,r=document.createElementNS(NS,"rect");
+      Object.entries({x:b.x-p,y:b.y-p,width:b.width+2*p,height:b.height+2*p,class:"selbox","stroke-width":hp}).forEach(([k,v])=>r.setAttribute(k,v));gr.insertBefore(r,gr.firstChild)}})}
+function exPt(e){const m=$("exsvg").getScreenCTM();return m?new DOMPoint(e.clientX,e.clientY).matrixTransform(m.inverse()):null}
+let exDrag=null;
+$("exsvg").addEventListener("pointerdown",e=>{if(e.button!==0)return;const G=exG(),p=exPt(e);if(!G||!p)return;
+  const el=e.target.closest("[data-part]"),gr=e.target.closest("g.ai");
+  if(el&&gr){const k=+gr.dataset.k;S.ex.sel=k;exDrag={k,part:el.dataset.part,p0:p,cx:e.clientX,cy:e.clientY,orig:Object.assign({},annItems()[k])};renderAnn();drawOverlay()}
+  else{const x=+G.x(p.x).toFixed(2),y=+G.y(p.y).toFixed(1),inX=p.x>=G.AX0&&p.x<=G.AX1;
+    if(S.ex.mode==="vline"){if(!inX)return;annAdd("vline",{x})}
+    else if(S.ex.mode==="text")annAdd("text",{text:TR("文字"),x,y});
+    else if(S.ex.mode==="arrow"){const a=annAdd("arrow",{x0:x,y0:y,x1:x,y1:y});exDrag={k:annItems().indexOf(a),part:"new",p0:p,cx:e.clientX,cy:e.clientY,orig:Object.assign({},a)}}
+    else{if(S.ex.sel!==null){S.ex.sel=null;renderAnn();drawOverlay()}return}}
+  if(exDrag)$("exsvg").setPointerCapture(e.pointerId);e.preventDefault()});
+$("exsvg").addEventListener("pointermove",e=>{if(!exDrag)return;const G=exG(),p=exPt(e),a=annItems()[exDrag.k];if(!G||!p||!a)return;
+  if(Math.hypot(e.clientX-exDrag.cx,e.clientY-exDrag.cy)>2)exDrag.moved=true;if(!exDrag.moved)return;
+  const o=exDrag.orig,x=+G.x(p.x).toFixed(2),y=+Math.max(-15,Math.min(115,G.y(p.y))).toFixed(1),dx=G.x(p.x)-G.x(exDrag.p0.x),dy=G.y(p.y)-G.y(exDrag.p0.y);
+  if(a.type==="vline"){if(exDrag.part==="top")a.len=+Math.max(2,Math.min(100,y)).toFixed(1);else a.x=+(o.x+dx).toFixed(2)}
+  else if(a.type==="text"){a.x=+(o.x+dx).toFixed(2);a.y=+Math.max(-15,Math.min(115,o.y+dy)).toFixed(1)}
+  else if(exDrag.part==="head"||exDrag.part==="new"){a.x1=x;a.y1=y}
+  else if(exDrag.part==="tail"){a.x0=x;a.y0=y}
+  else{a.x0=+(o.x0+dx).toFixed(2);a.x1=+(o.x1+dx).toFixed(2);a.y0=+(o.y0+dy).toFixed(1);a.y1=+(o.y1+dy).toFixed(1)}
+  drawOverlayRaf()});
+function exEnd(){if(!exDrag)return;const a=annItems()[exDrag.k],G=exG();
+  if(a&&G&&exDrag.part==="new"&&!exDrag.moved){a.x0=+G.x(exDrag.p0.x-45*G.hp).toFixed(2);a.y0=+G.y(exDrag.p0.y-45*G.hp).toFixed(1)}  // 只点了一下：从左上方指向这里
+  const ch=exDrag.moved||exDrag.part==="new";exDrag=null;if(ch)annSave(true);renderAnn();drawOverlay()}
+$("exsvg").addEventListener("pointerup",exEnd);$("exsvg").addEventListener("pointercancel",exEnd);
+document.addEventListener("keydown",e=>{if(!$("exm").classList.contains("open")||S.ex.sel===null||!["Delete","Backspace"].includes(e.key))return;
+  if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;e.preventDefault();annDel(S.ex.sel)});
+/* 峰颜色（同组同色）：在导出对话框里直接改，预览随之更新；堆叠对比时所有样品的同名峰一起改 */
+function exGroups(){const v=S.v;if(!v||!v.peaks.length)return [];const seen=new Set(),out=[];
+  v.peaks.forEach((p,j)=>{const r=rootOf(j);if(seen.has(r))return;seen.add(r);out.push({j:r,name:v.peaks[r].name,col:pcol(v.peaks[r],r),role:v.peaks[r].role||"main"})});return out}
+function renderExColors(){const box=$("excols"),G=exGroups();
+  $("excol_note").textContent=S.ex.ctx==="stack"?TR("所有样品的同名峰一起改"):"";
+  box.innerHTML=G.length?"":`<div class="note">${TR("当前谱还没有拟合峰")}</div>`;
+  if(S.ex.ctx==="stack"&&G.length&&!$("stk_comps").checked)box.innerHTML=`<div class="note">${TR("堆叠工具条勾选“分峰”后，图中才显示各峰")}</div>`;
+  G.forEach(g=>{const r=document.createElement("div");r.className="r";r.title=TR("点击选择颜色（整组同色）");
+    r.innerHTML=`<span class="sw" style="background:${g.col}"></span><span></span>`;r.children[1].textContent=g.name;
+    r.onclick=e=>openColorPop(e,g.j,async()=>{renderExColors();if(S.ex.ctx==="stack")await loadStack();preview()});box.append(r)})}
 /* ---------- 氧化态选择（一键拟合） ---------- */
 S.oxide=(()=>{try{return localStorage.getItem("xpsfit_oxide")||"auto"}catch(e){return "auto"}})();
 function setOxide(o){S.oxide=o;document.querySelectorAll("#oxseg button").forEach(b=>b.classList.toggle("on",b.dataset.o===o));

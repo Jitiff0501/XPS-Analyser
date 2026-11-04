@@ -308,13 +308,19 @@ def api(method, a):
                     q["link"]["ref"] = clean["name"]
     elif method == "set_color":
         # 颜色作用于整组：存到主峰上，组内其他峰的自定义颜色清除；color 为空 = 恢复自动配色
-        j = core.group_root(s.peaks, int(a["j"]))
+        # all=True（堆叠对比）：同一轨道的其他谱中同名的峰组也改成这个颜色
         c = a.get("color")
-        for k, q in enumerate(s.peaks):
-            if core.group_root(s.peaks, k) == j:
-                q.pop("color", None)
-        if c and re.fullmatch(r"#[0-9a-fA-F]{6}", c):
-            s.peaks[j]["color"] = c
+        name = s.peaks[core.group_root(s.peaks, int(a["j"]))]["name"]
+        for t in ([u for u in st.specs if u.element == s.element] if a.get("all") else [s]):
+            ks = [k for k, q in enumerate(t.peaks) if q["name"] == name]
+            if not ks:
+                continue
+            j = core.group_root(t.peaks, ks[0])
+            for k, q in enumerate(t.peaks):
+                if core.group_root(t.peaks, k) == j:
+                    q.pop("color", None)
+            if c and re.fullmatch(r"#[0-9a-fA-F]{6}", c):
+                t.peaks[j]["color"] = c
     elif method == "delete_peak":
         p = s.peaks.pop(int(a["j"]))
         # 双峰副峰随主峰一起删除；卫星峰等解除绑定
@@ -325,8 +331,9 @@ def api(method, a):
     elif method == "preview_figure":
         import io
         buf = io.BytesIO()
-        figure(s, buf, dict(a.get("opts") or {}, fmt="png"), dpi=110)
-        return {"png": base64.b64encode(buf.getvalue()).decode()}
+        o = dict(a.get("opts") or {}, fmt="png")
+        geo = figure(s, buf, o, dpi=_preview_dpi(o.get("width_cm") or FIG_DEFAULTS["width_cm"], a.get("px")), annots=False)
+        return {"png": base64.b64encode(buf.getvalue()).decode(), "geo": geo}
     elif method == "equal_param":
         # 多选绑定：members 中的峰与参考峰 j 的 FWHM（或 L%）相等；其余原先绑到参考峰的解除
         ref = s.peaks[int(a["j"])]
@@ -432,8 +439,13 @@ def api(method, a):
         else:
             s.annots = items
         return {"ok": True, "n": len(items)}
-    elif method == "ann_metrics":
-        return {"h_pt": ann_axes_pt(a["i"], a.get("ctx"), a.get("opts") or {})}
+    elif method == "preview_stack":
+        import io
+        buf = io.BytesIO()
+        o = dict(a, fmt="png")
+        o["dpi"] = _preview_dpi(o.get("width_cm") or STACK_DEFAULTS["width_cm"], a.get("px"))
+        geo = export_stack(a["i"], o, out=buf, annots=False)
+        return {"png": base64.b64encode(buf.getvalue()).decode(), "geo": geo}
     elif method == "stack":
         return stack_data(a["i"], a)
     elif method == "export_stack":
@@ -656,8 +668,25 @@ def export(kind, a):
 FIG_DEFAULTS = {"fmt": "png", "width_cm": 8.5, "height_cm": 7.0, "dpi": 600, "font": 9,
                 "xmin": None, "xmax": None, "xstep": None, "xminor": 1,
                 "ynumbers": True, "ylabel": "Intensity (CPS)", "xlabel": "Binding Energy (eV)",
-                "legend": True, "legend_loc": "best", "title": True, "labels": "legend", "background": True, "envelope": True, "raw": "line",
-                "fill": True, "screen_h": None}
+                "legend": False, "legend_loc": "best", "title": True, "labels": "legend", "background": True, "envelope": True, "raw": "line",
+                "fill": True}
+
+
+def _preview_dpi(width_cm, px):
+    """预览图的 dpi：让图片宽度约为页面上显示宽度（已乘屏幕像素比），清晰且不过大。"""
+    try:
+        w_in = max(float(width_cm), 1.0) / 2.54
+        return min(max(float(px or 900) / w_in, 50.0), 300.0)
+    except (TypeError, ValueError):
+        return 110.0
+
+
+def _geo(fig, ax):
+    """坐标轴在图中的位置（图宽高为 pt；ax 为 [x0, y0, x1, y1] 图分数，y 向上）与 x 范围，供页面在预览上叠加标注。"""
+    w, h = fig.get_size_inches()
+    b = ax.get_position()
+    return {"w": float(w) * 72.0, "h": float(h) * 72.0, "ax": [float(b.x0), float(b.y0), float(b.x1), float(b.y1)],
+            "xlim": [float(v) for v in ax.get_xlim()]}
 
 
 def pretty_label(name):
@@ -758,8 +787,9 @@ def _arrow_labels(ax, fig, x, bg, comps, env, peaks, cols, o, ylim, yraw=None):
     return top
 
 
-def figure(s, path, opts=None, dpi=None):
-    """论文图。opts 见 FIG_DEFAULTS：x 范围/主刻度间距/次刻度数、y 轴数字开关等。"""
+def figure(s, path, opts=None, dpi=None, annots=True):
+    """论文图。opts 见 FIG_DEFAULTS：x 范围/主刻度间距/次刻度数、y 轴数字开关等。返回坐标轴位置（_geo）。
+    annots=False 时不画标注（导出预览由页面叠加标注，便于直接在预览上编辑）。"""
     import matplotlib
     matplotlib.use("Agg")
     from matplotlib.figure import Figure
@@ -770,7 +800,7 @@ def figure(s, path, opts=None, dpi=None):
                                 "font.sans-serif": ["Arial", "Helvetica", "Microsoft YaHei", "SimHei",
                                                     "PingFang SC", "Hiragino Sans GB", "Arial Unicode MS",
                                                     "Noto Sans CJK SC", "WenQuanYi Zen Hei", "DejaVu Sans"],
-                                "xtick.direction": "in", "ytick.direction": "in"})
+                                "xtick.direction": "in", "ytick.direction": "in", "mathtext.default": "regular"})
     cols = core.peak_colors(s.peaks)          # 同组同色，含自定义颜色
     x, y, bg, comps, env = s.compute()
     from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -829,18 +859,20 @@ def figure(s, path, opts=None, dpi=None):
         yl = ax.get_ylim()
         top = _arrow_labels(ax, fig, x, bg, comps, env, s.peaks, cols, o, yl, yraw=y)
         ax.set_ylim(yl[0], max(yl[1], top))
-    draw_annots(ax, getattr(s, "annots", []), o.get("screen_h"))
+    if annots:
+        draw_annots(ax, getattr(s, "annots", []))
     fmt = o["fmt"] if o["fmt"] != "tif" else "tiff"
     fig.savefig(path, dpi=dpi or float(o["dpi"]), format=fmt)
+    return _geo(fig, ax)
 
 
 # ------------------------------------------------------------------ 标注（单谱图与堆叠对比图通用）
-# 坐标：x 为 BE（eV），y 为坐标轴高度 %（0 = 坐标轴底部）。尺寸（字号、线宽、虚线段长 / 间隔、箭头大小）
-# 都是导出图里的 pt（36 = 36 pt）；屏幕按“屏幕坐标轴高度 px / 导出图坐标轴高度 pt”等比例预览（ann_axes_pt）。
+# 在“导出”对话框的预览图上添加、拖动；导出时画进图里。
+# 坐标：x 为 BE（eV），y 为坐标轴高度 %（0 = 坐标轴底部）。尺寸（字号、线宽、虚线段长 / 间隔、箭头大小）都是导出图里的 pt。
 # 文字：{type:"text", text, x, y, size, color, bold}；上标写 ^{…}，下标写 _{…}
 # 垂直线：{type:"vline", x, len(%), width, dash, gap, color}（底端固定在坐标轴底部；dash=0 为实线）
 # 箭头：{type:"arrow", x0, y0（尾）, x1, y1（头）, width, head(filled/open/none), size（箭头长度）, color}
-ANN_DEFAULTS = {"text": {"text": "", "x": 0.0, "y": 90.0, "size": 36.0, "color": "#333333", "bold": False},
+ANN_DEFAULTS = {"text": {"text": "", "x": 0.0, "y": 90.0, "size": 24.0, "color": "#333333", "bold": False},
                 "vline": {"x": 0.0, "len": 85.0, "width": 1.5, "dash": 10.0, "gap": 5.0, "color": "#666666"},
                 "arrow": {"x0": 0.0, "y0": 80.0, "x1": 0.0, "y1": 60.0, "width": 1.5, "head": "filled", "size": 10.0,
                           "color": "#333333"}}
@@ -880,57 +912,6 @@ def clean_annots(items):
     return out
 
 
-_AX_PT = {}
-
-
-def _axes_pt(w_cm, h_cm, font, title, ynumbers, xlabel, ylabel):
-    """按导出图的版式（尺寸、字号、轴标题、图名、y 轴数字）排版一次，返回坐标轴高度（pt）。"""
-    key = (w_cm, h_cm, font, title, ynumbers, xlabel, ylabel)
-    if key not in _AX_PT:
-        import matplotlib
-        matplotlib.use("Agg")
-        from matplotlib.figure import Figure
-        from matplotlib.backends.backend_agg import FigureCanvasAgg
-        matplotlib.rcParams.update({"font.family": "sans-serif", "font.size": font})
-        fig = Figure(figsize=(w_cm / 2.54, h_cm / 2.54))
-        FigureCanvasAgg(fig)
-        ax = fig.add_subplot(111)
-        ax.plot([700, 800], [0, 12000])
-        ax.set_xlim(800, 700)
-        if not ynumbers:
-            ax.set_yticks([])
-        ax.set_xlabel(xlabel); ax.set_ylabel(ylabel)
-        if title:
-            ax.set_title("Co2p", fontsize=font)
-        fig.tight_layout()
-        if len(_AX_PT) > 200:
-            _AX_PT.clear()
-        _AX_PT[key] = ax.get_window_extent(fig.canvas.get_renderer()).height * 72.0 / fig.dpi
-    return _AX_PT[key]
-
-
-def ann_axes_pt(i, ctx, opts):
-    """导出图坐标轴高度（pt），供屏幕按比例预览标注。ctx = "stack" 用堆叠对比图的版式。"""
-    def num(k, d):
-        try:
-            v = float(opts.get(k))
-            return v if v > 0 else d
-        except (TypeError, ValueError):
-            return d
-    if ctx == "stack":
-        o = STACK_DEFAULTS
-        el = ST.S(i).element
-        n = len(opts["members"]) if opts.get("members") is not None else \
-            sum(1 for t in ST.specs if t.element == el and getattr(t, "kind", "region") != "survey")
-        h = float(o["height_cm"] or (4.0 + 2.3 * max(n, 1)))
-        return _axes_pt(float(o["width_cm"]), h, float(o["font"]), True, opts.get("mode") == "raw", "Binding Energy (eV)",
-                        "Intensity (CPS)" if opts.get("mode") == "raw" else "Intensity (a.u.)")
-    o = FIG_DEFAULTS
-    return _axes_pt(num("width_cm", o["width_cm"]), num("height_cm", o["height_cm"]), num("font", o["font"]),
-                    bool(opts.get("title", True)), bool(opts.get("ynumbers", True)),
-                    str(opts.get("xlabel") or o["xlabel"]), str(opts.get("ylabel") or o["ylabel"]))
-
-
 def mathtext(t):
     """Co^{2+} → Co$^{2+}$，2p_{3/2} → 2p$_{3/2}$（matplotlib 数学文本）。"""
     t = str(t).replace("$", r"\$")
@@ -939,8 +920,8 @@ def mathtext(t):
     return t.replace("$$", "")
 
 
-def draw_annots(ax, items, screen_h=None):
-    """尺寸直接是 pt（screen_h 仅为兼容旧调用，不再使用）。"""
+def draw_annots(ax, items):
+    """尺寸都是 pt。"""
     from matplotlib.transforms import blended_transform_factory
     if not items:
         return
@@ -963,7 +944,6 @@ def draw_annots(ax, items, screen_h=None):
 
 # ------------------------------------------------------------------ 多样品同一轨道堆叠对比
 STACK_DEFAULTS = {"mode": "bgsub", "offset": 1.15, "fit": True, "comps": False, "members": None, "states": False, "names": True,
-                  "screen_h": None,
                   "fmt": "png", "width_cm": 8.5, "height_cm": None, "dpi": 600, "font": 9, "xmin": None, "xmax": None}
 
 
@@ -1007,7 +987,8 @@ def _stack_label(it, with_states=True):
     return lab
 
 
-def export_stack(i, a):
+def export_stack(i, a, out=None, annots=True):
+    """堆叠对比论文图。out 给定（文件对象）时写入它并返回坐标轴位置（预览用），否则保存到输出目录并返回路径。"""
     import matplotlib
     matplotlib.use("Agg")
     from matplotlib.figure import Figure
@@ -1022,7 +1003,7 @@ def export_stack(i, a):
                                 "font.sans-serif": ["Arial", "Helvetica", "Microsoft YaHei", "SimHei", "PingFang SC",
                                                     "Hiragino Sans GB", "Arial Unicode MS", "Noto Sans CJK SC",
                                                     "WenQuanYi Zen Hei", "DejaVu Sans"],
-                                "xtick.direction": "in", "ytick.direction": "in"})
+                                "xtick.direction": "in", "ytick.direction": "in", "mathtext.default": "regular"})
     hcm = float(o["height_cm"] or (4.0 + 2.3 * n))
     fig = Figure(figsize=(float(o["width_cm"]) / 2.54, hcm / 2.54))
     FigureCanvasAgg(fig)
@@ -1064,8 +1045,12 @@ def export_stack(i, a):
         m = (x >= lo_x) & (x <= hi_x)
         ymax = float(np.max(yy[m])) if m.any() else 0.0
         t.set_y(sh + max(ymax, 0.0) + 0.05 * span)
-    draw_annots(ax, ST.stack_annots.get(d["element"], []), o.get("screen_h"))
+    if annots:
+        draw_annots(ax, ST.stack_annots.get(d["element"], []))
     fmt = o["fmt"] if o["fmt"] != "tif" else "tiff"
+    if out is not None:
+        fig.savefig(out, dpi=float(o["dpi"]), format=fmt)
+        return _geo(fig, ax)
     s0 = ST.S(i)
     p = os.path.join(ST.out_dir(s0), conv.safe_name("stack_%s_%d-samples" % (d["element"], n)) + "." + o["fmt"])
     fig.savefig(p, dpi=float(o["dpi"]), format=fmt)

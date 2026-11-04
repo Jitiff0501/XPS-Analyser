@@ -402,22 +402,29 @@ class Api(unittest.TestCase):
             back = server.ST.load_path(pj)
             self.assertEqual(back[0].annots[1]["len"], 90.0)
             self.assertEqual(server.ST.stack_annots["Al2p"][0]["text"], "(a)")
-            # 默认值与单位：字号 36 pt 不加粗；线 1.5 pt、段长 10、间隔 5；箭头 1.5 pt 实心三角。导出图里就是 pt
+            # 默认值与单位：字号 24 pt 不加粗；线 1.5 pt、段长 10、间隔 5；箭头 1.5 pt 实心三角。导出图里就是 pt
             d = server.clean_annots([{"type": "text", "text": "x"}, {"type": "vline", "x": 73}, {"type": "arrow"}])
-            self.assertEqual((d[0]["size"], d[0]["bold"]), (36.0, False))
+            self.assertEqual((d[0]["size"], d[0]["bold"]), (24.0, False))
             self.assertEqual((d[1]["width"], d[1]["dash"], d[1]["gap"]), (1.5, 10.0, 5.0))
             self.assertEqual((d[2]["width"], d[2]["head"]), (1.5, "filled"))
             from matplotlib.figure import Figure
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             fig = Figure(); FigureCanvasAgg(fig); ax = fig.add_subplot(111)
-            server.draw_annots(ax, d, screen_h=300)
-            self.assertEqual(ax.texts[0].get_fontsize(), 36.0)
+            server.draw_annots(ax, d)
+            self.assertEqual(ax.texts[0].get_fontsize(), 24.0)
             self.assertEqual(ax.lines[0].get_linewidth(), 1.5)
-            h = server.api("ann_metrics", {"i": 0, "ctx": "spec", "opts": {"width_cm": 8.5, "height_cm": 7}})["h_pt"]
-            self.assertTrue(120 < h < 7 / 2.54 * 72, h)          # 坐标轴高度 < 整图高度
-            h2 = server.api("ann_metrics", {"i": 0, "ctx": "spec", "opts": {"height_cm": 14}})["h_pt"]
-            self.assertGreater(h2, 1.8 * h)
-            self.assertGreater(server.api("ann_metrics", {"i": 0, "ctx": "stack", "opts": {"mode": "bgsub"}})["h_pt"], 100)
+            # 导出预览：不画标注（页面叠加），返回坐标轴位置与 x 范围，供页面把标注放到正确的位置
+            r = server.api("preview_figure", {"i": 0, "opts": {"xmin": 70, "xmax": 80}, "px": 600})
+            g = r["geo"]
+            self.assertAlmostEqual(g["w"], 8.5 / 2.54 * 72, places=3)
+            self.assertTrue(0 < g["ax"][0] < g["ax"][2] < 1 and 0 < g["ax"][1] < g["ax"][3] < 1, g)
+            self.assertEqual([round(v) for v in g["xlim"]], [80, 70])     # 高 BE 在左
+            self.assertGreater(len(r["png"]), 1000)
+            self.assertGreater(len(server.api("preview_stack", {"i": 0, "mode": "bgsub", "px": 600})["png"]), 1000)
+            self.assertFalse(server.FIG_DEFAULTS["legend"])                  # 导出图默认不带图例
+            # 堆叠对比里改颜色：所有样品的同名峰组一起改
+            server.api("set_color", {"i": 0, "j": 0, "color": "#445566", "all": True})
+            self.assertEqual([t.peaks[0].get("color") for t in server.ST.specs], ["#445566", "#445566"])
         finally:
             server.user_dir = old
 
