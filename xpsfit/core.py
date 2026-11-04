@@ -440,7 +440,7 @@ class Spectrum:
         return {"name": self.name, "source": self.source, "hv": self.hv,
                 "be": self.be_raw.tolist(), "y": self.y.tolist(), "shift": self.shift,
                 "bg": self.bg, "peaks": self.peaks, "element": self.element, "sample": self.sample,
-                "window": self.window}
+                "window": self.window, "kind": getattr(self, "kind", "region")}
 
     @classmethod
     def from_dict(cls, d):
@@ -448,6 +448,7 @@ class Spectrum:
         s.shift, s.bg, s.peaks = d.get("shift", 0.0), d["bg"], [ensure_peak(p) for p in d["peaks"]]
         s.element = d.get("element", s.element)
         s.sample = d.get("sample", s.sample)
+        s.kind = d.get("kind", "region")
         s.window = d.get("window") or [float(s.be_raw.min()), float(s.be_raw.max())]
         return s
 

@@ -238,6 +238,23 @@ class Core(unittest.TestCase):
         autofit.uncertainties(s)
         self.assertTrue(s.peaks[0]["center"].get("err", 0) > 0)
 
+    def test_identify_region_and_survey(self):
+        from xpsfit import identify
+        import avantage_to_xpspeak as conv
+        _, b = conv.read_vgd(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tests_data", "Al2p Scan.VGD"), None)
+        c = identify.identify_region(b[0]["energy"], b[0]["intensity"])
+        self.assertEqual(c[0][0], "Al2p")
+        x = np.arange(0, 1350.01, 0.5)
+        y = 20000 + 30 * x
+        for cc, w, a in [(284.8, 2, 1.5e5), (531, 2, 6e5), (778.2, 2, 8e5), (793.2, 2.4, 4e5), (60, 2, 8e4),
+                         (1486.68 - 775, 8, 1.5e5), (1486.68 - 510, 8, 3e5), (23, 3, 4e4)]:
+            y = y + core.gl_peak(x, cc, w, a, 30)
+        y = np.random.default_rng(0).poisson(y).astype(float)
+        r = identify.identify_survey(x, y)
+        conf = {e["el"] for e in r["elements"] if e["confirmed"]}
+        self.assertEqual(conf, {"C", "O", "Co"})
+        self.assertFalse(any(e["el"] in ("Fe", "Ta") for e in r["elements"]))   # Co 俄歇≠Fe2p，O2s≠Ta4f
+
 
 class Api(unittest.TestCase):
     """不开窗口，直接调用后端 API 走一遍完整流程。"""

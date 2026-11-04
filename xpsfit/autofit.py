@@ -339,6 +339,18 @@ def run(s, sample_elements=(), ref=None, max_add=4):
     if s.window:
         s.bg["lo"], s.bg["hi"] = s.window[0] + s.shift, s.window[1] + s.shift
     s.bg.pop("ylo", None); s.bg.pop("yhi", None)
+    # 文件名与谱图是否一致
+    try:
+        from . import identify
+        cands = identify.identify_region(s.be_raw, s.y)
+        if cands:
+            if not s.element:
+                s.element = cands[0][0]
+                log("轨道：文件名中没有轨道信息，根据谱图识别为 %s（%s）" % (s.element, cands[0][2]))
+            elif cands[0][0] != s.element and cands[0][1] - next((c[1] for c in cands if c[0] == s.element), -9) > 1.0:
+                log("⚠ 文件名为 %s，但谱图更像 %s（%s）；如果文件名有误，请重命名后再拟合" % (s.element, cands[0][0], cands[0][2]))
+    except Exception:
+        pass
     noise = choose_background(s, log)
     peaks = recipe(s, log)
     if peaks is None:

@@ -267,7 +267,7 @@ input[type=checkbox]{accent-color:var(--accent)}
       </div>
     </div>
     <div class="panel" id="refpanel">
-      <h3>推荐峰位 <span class="sub" id="refsrc"></span></h3>
+      <h3><span id="reftitle">推荐峰位</span> <span class="sub" id="refsrc"></span></h3>
       <div id="refbody" class="note" style="margin:0">打开谱后显示</div>
     </div>
     <div class="panel">
@@ -588,6 +588,11 @@ function draw(){
   if(hx.length)T.push({x:hx,y:hy,mode:"markers",name:"_h",showlegend:false,hoverinfo:"skip",
     marker:{size:11,color:"#fff",line:{color:hc,width:2.2},symbol:"circle"}});
   const RS=refShapes(v);L.shapes=L.shapes.concat(RS.shapes);L.annotations=RS.ann;
+  if(v.kind==="survey"&&v.ident&&v.ident.peaks){const conf=new Set((v.ident.elements||[]).filter(e=>e.confirmed).map(e=>e.el));
+    v.ident.peaks.forEach(([x,name])=>{if(name==="?")return;let k=0;for(let i=1;i<v.be.length;i++)if(Math.abs(v.be[i]-x)<Math.abs(v.be[k]-x))k=i;
+      const tent=/待确认/.test(name);
+      L.annotations.push({x,y:v.y[k],text:name.replace("（待确认）","?"),showarrow:true,arrowhead:0,arrowwidth:0.8,ax:0,ay:-28,
+        font:{size:11,color:tent?"#B4532A":"#3d3c38"},arrowcolor:tent?"#E0B49E":"#B8B5AA",bgcolor:"rgba(255,255,255,.8)"})})}
   if(S.xr&&S.fixFor===v.i){L.xaxis.autorange=false;L.xaxis.range=S.xr;L.yaxis.autorange=false;L.yaxis.range=S.yr}
   else if(S.full){L.uirevision=v.i+":full:"+(S.resetN||0)}
   else if(!S.full&&v.window){const[lo,hi]=v.window,yr=winY(v,lo,hi);L.xaxis.autorange=false;L.xaxis.range=[hi+0.3,lo-0.3];
@@ -864,15 +869,26 @@ let REF=null,REFALL=false;const MARKS={};   // 每个轨道勾选显示的化合
 function marks(){const o=REF&&REF.orbital||"";return MARKS[o]||(MARKS[o]=new Set())}
 async function loadRef(){
   if(S.cur===null)return;REF=await call("reference",{i:S.cur});renderRef();draw()}
+function renderSurvey(){
+  const v=S.v,b=$("refbody");$("refsrc").textContent="全谱识别";
+  const E=(v.ident&&v.ident.elements)||[];
+  if(!E.length){b.innerHTML='<p class="note" style="margin:0">没有识别到明确的元素峰</p>';return}
+  b.innerHTML=`<table class="rt"><tbody>${E.map(e=>`<tr><td class="f" style="color:${e.confirmed?"var(--ink)":"#B4532A"}">${esc(e.el)}${e.confirmed?"":" ?"}</td>
+    <td style="white-space:normal;color:var(--ink2);font-size:12px">${e.lines.map(([n,x])=>`${esc(n)} ${x}`).join("、")}</td></tr>`).join("")}</tbody></table>
+    <p class="note" style="margin:6px 0 0">黑色 = 确认（最强线存在，双峰元素的两个自旋轨道分量都在）；橙色 ? = 待确认（只有部分谱线吻合，可能是其他元素的俄歇峰或次要能级）。确认的元素会自动用于同一样品高分辨谱的<b>重叠峰判断</b>。</p>`}
 function renderRef(){
+  $("reftitle").textContent=S.v&&S.v.kind==="survey"?"元素识别":"推荐峰位";
+  if(S.v&&S.v.kind==="survey"){renderSurvey();return}
   const b=$("refbody");b.className="";const r=REF&&REF.ref;
   if(!REF){b.innerHTML="";return}
-  if(!r){$("refsrc").textContent="";b.innerHTML=`<p class="note" style="margin:0">暂无 ${esc(REF.orbital||"该元素")} 的参考数据。已有：${REF.available.join("、")||"无"}。可点顶部“导入 NIST”导入 NIST XPS 数据库导出的文件。</p>`;return}
+  const idn0=S.v&&S.v.ident;const an0=idn0&&idn0.auto&&idn0.candidates&&idn0.candidates.length?`<p class="note" style="margin:0 0 6px;color:var(--accent-h)">已根据谱图识别为 <b>${esc(idn0.candidates[0][0])}</b>（${esc(idn0.candidates[0][2])}）</p>`:"";
+  if(!r){$("refsrc").textContent="";b.innerHTML=an0+`<p class="note" style="margin:0">暂无 ${esc(REF.orbital||"该元素")} 的参考数据。已有：${REF.available.join("、")||"无"}。可点顶部“导入 NIST”导入 NIST XPS 数据库导出的文件。</p>`;return}
   if(r.missing){$("refsrc").textContent="NIST";b.innerHTML=`<p class="note" style="margin:0">${esc(r.element)} 的参考数据里没有 ${esc(REF.orbital)}（有：${r.have.join("、")}）。</p>`;return}
   $("refsrc").textContent=`NIST · ${r.n_records} 条 ${r.line}`;
+  const idn=S.v&&S.v.ident;const autoNote=idn&&idn.auto&&idn.candidates&&idn.candidates.length?`<div class="refbar" style="color:var(--accent-h)">已根据谱图识别为 <b>${esc(idn.candidates[0][0])}</b>（${esc(idn.candidates[0][2])}）；不对的话双击左侧名称重命名</div>`:"";
   const sp=r.split?`双峰间距 <b>${r.split.median}</b> eV（${r.split.n} 条，${r.split.min}–${r.split.max}）· 面积比 ${+(r.ratio||0).toFixed(3)}`:"单峰轨道";
   const rows=r.states.filter(st=>REFALL||st.n>=6);
-  b.innerHTML=`<div class="refbar"><span>${sp}</span></div>
+  b.innerHTML=autoNote+`<div class="refbar"><span>${sp}</span></div>
    <div class="refbar" style="color:var(--ink3)"><span><span style="color:var(--ok);font-size:9px">●</span> = 数据中 ±0.3 eV 内有峰</span></div>
    <div class="refbar"><span>勾选的化合物在图上显示</span><a style="cursor:pointer;color:var(--accent-h)" id="ref_allon">全选</a><a style="cursor:pointer;color:var(--ink3)" id="ref_alloff">清除</a>
    <label class="switch" style="margin-left:auto"><input type="checkbox" id="ref_all" ${REFALL?"checked":""}> 含少见（n&lt;6）</label></div>

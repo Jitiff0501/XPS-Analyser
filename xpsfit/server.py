@@ -26,6 +26,7 @@ sys.path.insert(0, HERE)
 from xpsfit import core  # noqa: E402
 from xpsfit import reference  # noqa: E402
 from xpsfit import autofit  # noqa: E402
+from xpsfit import identify  # noqa: E402
 import avantage_to_xpspeak as conv  # noqa: E402
 
 APP = "XPS Fit Studio"
@@ -122,7 +123,8 @@ class State:
                 "x": _f(x), "bgline": _f(bg), "comps": [_f(bg + c) for c in comps],
                 "env": _f(bg + env) if s.peaks else [], "resid": _f(y - bg - env) if s.peaks else [],
                 "peaks": peaks, "fit": s.last_fit, "region": [float(x.min()), float(x.max())],
-                "window": [s.window[0] + s.shift, s.window[1] + s.shift]}
+                "window": [s.window[0] + s.shift, s.window[1] + s.shift],
+                "kind": getattr(s, "kind", "region"), "ident": getattr(s, "ident", None)}
 
 
 ST = State()
@@ -131,6 +133,9 @@ ST = State()
 # ============================================================== API
 def api(method, a):
     st = ST
+    if method == "identify":
+        t = st.S(a["i"]); auto_identify(t)
+        return dict(st.view(a["i"]), specs=st.summary())
     if method == "state":
         return {"specs": st.summary(), "templates": list(st.templates), "native": WINDOW is not None}
     if method == "pick_files":
@@ -293,6 +298,14 @@ def api(method, a):
         targets = [s] if not a.get("all") else [t for t in st.specs if t.sample == s.sample]
         reports = []
         for t in targets:
+            if getattr(t, "kind", "") == "survey":
+                auto_identify(t)
+                el_ = t.ident.get("elements", []) if t.ident else []
+                steps = ["全谱：不做峰拟合，识别元素"] + [
+                    "%s %s：%s" % (e["el"], "（确认）" if e["confirmed"] else "（待确认：只有部分谱线吻合）",
+                                  "、".join("%s %.1f eV" % (n, b) for n, b in e["lines"])) for e in el_]
+                reports.append({"spectrum": t.name, "sample": t.sample, "elements": [e["el"] for e in el_], "steps": steps})
+                continue
             els = sample_elements(t, a.get("extra"))
             try:
                 rep_ = autofit.run(t, els, reference.for_orbital(t.element, user_dir()))
@@ -380,6 +393,31 @@ def open_in_file_manager(p):
         subprocess.Popen(["xdg-open", p])
 
 
+def auto_identify(t):
+    """根据谱图识别：全谱 → 元素列表；文件名认不出轨道的高分辨谱 → 识别轨道。"""
+    t.ident = None
+    if identify.is_survey(t.be_raw):
+        t.kind = "survey"
+        t.element = ""
+        t.bg["type"] = "None"            # 全谱不画背景
+        try:
+            t.ident = identify.identify_survey(t.be_raw, t.y, t.hv)
+        except Exception:
+            t.ident = None
+        return
+    t.kind = "region"
+    cands = identify.identify_region(t.be_raw, t.y)
+    t.ident = {"candidates": cands[:4]}
+    if not t.element and cands:
+        t.element = cands[0][0]
+        t.ident["auto"] = True
+        if not core.guess_orbital(t.name):
+            t.name = "%s（自动识别）" % t.element
+        t.window = core.default_window(t.element, t.be_raw)
+        if t.window != [float(t.be_raw.min()), float(t.be_raw.max())]:
+            t.bg["lo"], t.bg["hi"] = t.window
+
+
 def sample_elements(s, extra=None):
     """同一样品里有哪些元素（由已打开的谱推断），可附加用户输入的元素。"""
     els = set()
@@ -388,6 +426,8 @@ def sample_elements(s, extra=None):
             m = re.match(r"[A-Z][a-z]?", t.element or "")
             if m:
                 els.add(m.group(0))
+            if getattr(t, "kind", "") == "survey" and t.ident:      # 全谱识别出的元素（已确认的）
+                els.update(e["el"] for e in t.ident.get("elements", []) if e.get("confirmed"))
     for e in re.split(r"[,\s，、]+", extra or ""):
         if re.fullmatch(r"[A-Z][a-z]?", e.strip()):
             els.add(e.strip())
@@ -425,6 +465,7 @@ def open_paths(paths):
             for t in new:   # 浏览器上传的单个文件：临时目录名没有意义
                 if t.sample.startswith("xpsfit_up"):
                     t.sample = "单独打开的文件"
+                auto_identify(t)
             if not new:
                 raise RuntimeError("没有识别到谱数据")
             ST.specs.extend(new); added += len(new)
