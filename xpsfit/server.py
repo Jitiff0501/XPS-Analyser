@@ -341,8 +341,7 @@ def api(method, a):
     elif method == "open_folder":
         p = a["path"]
         p = p if os.path.isdir(p) else os.path.dirname(p)
-        if os.name == "nt":
-            os.startfile(p)
+        open_in_file_manager(p)
         return {"ok": True}
     else:
         raise ValueError("未知操作 %s" % method)
@@ -368,6 +367,17 @@ def reference_for(s):
     for st_ in ref["states"]:
         st_["near"] = any(abs(st_["median"] - f) <= 0.3 for f in found)
     return out
+
+
+def open_in_file_manager(p):
+    """在系统文件管理器中打开文件夹（Windows 资源管理器 / macOS Finder / Linux）。"""
+    import subprocess
+    if os.name == "nt":
+        os.startfile(p)
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", p])
+    else:
+        subprocess.Popen(["xdg-open", p])
 
 
 def sample_elements(s, extra=None):
@@ -602,6 +612,7 @@ def figure(s, path, opts=None, dpi=None):
     matplotlib.rcParams.update({"font.family": "sans-serif", "font.size": float(o["font"]),
                                 # 西文用 Arial；中文峰名逐字回退到雅黑/黑体等
                                 "font.sans-serif": ["Arial", "Helvetica", "Microsoft YaHei", "SimHei",
+                                                    "PingFang SC", "Hiragino Sans GB", "Arial Unicode MS",
                                                     "Noto Sans CJK SC", "WenQuanYi Zen Hei", "DejaVu Sans"],
                                 "xtick.direction": "in", "ytick.direction": "in"})
     cols = ["#3B6EA8", "#C4553A", "#4E9A6A", "#8A63B8", "#D08A2E", "#7A5C4F", "#C76B9E", "#3A9AA8"]

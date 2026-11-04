@@ -586,8 +586,13 @@ def main(argv=None):
         try:
             from tkinter import messagebox
             messagebox.showinfo("avantage_to_xpspeak", summary)
-            if ok and os.name == "nt":
-                os.startfile(os.path.dirname(logs[0]))   # 打开输出文件夹
+            if ok:                                       # 打开输出文件夹
+                d = os.path.dirname(logs[0])
+                if os.name == "nt":
+                    os.startfile(d)
+                elif sys.platform == "darwin":
+                    import subprocess
+                    subprocess.Popen(["open", d])
         except Exception:
             pass
     return 0

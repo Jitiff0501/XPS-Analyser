@@ -3,7 +3,7 @@ on: [push, workflow_dispatch]
 permissions:
   contents: write
 jobs:
-  build:
+  windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,13 +35,77 @@ jobs:
           if (-not (Select-String -Path smoke\result.txt -Pattern '^OK$' -Quiet)) { exit 1 }
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-exe
+          name: windows
           path: dist/*.exe
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14          # Apple Silicon (M1–M4)
+            arch: arm64
+            experimental: false
+          - runner: macos-13          # Intel（GitHub 可能逐步停用该机型，失败不影响发布）
+            arch: intel
+            experimental: true
+    runs-on: ${{ matrix.runner }}
+    continue-on-error: ${{ matrix.experimental }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install pyinstaller pandas openpyxl xlrd numpy scipy matplotlib pywebview
+      - name: Tests
+        run: python -m unittest -v test_avantage_to_xpspeak.py test_xpsfit_core.py
+      - name: Build "XPS Fit Studio.app"
+        run: >-
+          python -m PyInstaller --noconfirm --windowed --name "XPS Fit Studio"
+          --osx-bundle-identifier org.xpsfitstudio.app
+          --add-data "xpsfit/web:xpsfit/web"
+          --add-data "xpsfit/sensitivity_factors.json:xpsfit"
+          --add-data "xpsfit/reference:xpsfit/reference"
+          --hidden-import avantage_to_xpspeak
+          --exclude-module IPython --exclude-module PyQt5 --exclude-module PySide6 --exclude-module tkinter
+          run_xpsfit.py
+      - name: Build "Avantage2XPSPEAK.app" (converter)
+        run: >-
+          python -m PyInstaller --noconfirm --windowed --name "Avantage2XPSPEAK"
+          --osx-bundle-identifier org.xpsfitstudio.converter
+          --exclude-module matplotlib --exclude-module scipy --exclude-module IPython --exclude-module webview
+          avantage_to_xpspeak.py
+      - name: Smoke test (run the packaged app headless)
+        run: |
+          mkdir -p smoke
+          XPSFIT_SMOKE="$PWD/smoke/result.txt" XPSFIT_SMOKE_VGD="$PWD/tests_data/Al2p Scan.VGD" \
+            "dist/XPS Fit Studio.app/Contents/MacOS/XPS Fit Studio"
+          cat smoke/result.txt
+          grep -qx OK smoke/result.txt
+      - name: Zip apps (keep bundle structure)
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent "dist/XPS Fit Studio.app" "XPSFitStudio-macOS-${{ matrix.arch }}.zip"
+          ditto -c -k --sequesterRsrc --keepParent "dist/Avantage2XPSPEAK.app" "Avantage2XPSPEAK-macOS-${{ matrix.arch }}.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}
+          path: "*.zip"
+
+  release:
+    if: github.ref == 'refs/heads/main'
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
       - name: Publish to Releases (latest)
-        if: github.ref == 'refs/heads/main'
-        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
+          ls -la out
           gh release delete latest --yes --cleanup-tag || true
-          gh release create latest dist/XPSFitStudio.exe dist/Avantage2XPSPEAK.exe --title "XPS Fit Studio (Windows)" --target "$GITHUB_SHA" --notes "XPSFitStudio.exe：XPS 峰拟合程序（双击运行）。Avantage2XPSPEAK.exe：VGD → XPSPEAK txt 转换器。"
+          gh release create latest out/* --title "XPS Fit Studio (Windows / macOS)" --target "$GITHUB_SHA" --notes "Windows：XPSFitStudio.exe（拟合程序）、Avantage2XPSPEAK.exe（转换器），双击运行。
+          macOS：XPSFitStudio-macOS-arm64.zip（Apple 芯片 M1–M4）/ -intel.zip（Intel 芯片，如有），解压后把 XPS Fit Studio 拖到“应用程序”。首次打开：右键 → 打开（未签名程序）。"

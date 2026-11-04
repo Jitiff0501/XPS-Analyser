@@ -4,8 +4,14 @@
 
 | 程序 | 用途 |
 |---|---|
-| `XPSFitStudio.exe` | XPS 峰拟合（替代 XPSPEAK 4.1）。双击运行，无需安装 Python |
+| `XPSFitStudio.exe` | Windows：XPS 峰拟合（替代 XPSPEAK 4.1）。双击运行，无需安装 Python |
+| `XPSFitStudio-macOS-arm64.zip` | macOS（Apple 芯片 M1–M4）：解压得到 `XPS Fit Studio.app`，拖进“应用程序”。Intel Mac 用 `-intel.zip`（如有） |
 | `Avantage2XPSPEAK.exe` | 把 Avantage `.VGD` / 导出表格转成 XPSPEAK 4.1 的两列 txt |
+
+### macOS 首次打开
+程序没有苹果开发者签名，第一次打开时系统会拦截：在“应用程序”里 **右键（或按住 Control 点按）→ 打开 → 打开**，之后就能正常双击。
+若提示“已损坏，无法打开”，在“终端”运行一次：`xattr -cr "/Applications/XPS Fit Studio.app"`。
+用户模板、灵敏度因子、导入的 NIST 数据保存在 `~/XPSFitStudio/`。
 
 ## XPS Fit Studio 使用
 1. **打开文件夹**（每种轨道自动使用文献常用的显示/背景范围，如 Al2p 70–80、C1s 280–292、Cu2p 925–965 eV；“全谱”看整个采集范围，“复位”回到默认范围）：一次读入样品文件夹（含子文件夹）里所有元素的 `.VGD`，按样品分组；图上方的元素标签（或键盘 ← →）切换元素。也可“打开文件”选单个文件（`.VGD`、Avantage 导出 Excel/CSV、XPSPEAK txt），或拖拽到左侧。
