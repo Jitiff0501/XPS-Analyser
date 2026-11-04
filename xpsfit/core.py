@@ -4,6 +4,7 @@ import copy
 import json
 import math
 import os
+import re
 
 import numpy as np
 from scipy.optimize import least_squares
@@ -296,10 +297,17 @@ def resolve(peaks, free_vec=None, layout=None):
         r = names.get(ln.get("ref"))
         if r is not None and r != i:
             fin(r, depth + 1)
+            # with：参考峰与这些峰一起构成参考包络（如 Fe 氧化物 2p3/2 = 主线 + 多重分裂线）。
+            # 此时 ΔE 相对包络的面积加权重心，面积比相对包络总面积——与文献的 ΔE、面积比直接可比
+            grp = [r] + [names[n] for n in (ln.get("with") or []) if n in names and names[n] != i]
+            for g in grp[1:]:
+                fin(g, depth + 1)
+            A = sum(vals[g]["area"] for g in grp)
             if ln.get("dE") is not None:
-                vals[i]["center"] = vals[r]["center"] + ln["dE"]
+                c0 = (sum(vals[g]["center"] * vals[g]["area"] for g in grp) / A) if len(grp) > 1 and A > 0 else vals[r]["center"]
+                vals[i]["center"] = c0 + ln["dE"]
             if ln.get("area_ratio") is not None:
-                vals[i]["area"] = vals[r]["area"] * ln["area_ratio"]
+                vals[i]["area"] = (A if len(grp) > 1 else vals[r]["area"]) * ln["area_ratio"]
             if ln.get("fwhm_ratio") is not None:
                 vals[i]["fwhm"] = vals[r]["fwhm"] * ln["fwhm_ratio"]
             if ln.get("lor_same"):   # 峰型相同：L%、不对称形状和拖尾参数都跟随参考峰
@@ -584,6 +592,81 @@ def guess_orbital(name):
 
 
 # ------------------------------------------------------------------ 参数表 / 定量
+# ------------------------------------------------------------------ 自旋轨道双峰的文献约束
+# 高 j / 低 j 分量（2p1/2 相对 2p3/2、3d3/2 相对 3d5/2、4f5/2 相对 4f7/2）：
+#   dE    分裂范围 (eV) 与常用值：取自 NIST XPS Database (SRD 20) 的分布、Thermo Fisher “XPS Simplified” 元素页、
+#         Biesinger et al. (Appl. Surf. Sci. 257 (2010) 887；257 (2011) 2717)；金属态与化合物（氧化物等）分开
+#   ratio 面积比：理论 (2j+1) 比 p 0.5 / d 0.667 / f 0.75，允许 ±0.05 左右（背景与 Coster–Kronig 效应）
+#   fwr   FWHM 比：2p 的 1/2 分量因 Coster–Kronig 衰变更宽（Ti、V 最明显），3d / 4f 基本相等
+#   lock  分裂远小于峰宽、拟合无法分辨时按惯例锁定在常用值（Al2p、Si2p）
+SPIN_ORBIT = {
+    # 轨道: {"metal": (ΔE 常用, ΔE 范围), "comp": (ΔE 常用, ΔE 范围), "ratio": 范围, "fwr": 范围[, "fwr_metal"], "lock"}
+    "Al2p": {"metal": (0.44, (0.40, 0.46)), "comp": (0.44, (0.40, 0.46)), "ratio": (0.5, 0.5), "fwr": (1.0, 1.0), "lock": True},
+    "Si2p": {"metal": (0.61, (0.58, 0.64)), "comp": (0.61, (0.58, 0.64)), "ratio": (0.5, 0.5), "fwr": (1.0, 1.0), "lock": True},
+    "P2p": {"metal": (0.87, (0.83, 0.90)), "comp": (0.87, (0.83, 0.90)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.0)},
+    "S2p": {"metal": (1.18, (1.15, 1.21)), "comp": (1.18, (1.15, 1.21)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.0)},
+    "Cl2p": {"metal": (1.60, (1.55, 1.65)), "comp": (1.60, (1.55, 1.65)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.0)},
+    "K2p": {"metal": (2.80, (2.75, 2.85)), "comp": (2.80, (2.75, 2.85)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.1)},
+    "Ca2p": {"metal": (3.55, (3.50, 3.60)), "comp": (3.55, (3.50, 3.60)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.1)},
+    "Ti2p": {"metal": (6.10, (6.00, 6.20)), "comp": (5.70, (5.50, 5.90)), "ratio": (0.42, 0.55), "fwr": (1.2, 2.2), "fwr_metal": (1.0, 1.6)},
+    "V2p": {"metal": (7.55, (7.40, 7.70)), "comp": (7.40, (7.20, 7.60)), "ratio": (0.40, 0.55), "fwr": (1.2, 2.5), "fwr_metal": (1.0, 1.8)},
+    "Cr2p": {"metal": (9.30, (9.20, 9.40)), "comp": (9.75, (9.50, 9.90)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.4), "fwr_metal": (1.0, 1.5)},
+    "Mn2p": {"metal": (11.15, (11.00, 11.30)), "comp": (11.65, (11.40, 11.90)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.5)},
+    "Fe2p": {"metal": (13.10, (13.00, 13.25)), "comp": (13.60, (13.40, 13.90)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.4), "fwr_metal": (1.0, 1.5)},
+    "Co2p": {"metal": (15.00, (14.90, 15.10)), "comp": (15.50, (15.10, 16.00)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.3), "fwr_metal": (1.0, 1.4)},
+    "Ni2p": {"metal": (17.30, (17.20, 17.40)), "comp": (17.70, (17.40, 18.00)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.4)},
+    "Cu2p": {"metal": (19.80, (19.70, 20.00)), "comp": (19.90, (19.80, 20.10)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.3)},
+    "Zn2p": {"metal": (23.10, (23.00, 23.20)), "comp": (23.10, (23.00, 23.20)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.2)},
+    "Cu3p": {"metal": (2.30, (2.20, 2.40)), "comp": (2.30, (2.20, 2.40)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.2)},
+    "Zr3d": {"metal": (2.40, (2.35, 2.45)), "comp": (2.40, (2.35, 2.45)), "ratio": (0.62, 0.70), "fwr": (1.0, 1.1)},
+    "Nb3d": {"metal": (2.75, (2.70, 2.80)), "comp": (2.75, (2.70, 2.80)), "ratio": (0.62, 0.70), "fwr": (1.0, 1.1)},
+    "Mo3d": {"metal": (3.13, (3.10, 3.18)), "comp": (3.13, (3.10, 3.18)), "ratio": (0.62, 0.70), "fwr": (1.0, 1.1)},
+    "Ru3d": {"metal": (4.17, (4.10, 4.22)), "comp": (4.17, (4.10, 4.22)), "ratio": (0.62, 0.70), "fwr": (1.0, 1.1)},
+    "Pd3d": {"metal": (5.26, (5.20, 5.32)), "comp": (5.26, (5.20, 5.32)), "ratio": (0.62, 0.70), "fwr": (1.0, 1.1)},
+    "Ag3d": {"metal": (6.00, (5.95, 6.05)), "comp": (6.00, (5.95, 6.05)), "ratio": (0.62, 0.70), "fwr": (1.0, 1.1)},
+    "In3d": {"metal": (7.54, (7.48, 7.60)), "comp": (7.54, (7.48, 7.60)), "ratio": (0.62, 0.70), "fwr": (1.0, 1.1)},
+    "Sn3d": {"metal": (8.41, (8.36, 8.46)), "comp": (8.41, (8.36, 8.46)), "ratio": (0.62, 0.70), "fwr": (1.0, 1.1)},
+    "Hf4f": {"metal": (1.68, (1.64, 1.72)), "comp": (1.68, (1.64, 1.72)), "ratio": (0.72, 0.78), "fwr": (1.0, 1.1)},
+    "Ta4f": {"metal": (1.90, (1.86, 1.94)), "comp": (1.90, (1.86, 1.94)), "ratio": (0.72, 0.78), "fwr": (1.0, 1.1)},
+    "W4f": {"metal": (2.17, (2.12, 2.22)), "comp": (2.17, (2.12, 2.22)), "ratio": (0.72, 0.78), "fwr": (1.0, 1.1)},
+    "Pt4f": {"metal": (3.33, (3.30, 3.36)), "comp": (3.33, (3.30, 3.36)), "ratio": (0.72, 0.78), "fwr": (1.0, 1.1)},
+    "Au4f": {"metal": (3.67, (3.64, 3.70)), "comp": (3.67, (3.64, 3.70)), "ratio": (0.72, 0.78), "fwr": (1.0, 1.1)},
+}
+_SO_DEFAULT = {"p": (0.45, 0.55), "d": (0.62, 0.70), "f": (0.72, 0.78)}
+
+
+def is_metal_name(name):
+    """名称像金属态（Fe0、Cu0/Cu+、Al0…）。"""
+    return bool(re.match(r"^[A-Z][a-z]?0\b", name or ""))
+
+
+def so_rule(orbital, metal=False):
+    """返回该轨道的双峰约束：{dE, dE_rng, ratio, ratio_rng, fwr_rng, lock}；未收录的轨道返回 None。"""
+    r = SPIN_ORBIT.get(orbital or "")
+    if not r:
+        return None
+    dE, rng = r["metal" if metal else "comp"]
+    rr = r.get("ratio") or _SO_DEFAULT.get((orbital or "x")[-1], (0.45, 0.55))
+    fw = r.get("fwr_metal") if metal and r.get("fwr_metal") else r.get("fwr", (1.0, 1.0))
+    th = {"p": 0.5, "d": 2 / 3, "f": 0.75}.get((orbital or "x")[-1], 0.5)
+    return {"dE": dE, "dE_rng": rng, "ratio": th, "ratio_rng": rr, "fwr_rng": fw, "lock": bool(r.get("lock"))}
+
+
+def apply_so_rule(pair_link, rule, fit=True):
+    """把文献范围写进双峰副峰的绑定：fit=True 时 ΔE / 面积比 / FWHM 比在范围内拟合，否则锁定在常用值。"""
+    ln = pair_link
+    ln["dE"], ln["area_ratio"] = rule["dE"], rule["ratio"]
+    lo, hi = rule["fwr_rng"]
+    ln["fwhm_ratio"] = (lo + hi) / 2
+    if hi > lo:
+        ln.update(fwhm_ratio_fit=True, fwhm_ratio_min=lo, fwhm_ratio_max=hi)
+    if fit and not rule["lock"]:
+        ln.update(dE_fit=True, dE_min=rule["dE_rng"][0], dE_max=rule["dE_rng"][1])
+        if rule["ratio_rng"][1] > rule["ratio_rng"][0]:
+            ln.update(area_ratio_fit=True, area_ratio_min=rule["ratio_rng"][0], area_ratio_max=rule["ratio_rng"][1])
+    return ln
+
+
 # 峰颜色：同一组（主峰 + 自旋轨道副峰 + 多重分裂分量 + 卫星）同色；主峰可存自定义颜色 p["color"]
 PALETTE = ["#3B6EA8", "#C4553A", "#4E9A6A", "#8A63B8", "#D08A2E", "#7A5C4F", "#C76B9E", "#3A9AA8",
            "#6F7FB8", "#A86A3C", "#6E8F3A", "#B07A8A"]

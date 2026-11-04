@@ -126,7 +126,9 @@ class State:
                 "peaks": peaks, "fit": s.last_fit, "region": [float(x.min()), float(x.max())],
                 "window": [s.window[0] + s.shift, s.window[1] + s.shift],
                 "kind": getattr(s, "kind", "region"), "ident": getattr(s, "ident", None),
-                "states": _states(s), "interp": _interp(s), "colors": core.peak_colors(s.peaks)}
+                "states": _states(s), "interp": _interp(s), "colors": core.peak_colors(s.peaks),
+                "so": {"metal": core.so_rule(s.element, True), "comp": core.so_rule(s.element, False)}
+                if core.so_rule(s.element) else None}
 
 
 ST = State()
@@ -408,6 +410,11 @@ def api(method, a):
                                     0.6 if a.get("ecf", True) else 0.0, inc)
         used = sorted({t.element for t in st.specs if t.element})
         return {"samples": res, "sf": st.sf, "orbitals": used}
+    elif method == "stack":
+        return stack_data(a["i"], a)
+    elif method == "export_stack":
+        p = export_stack(a["i"], a)
+        return {"path": p, "msg": "已导出"}
     elif method.startswith("export_"):
         return {"path": export(method[7:], a), "msg": "已导出"}
     elif method == "save_project":
@@ -801,6 +808,115 @@ def figure(s, path, opts=None, dpi=None):
     fig.savefig(path, dpi=dpi or float(o["dpi"]), format=fmt)
 
 
+# ------------------------------------------------------------------ 多样品同一轨道堆叠对比
+STACK_DEFAULTS = {"mode": "bgsub", "offset": 1.15, "fit": True, "comps": False, "members": None, "states": True,
+                  "fmt": "png", "width_cm": 8.5, "height_cm": None, "dpi": 600, "font": 9, "xmin": None, "xmax": None}
+
+
+def stack_data(i, a):
+    """当前谱所属轨道在各样品中的谱，按 mode 变换：raw 原始；norm 最小–最大归一化；bgsub 扣背景后按峰高归一化。"""
+    o = dict(STACK_DEFAULTS); o.update({k: v for k, v in (a or {}).items() if k in STACK_DEFAULTS and v is not None})
+    el = ST.S(i).element
+    allk = [k for k, t in enumerate(ST.specs) if t.element == el and getattr(t, "kind", "region") != "survey"]
+    sel = set(int(m) for m in o["members"]) if o["members"] is not None else set(allk)
+    items = []
+    for k in allk:
+        if k not in sel:
+            continue
+        t = ST.specs[k]
+        x, y, bg, comps, env = t.compute()
+        if o["mode"] == "raw":
+            off, sc, yy, base = 0.0, 1.0, y, bg
+        elif o["mode"] == "norm":
+            off, sc = float(np.min(y)), float(np.ptp(y)) or 1.0
+            yy, base = y, bg
+        else:
+            off, sc = 0.0, float(np.max(y - bg)) or 1.0
+            yy, base = y - bg, np.zeros_like(bg)
+        f = lambda v: _f((np.asarray(v, float) - off) / sc)
+        fitted = bool(t.peaks)
+        items.append({"i": k, "sample": t.sample or "", "name": t.name, "x": _f(x), "y": f(yy),
+                      "bg": f(base) if o["mode"] != "bgsub" else None,
+                      "env": f(base + env) if fitted else None,
+                      "comps": [f(base + c) for c in comps] if fitted and o["comps"] else [],
+                      "colors": core.peak_colors(t.peaks), "roles": [p.get("role", "main") for p in t.peaks],
+                      "states": _states(t) if fitted else []})
+    return {"element": el, "mode": o["mode"], "items": items,
+            "all": [{"i": k, "sample": ST.specs[k].sample or "", "name": ST.specs[k].name} for k in allk]}
+
+
+def _stack_label(it, with_states=True):
+    lab = it["sample"] or it["name"]
+    if with_states and it["states"]:
+        lab += "  " + " · ".join("%s %.0f%%" % (re.sub(r"\s*\d[spdf]$", "", core.state_name(n)), 100 * f)
+                                 for n, f, *_ in it["states"] if f >= 0.005)
+    return lab
+
+
+def export_stack(i, a):
+    import matplotlib
+    matplotlib.use("Agg")
+    from matplotlib.figure import Figure
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+    o = dict(STACK_DEFAULTS); o.update({k: v for k, v in (a or {}).items() if k in STACK_DEFAULTS and v is not None and v != ""})
+    d = stack_data(i, o)
+    items = d["items"]
+    if not items:
+        raise ValueError("没有可堆叠的谱")
+    n = len(items)
+    matplotlib.rcParams.update({"font.family": "sans-serif", "font.size": float(o["font"]),
+                                "font.sans-serif": ["Arial", "Helvetica", "Microsoft YaHei", "SimHei", "PingFang SC",
+                                                    "Hiragino Sans GB", "Arial Unicode MS", "Noto Sans CJK SC",
+                                                    "WenQuanYi Zen Hei", "DejaVu Sans"],
+                                "xtick.direction": "in", "ytick.direction": "in"})
+    hcm = float(o["height_cm"] or (4.0 + 2.3 * n))
+    fig = Figure(figsize=(float(o["width_cm"]) / 2.54, hcm / 2.54))
+    FigureCanvasAgg(fig)
+    ax = fig.add_subplot(111)
+    span = 1.0 if d["mode"] != "raw" else max(max(it["y"]) - min(it["y"]) for it in items)
+    step = float(o["offset"]) * span
+    xs = [v for it in items for v in it["x"]]
+    xmin = float(o["xmin"]) if o["xmin"] is not None else min(xs)
+    xmax = float(o["xmax"]) if o["xmax"] is not None else max(xs)
+    labels = []
+    for j, it in enumerate(items):                 # 第一个样品在最上面
+        sh = (n - 1 - j) * step
+        x = np.asarray(it["x"])
+        if it["comps"]:
+            base = np.asarray(it["bg"]) if it["bg"] is not None else np.zeros_like(x)
+            for c, col, role in zip(it["comps"], it["colors"], it["roles"]):
+                ax.fill_between(x, base + sh, np.asarray(c) + sh, color=col, alpha=0.25 if role == "main" else 0.15, lw=0)
+                ax.plot(x, np.asarray(c) + sh, color=col, lw=0.6, ls=":" if role == "satellite" else "-")
+        ax.plot(x, np.asarray(it["y"]) + sh, "-", color="#222", lw=0.8)
+        if o["fit"] and it["env"] is not None:
+            ax.plot(x, np.asarray(it["env"]) + sh, "-", color="#C00000", lw=0.9)
+        labels.append((j, sh, x, np.maximum(np.asarray(it["y"]), np.asarray(it["env"]) if it["env"] is not None else -np.inf)))
+    ax.set_xlim(xmax, xmin)
+    ax.set_xlabel("Binding Energy (eV)")
+    ax.set_ylabel("Intensity (a.u.)" if d["mode"] != "raw" else "Intensity (CPS)")
+    if d["mode"] != "raw":
+        ax.set_yticks([])
+    ax.set_title(d["element"], fontsize=float(o["font"]))
+    top = (n - 1) * step + 1.25 * span
+    ax.set_ylim(ax.get_ylim()[0], max(ax.get_ylim()[1], top))
+    fig.tight_layout()
+    # 标签：放在高 BE 一侧，按实际文字宽度找出这一段曲线的最高点，放在其上方，避免压住峰
+    r = fig.canvas.get_renderer()
+    for j, sh, x, yy in labels:
+        t = ax.text(xmax - 0.02 * (xmax - xmin), sh, pretty_label(_stack_label(items[j], o["states"])),
+                    ha="left", va="bottom", fontsize=float(o["font"]) * 0.8)
+        bb = t.get_window_extent(r).transformed(ax.transData.inverted())
+        lo_x, hi_x = sorted((bb.x0, bb.x1))
+        m = (x >= lo_x) & (x <= hi_x)
+        ymax = float(np.max(yy[m])) if m.any() else 0.0
+        t.set_y(sh + max(ymax, 0.0) + 0.05 * span)
+    fmt = o["fmt"] if o["fmt"] != "tif" else "tiff"
+    s0 = ST.S(i)
+    p = os.path.join(ST.out_dir(s0), conv.safe_name("stack_%s_%d-samples" % (d["element"], n)) + "." + o["fmt"])
+    fig.savefig(p, dpi=float(o["dpi"]), format=fmt)
+    return p
+
+
 def add_peak(s, a):
     """kind: single / doublet / satellite / unknown"""
     x, y, bg, comps, env = s.compute()
@@ -830,9 +946,25 @@ def add_peak(s, a):
         sub = re.search(r"\d[spdf]$", s.element or "")
         sub = sub.group(0) if sub and sub.group(0) not in nm else ""      # 名称里没有能级时补上，如 Cr0 → Cr0 2p3/2
         labels = ("%s %s%s" % (nm, sub, j_lab[0]), "%s %s%s" % (nm, sub, j_lab[1]))
-        s.peaks.extend(core.doublet(nm, c, float(a["split"]), float(a["ratio"]), w, h * w * 1.064, lor, labels,
-                                    fit_split=not a.get("lock_split", True), fit_ratio=not a.get("lock_ratio", True),
-                                    shape=shape))
+        pk = core.doublet(nm, c, float(a["split"]), float(a["ratio"]), w, h * w * 1.064, lor, labels,
+                          fit_split=not a.get("lock_split", True), fit_ratio=not a.get("lock_ratio", True), shape=shape)
+        rule = core.so_rule(s.element, shape == "Asym" or core.is_metal_name(nm))
+        if rule:                                  # 不锁定时在文献范围内拟合；FWHM 倍率总按文献范围
+            ln = pk[1]["link"]
+            if rule["lock"]:                      # 分裂远小于峰宽（Al2p、Si2p）：按惯例锁定在常用值
+                for k in ("dE_fit", "area_ratio_fit"):
+                    ln.pop(k, None)
+            lo, hi = rule["dE_rng"]
+            if ln.get("dE_fit") and lo - 0.3 <= ln["dE"] <= hi + 0.3:
+                ln.update(dE_min=min(lo, ln["dE"]), dE_max=max(hi, ln["dE"]))
+            lo, hi = rule["ratio_rng"]
+            if ln.get("area_ratio_fit") and hi > lo:
+                ln.update(area_ratio_min=min(lo, ln["area_ratio"]), area_ratio_max=max(hi, ln["area_ratio"]))
+            lo, hi = rule["fwr_rng"]
+            if hi > lo:
+                ln.update(fwhm_ratio=(lo + hi) / 2, fwhm_ratio_fit=True, fwhm_ratio_min=lo, fwhm_ratio_max=hi)
+                pk[1]["fwhm"]["value"] = w * (lo + hi) / 2
+        s.peaks.extend(pk)
     elif kind == "satellite":
         par = s.peaks[int(a["parent"])]
         dE = float(a.get("dE", c - par["center"]["value"]))

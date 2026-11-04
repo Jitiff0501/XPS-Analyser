@@ -13,5 +13,5 @@
 | Sample3 | Al2p | Smart | Al3+ 2p 98%、Al0 2p 2% | Al3+ 2p 100±1%、Al0 2p 0±1% | 0/4 |
 | Sample3 | C1s | Points | C-C/C-H 62%、M-C carbide 26%、C-O 9%、C=O / O-C=O 4% | C-C/C-H 54±11%、M-C carbide 23±6%、C-O 14±8%、C=O / O-C=O 9±5% | 0/4 |
 | Sample3 | Co2p | Smart | Co0 2p 56%、Co2+ 2p 44% | Co0 2p 55±1%、Co2+ 2p 45±1% | 0/4 |
-| Sample3 | Cr2p | Smart | Cr3+ 2p 59%、Cr0 2p 33%、Cr6+ 2p 8% | Cr3+ 2p 60±1%、Cr0 2p 31±2%、Cr6+ 2p 9±1% | 0/4 |
+| Sample3 | Cr2p | Smart | Cr3+ 2p 61%、Cr0 2p 30%、Cr6+ 2p 8% | Cr3+ 2p 62±1%、Cr0 2p 29±2%、Cr6+ 2p 9±1% | 0/4 |
 | Sample3 | O1s | Smart | O lattice (M-O) 45%、O defect / M-OH 38%、C-O / H2O ads. 17% | O lattice (M-O) 44±1%、O defect / M-OH 38±0%、C-O / H2O ads. 17±0% | 0/4 |

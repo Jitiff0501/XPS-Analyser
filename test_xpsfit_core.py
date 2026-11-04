@@ -296,6 +296,24 @@ class Core(unittest.TestCase):
         self.assertAlmostEqual(autofit.fe_phases(s)["x2"], 1.0, places=6)
 
 
+    def test_spin_orbit_rules(self):
+        from xpsfit import autofit
+        r = core.so_rule("Co2p", metal=True)
+        self.assertEqual(r["dE_rng"], (14.9, 15.1))
+        pk = autofit._D("Co2+", 780.6, None, None, 2.6, orb="Co2p")
+        ln = pk[1]["link"]
+        self.assertEqual((ln["dE_min"], ln["dE_max"]), core.so_rule("Co2p")["dE_rng"])
+        self.assertEqual((ln["area_ratio_min"], ln["area_ratio_max"]), (0.45, 0.55))
+        al = autofit._D("Al0", 72.6, None, None, 0.8, shape="Asym", orb="Al2p")[1]["link"]
+        self.assertFalse(al.get("dE_fit") or al.get("area_ratio_fit"))          # 分裂太小：锁定
+        # Fe 氧化物 2p1/2 相对 2p3/2 包络（主线 + 多重分裂线）
+        fe = autofit.fe_phase_peaks("Fe2O3")
+        v = core.resolve(fe)
+        c3 = (v[0]["center"] * v[0]["area"] + v[1]["center"] * v[1]["area"]) / (v[0]["area"] + v[1]["area"])
+        self.assertAlmostEqual(v[2]["center"] - c3, core.so_rule("Fe2p")["dE"], places=6)
+        self.assertAlmostEqual(v[2]["area"] / (v[0]["area"] + v[1]["area"]), 0.5, places=6)
+
+
 class Api(unittest.TestCase):
     """不开窗口，直接调用后端 API 走一遍完整流程。"""
     def test_workflow(self):
@@ -323,6 +341,16 @@ class Api(unittest.TestCase):
                 self.assertTrue(os.path.getsize(out) > 100, out)
             q = server.api("quant", {"use_fit": True, "ecf": True})
             self.assertAlmostEqual(q["samples"][0]["elements"]["Al2p"], 100.0)
+            # 堆叠对比：同一轨道的两条谱
+            server.ST.specs.append(copy.deepcopy(server.ST.specs[0]))
+            server.ST.specs[1].sample = "B"
+            st = server.api("stack", {"i": 0, "mode": "bgsub"})
+            self.assertEqual(len(st["items"]), 2)
+            self.assertAlmostEqual(max(st["items"][0]["y"]), 1.0, places=6)
+            out = server.api("export_stack", {"i": 0, "dpi": 80})["path"]
+            self.assertTrue(os.path.getsize(out) > 100, out)
+            v = server.api("set_color", {"i": 0, "j": 1, "color": "#112233"})
+            self.assertEqual(v["colors"][0], "#112233")                    # 双峰副峰的颜色作用于整组
         finally:
             server.user_dir = old
 

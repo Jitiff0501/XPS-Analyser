@@ -83,7 +83,16 @@ def _P(name, c, w, lor=30, shape="GL", role="main", lo=None, hi=None, wmin=1.0, 
 
 
 def _D(name, c, split, ratio, w, sub="2p", shape="GL", lo=None, hi=None, split_rng=None, ratio_rng=None,
-       fwr=(1.0, 1.3), wmin=1.0, wmax=3.0, lor=30):
+       fwr=(1.0, 1.3), wmin=1.0, wmax=3.0, lor=30, orb=None):
+    """自旋轨道双峰。给出 orb（如 "Fe2p"）且该轨道在 core.SPIN_ORBIT 中时，ΔE / 面积比 / FWHM 比一律用文献范围
+    （金属态与化合物分开；分不开的小分裂锁定），忽略 split / ratio / *_rng / fwr 参数。"""
+    rule = core.so_rule(orb, core.is_metal_name(name) or shape == "Asym") if orb else None
+    if rule:
+        sub = orb[-2:]
+        split, ratio, fwr = rule["dE"], rule["ratio"], rule["fwr_rng"]
+        split_rng = None if rule["lock"] else rule["dE_rng"]
+        rr = rule["ratio_rng"]
+        ratio_rng = None if rule["lock"] or rr[1] <= rr[0] else rr
     j = {"p": ("3/2", "1/2"), "d": ("5/2", "3/2"), "f": ("7/2", "5/2")}[sub[-1]]
     a, b = "%s %s%s" % (name, sub, j[0]), "%s %s%s" % (name, sub, j[1])
     p1 = _P(a, c, w, lor, shape, lo=lo, hi=hi, wmin=wmin, wmax=wmax)
@@ -139,9 +148,14 @@ def fe_phase_peaks(name):
     mult["link"] = {"ref": main["name"], "dE": 1.6, "dE_fit": True, "dE_min": 1.0, "dE_max": 2.2,
                     "area_ratio": 0.55, "area_ratio_fit": True, "area_ratio_min": 0.3, "area_ratio_max": 0.8,
                     "fwhm_ratio": 1.2, "fwhm_ratio_fit": True, "fwhm_ratio_min": 1.0, "fwhm_ratio_max": 1.4, "lor_same": True}
-    half = _P("%s 2p1/2" % name, c + 14.2, 3.2, wmin=1.6, wmax=5.0)
-    half["link"] = {"ref": main["name"], "dE": 14.2, "dE_fit": True, "dE_min": 13.6, "dE_max": 14.8,
-                    "area_ratio": 0.8, "area_ratio_fit": True, "area_ratio_min": 0.5, "area_ratio_max": 1.1,
+    # 2p1/2：ΔE 与面积比相对整个 2p3/2 包络（主线 + 多重分裂线的重心 / 总面积），直接使用文献范围（core.SPIN_ORBIT）；
+    # 宽度相对主线（1/2 分量是一个宽峰，对应整个 2p3/2 包络的宽度再加 Coster–Kronig 展宽）
+    rule = core.so_rule("Fe2p", metal=False)
+    half = _P("%s 2p1/2" % name, c + 0.6 + rule["dE"], 3.2, wmin=1.6, wmax=5.0)
+    half["link"] = {"ref": main["name"], "with": [mult["name"]], "dE": rule["dE"], "dE_fit": True,
+                    "dE_min": rule["dE_rng"][0], "dE_max": rule["dE_rng"][1],
+                    "area_ratio": rule["ratio"], "area_ratio_fit": True,
+                    "area_ratio_min": rule["ratio_rng"][0], "area_ratio_max": rule["ratio_rng"][1],
                     "fwhm_ratio": 1.8, "fwhm_ratio_fit": True, "fwhm_ratio_min": 1.2, "fwhm_ratio_max": 2.5, "lor_same": True}
     mult["pair"] = half["pair"] = True
     s1 = _SATR("%s sat. 2p3/2" % name, main["name"], c, dsat, (swl + swh) / 2, drng, rr, wmin=swl, wmax=swh)
@@ -157,8 +171,7 @@ def fe_phase_peaks(name):
 def fe_model(metal=True, phases=("Fe3O4",)):
     m = []
     if metal:
-        m += _D("Fe0", 706.7, 13.1, 0.5, 1.0, shape="Asym", lo=706.3, hi=707.2, wmin=0.7, wmax=1.8,
-                split_rng=(12.95, 13.3), ratio_rng=(0.45, 0.55), fwr=(1.0, 1.5))
+        m += _D("Fe0", 706.7, None, None, 1.0, shape="Asym", lo=706.3, hi=707.2, wmin=0.7, wmax=1.8, orb="Fe2p")
     for ph in phases:
         m += fe_phase_peaks(ph)
     return m
@@ -183,15 +196,25 @@ def fe_select(s, log):
     """Fe 物相选择。① 三个单相模型按 BIC 选主物相（默认显示）；② 两相模型（Fe₃O₄+Fe₂O₃、FeO+Fe₃O₄）
     因包络形状是近似，几乎总能拟合得更好，不能单凭拟合优度确认混合——只用来给出 Fe²⁺ 比例的范围。"""
     base = [p for p in s.peaks if not p.get("fe_phase")]
+    bg0 = copy.deepcopy(s.bg)                 # 主动 Shirley 的斜坡也是拟合参数：每个模型都从斜坡 0 开始，并各自保存
+    if bg0.get("type") == "SlopeShirley":
+        bg0["tilt"] = 0.0
     res = []
     for combo in FE_COMBOS:
+        s.bg = copy.deepcopy(bg0)
         s.peaks = copy.deepcopy(base) + _seed(s, [q for ph in combo for q in fe_phase_peaks(ph)])
-        r = staged_fit(s, max_nfev=400)       # 比较阶段限制迭代；选中的模型再完整拟合
+        r = staged_fit(s, max_nfev=400)       # 比较阶段限制迭代（提高到 1500 结果不变）；选中的模型再完整拟合
         d = fe_phases(s)
-        res.append({"bic": bic(s, r), "combo": combo, "peaks": copy.deepcopy(s.peaks), "x2": d["x2"], "phases": d["phases"]})
+        res.append({"bic": bic(s, r), "combo": combo, "peaks": copy.deepcopy(s.peaks), "bg": copy.deepcopy(s.bg),
+                    "x2": d["x2"], "phases": d["phases"]})
+    for t in res:                             # 单相模型在粗拟合的基础上完整收敛后再比较（主动 Shirley 的斜坡需要更多迭代）
+        if len(t["combo"]) == 1:
+            s.peaks, s.bg = copy.deepcopy(t["peaks"]), copy.deepcopy(t["bg"])
+            r1 = s.do_fit()
+            t.update(bic=bic(s, r1), peaks=copy.deepcopy(s.peaks), bg=copy.deepcopy(s.bg))
     singles = sorted((t for t in res if len(t["combo"]) == 1), key=lambda t: t["bic"])
     best = singles[0]
-    s.peaks = best["peaks"]
+    s.peaks, s.bg = best["peaks"], best["bg"]
     r = s.do_fit()
     b = bic(s, r)
     x2 = fe_phases(s)["x2"]
@@ -277,23 +300,23 @@ def recipe(s, log):
     el = s.element
     if el == "Al2p":
         log("Al2p：金属 Al⁰ 用不对称双峰（Δ0.44 锁定）；氧化物 Al³⁺ 双峰 FWHM ≤ 2.0 eV（Thermo）")
-        return _D("Al0", 72.6, 0.44, 0.5, 0.8, shape="Asym", lo=71.8, hi=73.0, wmin=0.6, wmax=1.6, fwr=(1.0, 1.0)) + \
-            _D("Al3+", 74.6, 0.44, 0.5, 1.6, lo=73.8, hi=75.6, wmax=2.0, fwr=(1.0, 1.0))
+        return _D("Al0", 72.6, None, None, 0.8, shape="Asym", lo=71.8, hi=73.0, wmin=0.6, wmax=1.6, orb="Al2p") + \
+            _D("Al3+", 74.6, None, None, 1.6, lo=73.8, hi=75.6, wmax=2.0, orb="Al2p")
     if el == "Co2p":
         log("Co2p：Co⁰ 不对称双峰 Δ14.9–15.1；Co²⁺ 双峰 Δ15.2–15.7 + 卫星 ~786 / ~802 eV")
-        return (_D("Co0", 778.2, 14.99, 0.5, 1.0, shape="Asym", lo=777.9, hi=778.5, split_rng=(14.9, 15.1), ratio_rng=(0.45, 0.55), fwr=(1.0, 1.4))
-                + _D("Co2+", 780.6, 15.4, 0.5, 2.6, lo=779.9, hi=781.5, split_rng=(15.2, 15.7))
+        return (_D("Co0", 778.2, None, None, 1.0, shape="Asym", lo=777.9, hi=778.5, orb="Co2p")
+                + _D("Co2+", 780.6, None, None, 2.6, lo=779.9, hi=781.5, orb="Co2p")
                 + [_SAT("Co2+ sat. 2p3/2", "Co2+ 2p3/2", 786.0, 5.0, 783.5, 788.5, wmax=6.0, ratio=(0.3, 0.9)),
                    _SAT("Co2+ sat. 2p1/2", "Co2+ 2p1/2", 802.3, 5.0, 800.0, 804.5, wmax=6.0, ratio=(0.3, 0.9))])
     if el == "Cr2p":
         log("Cr2p：Cr⁰ 不对称双峰 Δ9.2–9.4；Cr³⁺ 双峰 Δ9.6–9.9（多重分裂以宽峰近似）")
-        return (_D("Cr0", 574.2, 9.3, 0.5, 1.2, shape="Asym", lo=573.6, hi=574.7, split_rng=(9.2, 9.4), ratio_rng=(0.45, 0.55), fwr=(1.0, 1.5))
-                + _D("Cr3+", 576.4, 9.75, 0.5, 2.6, lo=575.6, hi=577.3, split_rng=(9.6, 9.9)))
+        return (_D("Cr0", 574.2, None, None, 1.2, shape="Asym", lo=573.6, hi=574.7, orb="Cr2p")
+                + _D("Cr3+", 576.4, None, None, 2.6, lo=575.6, hi=577.3, orb="Cr2p"))
     if el == "Cu2p":
-        m = _D("Cu0/Cu+", 932.6, 19.8, 0.5, 1.2, shape="Asym", lo=932.3, hi=932.9, split_rng=(19.7, 20.0), ratio_rng=(0.42, 0.55))
+        m = _D("Cu0/Cu+", 932.6, None, None, 1.2, shape="Asym", lo=932.3, hi=932.9, orb="Cu2p")
         f = _signal(s, 940.0, 946.0)
         if f > 0.02:
-            cu2 = _D("Cu2+", 933.8, 19.9, 0.5, 2.5, lo=933.4, hi=934.4, wmax=3.5) + [_SAT("Cu2+ sat.", "Cu2+ 2p3/2", 942.5, 4.5, 940.0, 945.5, wmax=7.0, ratio=(0.4, 0.75))]
+            cu2 = _D("Cu2+", 933.8, None, None, 2.5, lo=933.4, hi=934.4, wmax=3.5, orb="Cu2p") + [_SAT("Cu2+ sat.", "Cu2+ 2p3/2", 942.5, 4.5, 940.0, 945.5, wmax=7.0, ratio=(0.4, 0.75))]
             for p in cu2:
                 p["optional"] = "Cu2+"
             log("Cu2p：940–946 eV 有卫星信号（%.1f%%）→ Cu²⁺ 及其卫星峰作为候选，拟合后用 BIC 判断是否保留" % (100 * f))
@@ -346,7 +369,7 @@ def generic_model(s, log, ref=None):
             if abs(st["median"] - c) < 1.0:
                 name = st["formula"]
         if split and l_ in RATIO:
-            peaks += _D(name, c, split, RATIO[l_], 1.5, sub=s.element[-2:], lo=c - 0.8, hi=c + 0.8)
+            peaks += _D(name, c, split, RATIO[l_], 1.5, sub=s.element[-2:], lo=c - 0.8, hi=c + 0.8, orb=s.element)
         else:
             peaks.append(_P(name, c, 1.5, lo=c - 0.8, hi=c + 0.8))
         used.append(c)
@@ -566,7 +589,7 @@ def test_known_states(s, b0, r, log):
             continue
         trial = s.peaks
         if split and l_ in RATIO and split > 1.0:
-            new = _D(name, c, split, RATIO[l_], 1.8, sub=s.element[-2:], lo=a - 0.2, hi=b + 0.2)
+            new = _D(name, c, split, RATIO[l_], 1.8, sub=s.element[-2:], lo=a - 0.2, hi=b + 0.2, orb=s.element)
         else:
             new = [_P(name, c, 1.8, lo=a - 0.2, hi=b + 0.2)]
         import copy as _c
@@ -718,7 +741,7 @@ def run(s, sample_elements=(), ref=None, max_add=4):
         import copy as _c
         if not any(p.get("optional") == tag for p in s.peaks):
             continue
-        keep = _c.deepcopy(s.peaks)
+        keep, keep_bg = _c.deepcopy(s.peaks), _c.deepcopy(s.bg)
         if not any(p.get("role", "main") == "main" and p.get("optional") != tag for p in s.peaks):
             continue                          # 去掉后没有主峰了：不测试
         s.peaks = [p for p in s.peaks if p.get("optional") != tag]
@@ -728,7 +751,7 @@ def run(s, sample_elements=(), ref=None, max_add=4):
             b0, r = b_wo, r_wo
             log("候选 %s：去掉后拟合同样好或更好（BIC），不保留" % tag)
         else:
-            s.peaks = keep
+            s.peaks, s.bg = keep, keep_bg
             r = s.do_fit()
             pinned = _pinned([p for p in s.peaks if p.get("optional") == tag])
             if pinned >= 2:
@@ -760,7 +783,7 @@ def run(s, sample_elements=(), ref=None, max_add=4):
         c, w, frac = bumps[0]
         tried.add(round(c, 0))
         kind, name, refname, why = classify(c, w, s, sample_elements, ref, log)
-        trial = copy.deepcopy(s.peaks)
+        trial, trial_bg = copy.deepcopy(s.peaks), copy.deepcopy(s.bg)
         wv = min(max(w, 1.0), 8.0 if kind == "satellite" else 3.0)
         if kind == "satellite":
             p = _SAT(name, refname, c, wv, c - 1.5, c + 1.5)
@@ -772,7 +795,7 @@ def run(s, sample_elements=(), ref=None, max_add=4):
             l_ = (s.element or "x")[-1]
             split = SPLIT.get(s.element)
             if split and l_ in RATIO:
-                pp = _D(name, c, split, RATIO[l_], wv, sub=s.element[-2:], lo=c - 0.6, hi=c + 0.6)
+                pp = _D(name, c, split, RATIO[l_], wv, sub=s.element[-2:], lo=c - 0.6, hi=c + 0.6, orb=s.element)
                 s.peaks = s.peaks + pp
                 p = None
             else:
@@ -786,7 +809,7 @@ def run(s, sample_elements=(), ref=None, max_add=4):
             added += 1
             log("残差峰 %.2f eV（占 %.1f%%）：%s" % (c, 100 * frac, why))
         else:
-            s.peaks = trial
+            s.peaks, s.bg = trial, trial_bg
             r = s.do_fit()
             log("残差峰 %.2f eV（占 %.1f%%）：加入后拟合没有显著改善（BIC），不保留" % (c, 100 * frac))
     if s.element == "Co2p" and any(p["name"].startswith("Co2+") for p in s.peaks):
@@ -813,6 +836,8 @@ def quality(s):
     over = float(np.max(bg - ys))
     warns = []
     by = {p["name"]: p for p in s.peaks}
+    idx = {p["name"]: k for k, p in enumerate(s.peaks)}
+    rv = core.resolve(s.peaks)
     if over > 0.5 * noise:
         warns.append("背景在某处高于数据 %.0f（噪声 σ≈%.0f）" % (over, noise))
     for p in s.peaks:
@@ -824,14 +849,40 @@ def quality(s):
                 warns.append("%s 的%s卡在边界（%.2f）" % (p["name"], "峰位" if k == "center" else " FWHM ", par["value"]))
         ln = p.get("link") or {}
         R = ln.get("ref", "")
-        if p.get("pair") and ln.get("area_ratio") is not None and not p["name"].startswith(R + " "):
-            el = (s.element or "x")[-1]
-            th = RATIO.get(el)
-            ratio = ln["area_ratio"]
-            # 2p3/2 用“主线 + 多重分裂分量（名称为 主线名 + ' m' / ' l'）”描述时，比的是整个 2p3/2 包络
-            parts = [q for q in s.peaks if q is not p and (q.get("link") or {}).get("ref") == R and q["name"].startswith(R + " ")]
-            if parts and R in by:
-                ratio = p["area"]["value"] / max(by[R]["area"]["value"] + sum(q["area"]["value"] for q in parts), 1e-9)
+        if not (p.get("pair") and R in by) or p["name"].startswith(R + " "):
+            continue                          # 只检查自旋轨道副峰（多重分裂分量不查）
+        orb = s.element if (s.element or "")[-2:] in ("2p", "3d", "4f", "3p") else None
+        if p.get("role") == "unknown":       # 重叠峰按它自己的能级查（如 Cu3p）
+            m_ = re.search(r"([A-Z][a-z]?\d[spdf])", R)
+            orb = m_.group(1) if m_ else None
+        rule = core.so_rule(orb, core.is_metal_name(R) or by[R].get("shape") == "Asym") if orb else None
+        k12, kR = idx[p["name"]], idx[R]
+        grp = [kR] + [idx[n] for n in (ln.get("with") or []) if n in idx]
+        A = sum(rv[g]["area"] for g in grp)
+        c3 = sum(rv[g]["center"] * rv[g]["area"] for g in grp) / A if A > 0 else rv[kR]["center"]
+        dE, ratio = rv[k12]["center"] - c3, rv[k12]["area"] / max(A, 1e-9)
+        fwr = None if len(grp) > 1 else rv[k12]["fwhm"] / max(rv[kR]["fwhm"], 1e-9)
+        if rule:
+            tol = 1e-3
+            lo, hi = rule["dE_rng"]
+            if not (lo - tol <= dE <= hi + tol):
+                warns.append("%s 的自旋轨道分裂 %.2f eV 不在文献范围 %.2f–%.2f eV" % (p["name"], dE, lo, hi))
+            lo, hi = rule["ratio_rng"]
+            if not (lo - 0.02 <= ratio <= hi + 0.02):
+                warns.append("%s 面积比 %.2f 不在文献范围 %.2f–%.2f（背景或重叠可能有问题）" % (p["name"], ratio, lo, hi))
+            lo, hi = rule["fwr_rng"]
+            if fwr is not None and not (lo - 0.02 <= fwr <= hi + 0.02):
+                warns.append("%s 的 FWHM 倍率 %.2f 不在文献范围 %.2f–%.2f" % (p["name"], fwr, lo, hi))
+            # 拟合把参数推到文献范围的边界：约束在起作用，说明 1/2 区域的背景或重叠可能有问题
+            at = []
+            for k, lab in (("dE", "分裂"), ("area_ratio", "面积比"), ("fwhm_ratio", "FWHM 倍率")):
+                if ln.get(k + "_fit") and ln.get(k + "_min") is not None and ln.get(k + "_max") is not None \
+                        and ln[k + "_max"] > ln[k + "_min"] and min(abs(ln[k] - ln[k + "_min"]), abs(ln[k] - ln[k + "_max"])) < 1e-3:
+                    at.append("%s %.2f" % (lab, ln[k]))
+            if at:
+                warns.append("%s：%s 到达文献范围边界（约束在起作用，1/2 区域的背景或重叠值得检查）" % (p["name"], "；".join(at)))
+        else:
+            th = RATIO.get((orb or "x")[-1])
             if th and abs(ratio - th) / th > 0.15:
                 warns.append("%s 面积比 %.2f 偏离理论值 %.2f 超过 15%%（背景或重叠可能有问题）" % (p["name"], ratio, th))
     rel = float(np.sqrt(np.mean((y - bg - env) ** 2)) / max(float(np.max(y - bg)), 1.0)) if s.peaks else 0.0
@@ -857,12 +908,12 @@ def refine(s, window=0.3):
 def multistart(s, n=12, seed=0):
     """多起点：随机扰动峰位（±0.4 eV，限制在范围内）与 FWHM（×0.75–1.3），取约化 χ² 最小的结果。"""
     rng = np.random.default_rng(seed)
-    best = copy.deepcopy(s.peaks)
     r_best = s.do_fit()
-    best = copy.deepcopy(s.peaks)
-    base = copy.deepcopy(s.peaks)
+    best, best_bg = copy.deepcopy(s.peaks), copy.deepcopy(s.bg)    # 主动 Shirley 的斜坡随峰一起保存
+    base, base_bg = copy.deepcopy(s.peaks), copy.deepcopy(s.bg)
     for _ in range(n):
         trial = copy.deepcopy(base)
+        s.bg = copy.deepcopy(base_bg)
         for p in trial:
             lk = core.linked_params(p)
             c, w = p["center"], p["fwhm"]
@@ -882,8 +933,8 @@ def multistart(s, n=12, seed=0):
         except Exception:
             continue
         if r["rchi2"] < r_best["rchi2"] * (1 - 1e-6):
-            r_best, best = r, copy.deepcopy(s.peaks)
-    s.peaks = best
+            r_best, best, best_bg = r, copy.deepcopy(s.peaks), copy.deepcopy(s.bg)
+    s.peaks, s.bg = best, best_bg
     s.last_fit = r_best
     return r_best
 

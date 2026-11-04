@@ -7,6 +7,14 @@ import re
 
 # ------------------------------------------------------------------ 整句 / 词组
 PHRASES = {
+    "⧉ 堆叠对比": "⧉ Stack compare", "把各样品的同一轨道上下错开叠在一起比较": "Stack the same orbital from all samples for comparison",
+    "扣背景归一化": "Bkg-subtracted, normalized", "归一化": "Normalized", "原始": "Raw", "间距": "Spacing", "拟合包络": "Fit envelope",
+    "分峰": "Components", "化学态比例": "State fractions", "导出堆叠图": "Export stacked figure", "返回单谱": "Back to single spectrum",
+    "个样品": "samples", "纵轴": "Y axis", "没有可堆叠的谱": "No spectra to stack",
+    "拟合约束（1/2 与 3/2）": "Fit constraints (1/2 vs 3/2)", "金属态": "metal", "化合物": "compound",
+    "文献范围（金属态）：": "Literature range (metal): ", "文献范围（化合物）：": "Literature range (compound): ",
+    "。不锁定时在此范围内拟合，FWHM 倍率总在此范围内拟合": ". When unlocked it is fitted within this range; the FWHM ratio is always fitted within its range",
+    "（分裂太小，锁定）": " (splitting too small, locked)", "常用": "typical", "面积比": "area ratio", "FWHM 倍率": "FWHM ratio",
     "颜色": "Color", "自动": "Auto", "自定义颜色": "Custom color", "整组同色": "whole group shares this color",
     "点击选择颜色（整组同色）": "Click to choose a color (applies to the whole group)",
     "在中段偏离本底": "deviate from the background in the middle", "已限制为不高于数据": "clamped to never exceed the data", "未高于数据": "never above the data",
@@ -156,6 +164,21 @@ PHRASES = {
 
 # ------------------------------------------------------------------ 含变量的句子：中文 printf 模板 → 英文（{0}{1}… 为各变量，变量本身也会递归翻译）
 TEMPLATES = [
+    ("点击添加双峰（%s：分裂、面积比、FWHM 倍率在文献范围内拟合，起点 %s eV / %s）；Esc 结束",
+     "Click to add a doublet ({0}: splitting, area ratio and FWHM ratio are fitted within the literature ranges, starting from {1} eV / {2}); Esc to finish"),
+    ("%s：%s 到达文献范围边界（约束在起作用，1/2 区域的背景或重叠值得检查）",
+     "{0}: {1} reached the literature-range limit (the constraint is active; check the background or overlaps around the 1/2 component)"),
+    ("分裂 %s", "splitting {0}"), ("面积比 %s", "area ratio {0}"), ("FWHM 倍率 %s", "FWHM ratio {0}"),
+    ("ΔE %s–%s eV（常用 %s）· 面积比 %s–%s · FWHM 倍率 %s–%s（分裂太小，锁定）",
+     "ΔE {0}–{1} eV (typical {2}) · area ratio {3}–{4} · FWHM ratio {5}–{6} (splitting too small, locked)"),
+    ("ΔE %s–%s eV（常用 %s）· 面积比 %s–%s · FWHM 倍率 %s–%s", "ΔE {0}–{1} eV (typical {2}) · area ratio {3}–{4} · FWHM ratio {5}–{6}"),
+    ("金属态 %s", "metal: {0}"), ("化合物 %s", "compound: {0}"),
+    ("文献范围（%s）：%s。不锁定时在此范围内拟合，FWHM 倍率总在此范围内拟合",
+     "Literature range ({0}): {1}. When unlocked it is fitted within this range; the FWHM ratio is always fitted within its range"),
+    ("拟合约束（1/2 与 3/2）：", "Fit constraints (1/2 vs 3/2):"),
+    ("%s 的自旋轨道分裂 %.2f eV 不在文献范围 %.2f–%.2f eV", "spin–orbit splitting of {0} is {1} eV, outside the literature range {2}–{3} eV"),
+    ("%s 面积比 %.2f 不在文献范围 %.2f–%.2f（背景或重叠可能有问题）", "area ratio of {0} is {1}, outside the literature range {2}–{3} (check background or overlaps)"),
+    ("%s 的 FWHM 倍率 %.2f 不在文献范围 %.2f–%.2f", "FWHM ratio of {0} is {1}, outside the literature range {2}–{3}"),
     ("背景：%sFe2p 主峰之间是卫星结构 → 主动 Shirley（Shirley 台阶 + 线性斜坡，斜坡随峰一起拟合，背景不高于数据）",
      "Background: {0}the Fe2p region between the main lines holds satellites → active Shirley (Shirley step + linear slope fitted together with the peaks, never above the data)"),
     ("Shirley 会高于数据 %.0f（%.0fσ）；", "Shirley would exceed the data by {0} ({1}σ); "),

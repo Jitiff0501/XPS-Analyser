@@ -63,6 +63,11 @@ aside.left{border-right:1px solid var(--line);padding:14px 10px;overflow:auto}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
 .plotcard{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
 .plothead{display:flex;align-items:center;gap:10px;padding:12px 16px 4px}
+.stackbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 16px 0;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);font-size:12.5px}
+.stackbar .stk-l{display:flex;align-items:center;gap:6px;color:var(--ink2)}
+.stackbar .stk-m{display:flex;gap:10px;flex-wrap:wrap}
+.stackbar .stk-m label{display:flex;gap:4px;align-items:center;color:var(--ink2)}
+#stackbtn.on{background:var(--ink);color:#fff}
 .plothead h2{font:500 18px/1.2 var(--serif);margin:0;max-width:30%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .etabs{flex:1;display:flex;gap:4px;overflow-x:auto;min-width:0;padding:2px 0;scrollbar-width:thin}
 .etab{border:1px solid transparent;background:none;border-radius:99px;padding:4px 12px;color:var(--ink2);white-space:nowrap;font-size:13px}
@@ -269,16 +274,32 @@ input[type=checkbox]{accent-color:var(--accent)}
         <div class="etabs" id="etabs"></div>
         <button class="btn sm ghost" onclick="resetView()" title="回到默认分析窗口（也可双击图）">⤢ 复位</button>
         <button class="btn sm ghost" onclick="fullView()" title="显示整个采集范围">全谱</button>
+        <button class="btn sm ghost" id="stackbtn" onclick="toggleStack()" title="把各样品的同一轨道上下错开叠在一起比较">⧉ 堆叠对比</button>
         <div class="seg" id="clickkind" hidden title="图上点击时添加的峰类型">
           <button data-k="single" class="on">单峰</button>
           <button data-k="doublet">双峰</button>
         </div>
-        <label class="switch" id="clickasym" hidden title="点击添加的峰使用不对称峰型（金属态）"><input type="checkbox" id="ck_asym"> 不对称</label>
+        <label class="switch" id="clickasym" hidden title="点击添加的峰使用不对称峰型（金属态）"><input type="checkbox" id="ck_asym" onchange="S.mode==='peak'&&setMode('peak')"> 不对称</label>
         <div class="seg" id="modes">
           <button data-m="view" class="on">浏览</button>
           <button data-m="peak">点击加峰</button>
           <button data-m="bg">选背景范围</button>
         </div>
+      </div>
+      <div class="stackbar" id="stackbar" hidden>
+        <div class="seg" id="stk_mode" title="纵轴">
+          <button data-v="bgsub" class="on">扣背景归一化</button><button data-v="norm">归一化</button><button data-v="raw">原始</button>
+        </div>
+        <label class="stk-l">间距 <input type="range" id="stk_off" min="0.3" max="2" step="0.05" value="1.15"></label>
+        <label class="switch"><input type="checkbox" id="stk_fit" checked> 拟合包络</label>
+        <label class="switch"><input type="checkbox" id="stk_comps"> 分峰</label>
+        <label class="switch"><input type="checkbox" id="stk_states" checked> 化学态比例</label>
+        <span class="stk-m" id="stk_members"></span>
+        <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
+          <select class="in" id="stk_fmt" style="width:auto"><option value="png">PNG</option><option value="svg">SVG</option><option value="pdf">PDF</option><option value="tif">TIFF</option></select>
+          <button class="btn sm primary" onclick="exportStack()">导出堆叠图</button>
+          <button class="btn sm ghost" onclick="toggleStack()">返回单谱</button>
+        </span>
       </div>
       <div id="plot" hidden></div>
     </div>
@@ -358,6 +379,7 @@ input[type=checkbox]{accent-color:var(--accent)}
       <tr><td><label class="switch"><input type="checkbox" id="pe_fwhm_ratio_on"> FWHM 比（1 = 相等）</label></td><td><input class="in num" id="pe_fwhm_ratio"></td><td style="text-align:center"><input type="checkbox" id="pe_fwhm_ratio_lock"></td><td><input class="in num" id="pe_fwhm_ratio_min"></td><td><input class="in num" id="pe_fwhm_ratio_max"></td></tr>
     </tbody></table>
     <p class="note" style="margin:4px 0 0">不锁定时，该项在最小–最大之间拟合；范围留空则用默认（ΔE ±max(0.2, 10%)，比值 ×0.5–1.5）。</p>
+    <p class="note" id="pe_lit" style="margin:4px 0 0;color:var(--accent-h)"></p>
     <div class="row"><label style="min-width:0"><input type="checkbox" id="pe_lor_same"> 峰型相同（L%、不对称与拖尾跟随参考峰）</label></div>
   </div>
   <div class="foot"><button class="btn ghost" onclick="closeM('pe')">取消</button><button class="btn primary" onclick="savePeak()">保存</button></div>
@@ -385,6 +407,7 @@ input[type=checkbox]{accent-color:var(--accent)}
       <option value="0.5|1.0">3p</option></select></div>
     <div class="row"><label>分裂 ΔE (eV)</label><input class="in num" id="d_split"><label class="switch" style="min-width:0"><input type="checkbox" id="d_lock_split" checked> 拟合时锁定</label></div>
     <div class="row"><label>面积比 副/主</label><input class="in num" id="d_ratio"><label class="switch" style="min-width:0"><input type="checkbox" id="d_lock_ratio" checked> 拟合时锁定</label></div>
+    <p class="note" id="d_lit" style="margin:2px 0 0"></p>
   </div>
   <div id="a_sat">
     <div class="row"><label>相对主峰 ΔE</label><input class="in num" id="s_dE" value="6"><label class="switch" style="min-width:0"><input type="checkbox" id="s_bind_dE" checked> 固定 ΔE（否则在 ±1.5 eV 内拟合）</label></div>
@@ -566,7 +589,8 @@ document.addEventListener("keydown",e=>{if(document.querySelector(".scrim.open")
   if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight"||S.cur===null)return;const g=S.specs[S.cur].sample;
   const ids=S.specs.map((s,i)=>s.sample===g?i:-1).filter(i=>i>=0);const k=ids.indexOf(S.cur)+(e.key==="ArrowRight"?1:-1);
   if(k>=0&&k<ids.length)select(ids[k])});
-async function select(i){S.cur=i;S.sel=null;S.full=false;S.xr=S.yr=null;renderSpecs();setView(await call("view",{i}));loadRef()}
+async function select(i){S.cur=i;S.sel=null;S.full=false;S.xr=S.yr=null;renderSpecs();setView(await call("view",{i}));loadRef();
+  if(S.stack){S.stack.members=null;loadStack()}}
 function showWelcome(on){$("welcome").hidden=!on;$("plothead").hidden=on;$("plot").hidden=on;if(on){$("fitinfo").textContent="";$("ptab").innerHTML=""}}
 
 /* ---------- view ---------- */
@@ -605,7 +629,56 @@ function renderPeaks(){
   });
   if(!S.v.peaks.length)tb.innerHTML='<tr><td colspan="5" class="empty" style="text-align:center">点“＋ 单峰”后在图上点击，或套用模板</td></tr>';
 }
+/* ---------- 堆叠对比：各样品的同一轨道 ---------- */
+function stackOpts(){const st=S.stack;return {mode:st.mode,offset:+$("stk_off").value,fit:$("stk_fit").checked,comps:$("stk_comps").checked,
+  states:$("stk_states").checked,members:st.members}}
+async function toggleStack(){
+  if(S.stack){S.stack=null;S.stackData=null;$("stackbar").hidden=true;$("stackbtn").classList.remove("on");$("modes").hidden=false;
+    $("plot").style.top="";draw();setTimeout(()=>Plotly.Plots.resize("plot"),0);return}
+  if(S.cur===null)return;setMode("view");
+  S.stack={mode:"bgsub",members:null};$("stackbar").hidden=false;$("stackbtn").classList.add("on");$("modes").hidden=true;
+  $("clickkind").hidden=$("clickasym").hidden=true;placeStackBar();await loadStack()}
+function placeStackBar(){const b=$("stackbar");if(b.hidden)return;$("plot").style.top=(b.offsetTop+b.offsetHeight+6)+"px";
+  setTimeout(()=>Plotly.Plots.resize("plot"),0)}
+window.addEventListener("resize",()=>S.stack&&placeStackBar());
+async function loadStack(){if(!S.stack)return;const d=await call("stack",Object.assign({i:S.cur},stackOpts()));S.stackData=d;
+  const box=$("stk_members");box.innerHTML="";
+  d.all.forEach(m=>{const l=document.createElement("label");const c=document.createElement("input");c.type="checkbox";
+    c.checked=!S.stack.members||S.stack.members.includes(m.i);c.onchange=()=>{const on=[...box.querySelectorAll("input")].map((x,k)=>x.checked?d.all[k].i:null).filter(v=>v!==null);
+      S.stack.members=on;loadStack()};l.append(c,document.createTextNode(m.sample||m.name));box.append(l)});
+  drawStack()}
+function stackLabel(it){let t=it.sample||it.name;if($("stk_states").checked&&it.states.length)
+  t+="  "+it.states.filter(s=>s[1]>=0.005).map(s=>`${s[0].replace(/\s*\d[spdf]$/,"")} ${(100*s[1]).toFixed(0)}%`).join(" · ");return t}
+function drawStack(){
+  const d=S.stackData;if(!d)return;S.handles=[];
+  const n=d.items.length,raw=d.mode==="raw";
+  const span=raw?Math.max(...d.items.map(it=>Math.max(...it.y)-Math.min(...it.y)),1):1,step=+$("stk_off").value*span;
+  const T=[],ann=[];let xmin=Infinity,xmax=-Infinity,ylo=Infinity,yhi=-Infinity;d.items.forEach(it=>{xmin=Math.min(xmin,...it.x);xmax=Math.max(xmax,...it.x)});
+  d.items.forEach((it,j)=>{const sh=(n-1-j)*step;ylo=Math.min(ylo,Math.min(...it.y)+sh);yhi=Math.max(yhi,Math.max(...it.y,...(it.env||[]))+sh)});
+  d.items.forEach((it,j)=>{const sh=(n-1-j)*step,add=a=>a.map(v=>v+sh);
+    if(it.comps.length){const base=it.bg?add(it.bg):it.x.map(()=>sh);
+      it.comps.forEach((c,k)=>{const col=it.colors[k]||"#999",r=it.roles[k];
+        T.push({x:it.x,y:base,mode:"lines",line:{width:0},showlegend:false,hoverinfo:"skip"});
+        T.push({x:it.x,y:add(c),mode:"lines",fill:"tonexty",fillcolor:hex(col,r==="main"?.22:.13),line:{color:col,width:1,dash:r==="unknown"?"dash":r==="satellite"?"dot":"solid"},showlegend:false,hoverinfo:"skip"})})}
+    T.push({x:it.x,y:add(it.y),mode:"lines",name:it.sample||it.name,line:{color:"#3d3c38",width:1.2},showlegend:false,
+      hovertemplate:`${esc(it.sample||it.name)}<br>%{x:.2f} eV<extra></extra>`});
+    if($("stk_fit").checked&&it.env)T.push({x:it.x,y:add(it.env),mode:"lines",line:{color:"#C96442",width:1.6},showlegend:false,hoverinfo:"skip"});
+    // 标签：高 BE 一侧，放在该段曲线最高点之上
+    const x0=xmax-0.45*(xmax-xmin);let ym=0;it.x.forEach((x,k)=>{if(x>=x0){ym=Math.max(ym,it.y[k],it.env?it.env[k]:-Infinity)}});
+    ann.push({x:xmax-0.01*(xmax-xmin),y:sh+ym+0.05*span,xanchor:"left",yanchor:"bottom",showarrow:false,text:esc(stackLabel(it)),font:{size:12,color:"#3d3c38"}})});
+  const L={margin:{l:64,r:18,t:34,b:46},paper_bgcolor:"#fff",plot_bgcolor:"#fff",font:{family:getComputedStyle(document.body).fontFamily,size:12,color:"#3d3c38"},
+    title:{text:d.element+" · "+n+" "+TR("个样品"),font:{size:13},x:0.01,y:0.985,yanchor:"top"},annotations:ann,showlegend:false,hovermode:"closest",dragmode:"zoom",
+    xaxis:{range:[xmax,xmin],title:{text:"Binding Energy (eV)"},showgrid:false,zeroline:false,linecolor:"#D9D5C8",ticks:"outside",tickcolor:"#D9D5C8"},
+    yaxis:{title:{text:raw?"Intensity (CPS)":"Intensity (a.u.)"},showticklabels:raw,gridcolor:"#F1EFE8",zeroline:false,linecolor:"#D9D5C8",
+      range:[ylo-0.04*(yhi-ylo),yhi+0.14*(yhi-ylo)]},uirevision:"stack:"+d.element+":"+d.mode};
+  Plotly.react("plot",T,L,{displaylogo:false,displayModeBar:false,responsive:true,doubleClick:"reset"})}
+async function exportStack(){const r=await call("export_stack",Object.assign({i:S.cur,fmt:$("stk_fmt").value},stackOpts()));toast(r.msg,r.path)}
+document.querySelectorAll("#stk_mode button").forEach(b=>b.onclick=()=>{S.stack.mode=b.dataset.v;
+  document.querySelectorAll("#stk_mode button").forEach(x=>x.classList.toggle("on",x===b));loadStack()});
+["stk_off","stk_fit","stk_states"].forEach(id=>$(id).addEventListener("input",()=>S.stack&&drawStack()));
+$("stk_comps").addEventListener("change",()=>S.stack&&loadStack());
 function draw(){
+  if(S.stack){drawStack();return}
   const v=S.v;if(!v)return;
   const T=[{x:v.be,y:v.y,mode:"lines",name:TR("原始数据"),line:{color:"#3d3c38",width:1.2},hovertemplate:"%{x:.2f} eV<br>%{y:.0f}<extra></extra>"}];
   if(v.bg.type!=="None")T.push({x:v.x,y:v.bgline,mode:"lines",name:TR("背景"),line:{color:"#A8A59B",width:1.4,dash:"dot"},hoverinfo:"skip"});
@@ -774,14 +847,16 @@ document.querySelectorAll("#clickkind button").forEach(b=>b.onclick=()=>{CK=b.da
 // 常见轨道的自旋轨道分裂 (eV)；面积比按 p/d/f 自动
 const SPLIT={Al2p:0.44,Si2p:0.61,P2p:0.87,S2p:1.18,Cl2p:1.6,K2p:2.8,Ca2p:3.55,Ti2p:5.7,V2p:7.4,Cr2p:9.3,Mn2p:11.7,Fe2p:13.6,Co2p:15.0,Ni2p:17.3,Cu2p:19.8,Zn2p:23.1,
   Zr3d:2.43,Nb3d:2.72,Mo3d:3.13,Ag3d:6.0,Pd3d:5.26,Ru3d:4.17,Sn3d:8.41,In3d:7.54,Hf4f:1.68,Ta4f:1.91,W4f:2.18,Pt4f:3.33,Au4f:3.67,Bi4f:5.3,Pb4f:4.86};
-function dblDefaults(el){const l=(el||"").slice(-1);const ratio={p:0.5,d:0.6667,f:0.75}[l];
+function dblDefaults(el){const so=S.v&&S.v.so;
+  if(so){const r=$("ck_asym")&&$("ck_asym").checked?so.metal:so.comp;return {split:r.dE,ratio:r.ratio}}   // 文献常用值（core.SPIN_ORBIT）
+  const l=(el||"").slice(-1);const ratio={p:0.5,d:0.6667,f:0.75}[l];
   return ratio?{split:SPLIT[el]??{p:5.7,d:2.4,f:2.18}[l],ratio}:null}
 function setMode(m){
   if(!S.v)return;S.mode=m;S.clicks=[];
   $("clickkind").hidden=m!=="peak";$("clickasym").hidden=m!=="peak";
   document.querySelectorAll("#clickkind button").forEach(x=>x.classList.toggle("on",x.dataset.k===CK));
   document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
-  $("hint").textContent={view:"拖峰顶圆点移动 · 上下改高度 · Shift+拖改宽度 · 双击复位",peak:CK==="doublet"?(()=>{const d=dblDefaults(S.v.element);return d?`点击添加双峰（${S.v.element}：分裂 ${d.split} eV、面积比 ${+d.ratio.toFixed(3)}，锁定；可在“编辑”中修改）；Esc 结束`:"当前谱不是 p/d/f 轨道，将使用 2p 默认值（5.7 eV / 0.5）；Esc 结束"})():"点击添加单峰，可连续添加；Esc 结束",bg:"在图上横向拖动框选背景范围，或点击两个端点",bgpts:"点击添加背景点 · 拖动移动 · 右键/双击删除 · Esc 完成"}[m];
+  $("hint").textContent={view:"拖峰顶圆点移动 · 上下改高度 · Shift+拖改宽度 · 双击复位",peak:CK==="doublet"?(()=>{const d=dblDefaults(S.v.element);return d?(S.v.so?`点击添加双峰（${S.v.element}：分裂、面积比、FWHM 倍率在文献范围内拟合，起点 ${d.split} eV / ${+d.ratio.toFixed(3)}）；Esc 结束`:`点击添加双峰（${S.v.element}：分裂 ${d.split} eV、面积比 ${+d.ratio.toFixed(3)}，锁定；可在“编辑”中修改）；Esc 结束`):"当前谱不是 p/d/f 轨道，将使用 2p 默认值（5.7 eV / 0.5）；Esc 结束"})():"点击添加单峰，可连续添加；Esc 结束",bg:"在图上横向拖动框选背景范围，或点击两个端点",bgpts:"点击添加背景点 · 拖动移动 · 右键/双击删除 · Esc 完成"}[m];
   draw();
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){document.querySelectorAll(".scrim.open").forEach(s=>s.classList.remove("open"));setMode("view")}});
@@ -789,7 +864,8 @@ async function onClick(ev){
   const x=ev.points[0].x;
   if(S.mode==="peak"){
     if(CK==="doublet"){const d=dblDefaults(S.v.element)||{split:5.7,ratio:0.5};
-      await act("add_peak",{kind:"doublet",center:x,split:d.split,ratio:d.ratio,lock_split:true,lock_ratio:true,shape:$("ck_asym").checked?"Asym":"GL"});S.sel=S.v.peaks.length-2}
+      const lit=!!(S.v&&S.v.so);   // 有文献约束：ΔE 与面积比在文献范围内拟合
+      await act("add_peak",{kind:"doublet",center:x,split:d.split,ratio:d.ratio,lock_split:!lit,lock_ratio:!lit,shape:$("ck_asym").checked?"Asym":"GL"});S.sel=S.v.peaks.length-2}
     else{await act("add_peak",{x,shape:$("ck_asym").checked?"Asym":"GL"});S.sel=S.v.peaks.length-1}
     renderPeaks();draw()}
   else if(S.mode==="bg"){S.clicks.push(x);draw();
@@ -826,6 +902,9 @@ function editPeak(){
   for(const k of["dE","area_ratio","fwhm_ratio"]){$("pe_"+k+"_on").checked=ln[k]!=null;$("pe_"+k).value=ln[k]!=null?+(+ln[k]).toPrecision(6):(k==="dE"?"":"1");
     $("pe_"+k+"_lock").checked=!ln[k+"_fit"];$("pe_"+k+"_min").value=ln[k+"_min"]??"";$("pe_"+k+"_max").value=ln[k+"_max"]??""}
   $("pe_lor_same").checked=!!ln.lor_same;peShape();renderPalette($("pe_colors"),S.sel);
+  const so=S.v.so,refp=S.v.peaks.find(q=>q.name===ln.ref);
+  $("pe_lit").textContent=so&&p.pair&&refp&&!p.name.startsWith(ln.ref+" ")?(()=>{const m=refp.shape==="Asym"||/^[A-Z][a-z]?0\b/.test(refp.name);
+    return "文献范围（"+(m?"金属态":"化合物")+"）："+soText(m?so.metal:so.comp)+"。不锁定时在此范围内拟合，FWHM 倍率总在此范围内拟合"})():"";
   const lk={center:"dE",area:"area_ratio",fwhm:"fwhm_ratio"};
   const upd=()=>{for(const k in lk){const on=$("pe_ref").value&&$("pe_"+lk[k]+"_on").checked;["v","f","min","max"].forEach(f=>$(`pe_${k}_${f}`).disabled=!!on);
       $(`pe_${k}_v`).title=on?"由绑定关系决定":""}
@@ -892,6 +971,7 @@ function openAdd(kind){
   if(S.sel!==null&&ps.some(([j])=>j===S.sel))$("a_parent").value=S.sel;
   const el=(v.element||"").slice(-2);$("d_type").selectedIndex={"2p":0,"3d":1,"4f":2,"3p":3}[el]??0;dPreset();
   if(v.element==="Al2p")$("d_split").value="0.44";
+  soDefaults();
   $("kinds").querySelector('[data-k="satellite"]').style.opacity=ps.length?1:.4;
   $("a_shape").value="GL";
   $("d_lock_split").checked=$("d_lock_ratio").checked=$("s_bind_dE").checked=true;$("s_bind_area").checked=false;
@@ -901,6 +981,13 @@ function satDefaults(){const j=$("a_parent").value;if(j==="")return;const p=S.v.
 $("s_dE").oninput=()=>satDefaults();
 $("a_center").oninput=()=>{if(AK==="satellite"){const j=$("a_parent").value;if(j!=="")$("s_dE").value=(parseFloat($("a_center").value)-S.v.peaks[+j].center.value).toFixed(2)}};
 function dPreset(){const[r,s]=$("d_type").value.split("|");$("d_ratio").value=r;$("d_split").value=s}
+/* 1/2 与 3/2 的文献约束（core.SPIN_ORBIT）：金属态（不对称峰）与化合物分开 */
+function soText(r){return r?`ΔE ${r.dE_rng[0]}–${r.dE_rng[1]} eV（常用 ${r.dE}）· 面积比 ${r.ratio_rng[0]}–${r.ratio_rng[1]} · FWHM 倍率 ${r.fwr_rng[0]}–${r.fwr_rng[1]}${r.lock?"（分裂太小，锁定）":""}`:""}
+function soDefaults(){const so=S.v&&S.v.so;if(!so){$("d_lit").textContent="";return}
+  const r=$("a_shape").value==="Asym"?so.metal:so.comp;
+  $("d_split").value=r.dE;$("d_ratio").value=+r.ratio.toFixed(4);
+  $("d_lit").textContent="文献范围（"+($("a_shape").value==="Asym"?"金属态":"化合物")+"）："+soText(r)+"。不锁定时在此范围内拟合，FWHM 倍率总在此范围内拟合"}
+$("a_shape").addEventListener("change",soDefaults);
 async function addPeak(){
   if(AK==="satellite"&&$("a_parent").value===""){toast("请先添加主峰，卫星峰需要归属一个主峰");return}
   const a={kind:AK,name:$("a_name").value.trim(),center:$("a_center").value,fwhm:$("a_fwhm").value,lor:$("a_lor").value,shape:$("a_shape").value,
@@ -956,13 +1043,15 @@ function renderRef(){
   const b=$("refbody");b.className="";const r=REF&&REF.ref;
   if(!REF){b.innerHTML="";return}
   const idn0=S.v&&S.v.ident;const an0=idn0&&idn0.auto&&idn0.candidates&&idn0.candidates.length?`<p class="note" style="margin:0 0 6px;color:var(--accent-h)">已根据谱图识别为 <b>${esc(idn0.candidates[0][0])}</b>（${esc(idn0.candidates[0][2])}）</p>`:"";
-  if(!r){$("refsrc").textContent="";b.innerHTML=an0+`<p class="note" style="margin:0">暂无 ${esc(REF.orbital||"该元素")} 的参考数据。已有：${REF.available.join("、")||"无"}。可点顶部“导入 NIST”导入 NIST XPS 数据库导出的文件。</p>`;return}
-  if(r.missing){$("refsrc").textContent="NIST";b.innerHTML=`<p class="note" style="margin:0">${esc(r.element)} 的参考数据里没有 ${esc(REF.orbital)}（有：${r.have.join("、")}）。</p>`;return}
+  const so0=S.v&&S.v.so;const soLine0=so0?`<div class="refbar" style="display:block;color:var(--ink2);margin-top:6px"><span>拟合约束（1/2 与 3/2）：</span><br><span>金属态 ${esc(soText(so0.metal))}</span><br><span>化合物 ${esc(soText(so0.comp))}</span></div>`:"";
+  if(!r){$("refsrc").textContent="";b.innerHTML=an0+soLine0+`<p class="note" style="margin:0">暂无 ${esc(REF.orbital||"该元素")} 的参考数据。已有：${REF.available.join("、")||"无"}。可点顶部“导入 NIST”导入 NIST XPS 数据库导出的文件。</p>`;return}
+  if(r.missing){$("refsrc").textContent="NIST";b.innerHTML=soLine0+`<p class="note" style="margin:0">${esc(r.element)} 的参考数据里没有 ${esc(REF.orbital)}（有：${r.have.join("、")}）。</p>`;return}
   $("refsrc").textContent=r.curated?`文献 · ${r.states.length} 种化合物 ${r.line}`:`NIST · ${r.n_records} 条 ${r.line}`;
   const idn=S.v&&S.v.ident;const autoNote=idn&&idn.auto&&idn.candidates&&idn.candidates.length?`<div class="refbar" style="color:var(--accent-h)">已根据谱图识别为 <b>${esc(idn.candidates[0][0])}</b>（${esc(idn.candidates[0][2])}）；不对的话双击左侧名称重命名</div>`:"";
   const sp=r.split?`双峰间距 <b>${r.split.median}</b> eV（${r.curated?"文献范围":r.split.n+" 条"}，${r.split.min}–${r.split.max}）· 面积比 ${+(r.ratio||0).toFixed(3)}`:"单峰轨道";
+  const so=S.v&&S.v.so;const soLine=so?`<div class="refbar" style="display:block;color:var(--ink2)"><span>拟合约束（1/2 与 3/2）：</span><br><span>金属态 ${esc(soText(so.metal))}</span><br><span>化合物 ${esc(soText(so.comp))}</span></div>`:"";
   const rows=r.states.filter(st=>r.curated||REFALL||st.n>=6);
-  b.innerHTML=autoNote+`<div class="refbar"><span>${sp}</span></div>
+  b.innerHTML=autoNote+`<div class="refbar"><span>${sp}</span></div>${soLine}
    <div class="refbar" style="color:var(--ink3)"><span><span style="color:var(--ok);font-size:9px">●</span> = 数据中 ±0.3 eV 内有峰</span></div>
    <div class="refbar"><span>勾选的化合物在图上显示</span><a style="cursor:pointer;color:var(--accent-h)" id="ref_allon">全选</a><a style="cursor:pointer;color:var(--ink3)" id="ref_alloff">清除</a>
    ${r.curated?"":`<label class="switch" style="margin-left:auto"><input type="checkbox" id="ref_all" ${REFALL?"checked":""}> 含少见（n&lt;6）</label>`}</div>
