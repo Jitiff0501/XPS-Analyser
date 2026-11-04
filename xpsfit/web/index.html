@@ -167,6 +167,15 @@ details.sec>summary .sub{font-weight:400;color:var(--ink3);font-size:12px;overfl
 #cpop{position:fixed;z-index:60;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:var(--shadow);width:200px}
 #cpop .t{font-size:12px;color:var(--ink3);margin-bottom:6px}
 .ptab .sw{cursor:pointer}
+.relax{border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:6px}
+.relax-h{display:flex;align-items:baseline;gap:8px;font-weight:600;font-size:13px}
+.rx-steps{display:flex;gap:3px}
+.rx-steps i{flex:1;height:6px;border-radius:99px;background:var(--sunk);cursor:help}
+.rx-steps i.kept{background:var(--ok)}.rx-steps i.skipped{background:#D9D5C8}.rx-steps i.next{outline:1.5px solid var(--accent);outline-offset:1px}
+.rx-steps i.r3{background-image:repeating-linear-gradient(45deg,transparent 0 3px,rgba(180,83,42,.18) 3px 6px)}
+.rx-card{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.5;background:var(--panel)}
+.rx-card .v{font-weight:600}.rx-card .v.keep{color:var(--ok)}.rx-card .v.check{color:#B4532A}.rx-card .v.marginal,.rx-card .v.worse{color:var(--ink3)}
+.rx-card ul{margin:4px 0 0 16px;padding:0}.rx-card .fr{color:var(--ink2)}
 .summary .interp{margin-top:4px;padding:8px 10px;border-radius:9px;background:var(--sunk);font-size:12px;line-height:1.5;color:var(--ink2)}
 #qwarn details.more summary{cursor:pointer;color:var(--ink3);font-size:12px;margin-top:2px}
 .qwarn{border:1px solid #F0D9C9;background:#FBF3EE;border-radius:10px;padding:8px 10px;font-size:12px;color:#8A4A2E;max-height:140px;overflow:auto}
@@ -317,6 +326,16 @@ input[type=checkbox]{accent-color:var(--accent)}
         <button class="btn sm" onclick="act('fit').then(()=>toast('拟合完成'))" title="按当前设置拟合">拟合</button>
         <button class="btn sm" onclick="act('refine',{window:0.3})" title="峰位限制在当前值 ±0.3 eV 内重新拟合">局部微调</button>
         <button class="btn sm" onclick="toast('多起点拟合中…');act('multistart',{n:12})" title="从 12 组随机起点拟合，取最好结果，避免局部最优">多起点</button>
+      </div>
+      <div class="relax" id="relax" hidden>
+        <div class="relax-h"><span>逐步放宽约束</span><span class="sub" id="rx_lvl"></span></div>
+        <div class="rx-steps" id="rx_steps"></div>
+        <div class="grid3 tight">
+          <button class="btn sm" id="rx_next" onclick="relax('next')" title="按风险从低到高，放开下一级约束并重新拟合">放宽一级 ▸</button>
+          <button class="btn sm" onclick="relax('undo')" title="退回上一级">撤销</button>
+          <button class="btn sm" onclick="relax('auto')" title="逐级尝试低、中风险的前 4 级：BIC 显著下降、没有新的物理问题才保留">自动</button>
+        </div>
+        <div id="rx_res"></div>
       </div>
     </section>
     <div class="sec-title" style="margin:6px 4px 0">手动调整</div>
@@ -604,7 +623,7 @@ function setView(v){
   if(isP){$("bginterp").value=v.bg.interp||"smooth";$("bgpts_n").textContent=`${(v.bg.points||[]).length} 个点`+((v.bg.points||[]).length<2?"（至少 2 个）":"")}
   const man=v.bg.ylo!=null||v.bg.yhi!=null;$("bgends").textContent=man?`手动（低 BE 端 ${v.bgline[0]?.toFixed(0)} · 高 BE 端 ${v.bgline[v.bgline.length-1]?.toFixed(0)}）`:"自动（端点平均）";$("bgauto").disabled=!man;$("bglo").value=v.region[0].toFixed(2);$("bghi").value=v.region[1].toFixed(2);$("bgn").value=v.bg.navg||3;
   const f=v.fit;$("fitinfo").textContent=f?`约化 χ² ${fmt(f.rchi2,3)}${f.rel_rms!=null?`   残差 RMS ${(100*f.rel_rms).toFixed(1)}%`:""}   自由参数 ${f.nfree}${f.success?"":"   ⚠ "+f.message}`:"";
-  renderSummary(v);
+  renderSummary(v);renderRelax(v);
   $("bgsum").textContent=v.bg.type+(v.bg.type!=="None"&&v.region?` · ${v.region[0].toFixed(1)}–${v.region[1].toFixed(1)} eV`:"");
   const qw=$("qwarn"),W=(f&&f.warnings)||[];qw.hidden=!W.length;qw.innerHTML=W.slice(0,3).map(w=>`<div>⚠ ${esc(w)}</div>`).join("")+(W.length>3?`<details class="more"><summary>+${W.length-3} 条提示</summary>${W.slice(3).map(w=>`<div>⚠ ${esc(w)}</div>`).join("")}</details>`:"");
   if(S.sel!==null&&S.sel>=v.peaks.length)S.sel=null;
@@ -1022,6 +1041,24 @@ let REF=null,REFALL=false;const MARKS={};   // 每个轨道勾选显示的化合
 function marks(){const o=REF&&REF.orbital||"";return MARKS[o]||(MARKS[o]=new Set())}
 async function loadRef(){
   if(S.cur===null)return;REF=await call("reference",{i:S.cur});renderRef();draw()}
+/* ---------- 逐步放宽约束 ---------- */
+function renderRelax(v){
+  const box=$("relax"),R=v.relax;box.hidden=!R||!v.peaks.length||v.kind==="survey";if(box.hidden)return;
+  $("rx_lvl").textContent=`${R.level} / ${R.total}`;
+  $("rx_steps").innerHTML=R.ladder.map((L,k)=>`<i class="${L.status}${k===R.level?" next":""}${/高/.test(L.risk)?" r3":""}" title="${esc(`${k+1}. ${L.name}（风险：${L.risk}）\n${L.why}\n${{kept:"已放开并保留",skipped:"已尝试，未保留 / 不适用",pending:"未放开"}[L.status]}`)}"></i>`).join("");
+  const nx=R.ladder[R.level];$("rx_next").disabled=!nx;
+  $("rx_next").title=nx?`下一级：${nx.name}（风险：${nx.risk}）— ${nx.why}`:"所有级别都已放开过";
+  const L=R.last,c=$("rx_res");if(!L){c.innerHTML="";return}
+  if(L.auto){c.innerHTML=`<div class="rx-card"><div class="v">${esc(L.msg)}</div><ul>${L.steps.map(s=>`<li>${s[0]}. <span>${esc(s[1])}</span>: <b>${esc(s[2])}</b> — <span>${esc(s[3])}</span>${s[4]&&s[4].length?`<div class="fr">${s[4].map(([n,a,b])=>`${esc(n)} ${a.toFixed(1)}% → ${b.toFixed(1)}%`).join("; ")}</div>`:""}</li>`).join("")}</ul></div>`;return}
+  if(L.done||L.undone){c.innerHTML=`<div class="rx-card">${esc(L.msg)}</div>`;return}
+  const fr=L.fractions.length?`<div class="fr">${L.fractions.map(([n,a,b])=>`${esc(n)} ${a.toFixed(1)}% → ${b.toFixed(1)}%`).join("；")}</div>`:"";
+  c.innerHTML=`<div class="rx-card"><div>${L.level}. ${esc(L.name)}（风险：${esc(L.risk)}）</div>
+    <div class="fr">${L.changes.map(esc).join("；")}</div>
+    <div>χ²ᵣ ${fmt(L.before.rchi2,3)} → ${fmt(L.after.rchi2,3)} · ΔBIC ${L.dbic>0?"+":""}${L.dbic.toFixed(0)}</div>
+    <div class="v ${L.verdict}">${esc(L.msg)}</div>${fr}
+    ${L.new_warnings.length?`<ul>${L.new_warnings.map(w=>`<li>⚠ ${esc(w)}</li>`).join("")}</ul>`:""}</div>`}
+async function relax(a){if(S.cur===null)return;toast(a==="auto"?"逐级尝试放宽约束…":a==="next"?"放宽下一级约束并重新拟合…":"撤销…");
+  const v=await act("relax",{action:a});if(v&&v.msg)toast(v.msg)}
 function renderSummary(v){
   const box=$("summary");$("fitsum").textContent=v.fit?`χ²ᵣ ${fmt(v.fit.rchi2,3)}${v.fit.rel_rms!=null?` · RMS ${(100*v.fit.rel_rms).toFixed(1)}%`:""}`:"";
   if(v.kind==="survey"){const E=((v.ident&&v.ident.elements)||[]).filter(e=>e.confirmed).map(e=>e.el);
@@ -1153,6 +1190,7 @@ function trText(t){
   if(I18N.phrases[c]!==undefined)return lead+I18N.phrases[c]+tail;
   for(const[rx,en]of RX){const m=c.match(rx);if(m){const g=m.slice(1).map(x=>trText(x.trim()));
     return lead+punct(en.replace(/\{(\d+)\}/g,(_,i)=>g[+i]??""))+tail}}
+  if(c.includes("\n"))return lead+c.split("\n").map(trText).join("\n")+tail;
   if(c.includes("；"))return lead+c.split("；").map(trText).join("; ")+tail;
   let o=c;for(const k of SUBS)if(o.includes(k))o=o.split(k).join(I18N.phrases[k]);
   return lead+punct(o)+tail}
@@ -1174,10 +1212,12 @@ function applyLang(){trNode(document.body);document.documentElement.lang=LANG===
   document.querySelectorAll("#langseg button").forEach(b=>b.classList.toggle("on",b.dataset.l===LANG));
   if(S.v)draw()}
 async function initLang(){
-  I18N=await call("i18n");LANG=I18N.lang||"zh";RX=I18N.patterns.map(([rx,en])=>[new RegExp(rx,"s"),en]);
+  I18N=await call("i18n");LANG=I18N.lang||"zh";RX=I18N.patterns.map(([rx,en])=>[new RegExp(rx),en]);
   SUBS=Object.keys(I18N.phrases).filter(k=>k.length>=4&&/[\u4e00-\u9fff]/.test(k)).sort((a,b)=>b.length-a.length);
-  MO=new MutationObserver(ms=>{if(LANG!=="en")return;for(const m of ms){if(m.type==="characterData")trNode(m.target);else m.addedNodes.forEach(trNode)}});
-  MO.observe(document.body,{childList:true,subtree:true,characterData:true});
+  MO=new MutationObserver(ms=>{if(LANG!=="en")return;for(const m of ms){if(m.type==="characterData")trNode(m.target);
+    else if(m.type==="attributes"){const e=m.target,v=e.getAttribute(m.attributeName);if(v!==e.dataset["en_"+m.attributeName])trNode(e)}
+    else m.addedNodes.forEach(trNode)}});
+  MO.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:["title","placeholder"]});
   applyLang()}
 document.querySelectorAll("#langseg button").forEach(b=>b.onclick=async()=>{LANG=b.dataset.l;await call("set_lang",{lang:LANG});applyLang();
   if(S.cur!==null){setView(await call("view",{i:S.cur}));loadRef()}});

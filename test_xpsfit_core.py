@@ -314,6 +314,26 @@ class Core(unittest.TestCase):
         self.assertAlmostEqual(v[2]["area"] / (v[0]["area"] + v[1]["area"]), 0.5, places=6)
 
 
+    def test_relax_steps(self):
+        from xpsfit import autofit
+        x, y, _ = synth(3)
+        s = core.Spectrum("Al2p Scan", x, y)
+        autofit.run(s, ["Al", "O"])
+        before = copy.deepcopy(s.peaks)
+        r = autofit.relax_next(s)
+        self.assertEqual(r["level"], 1)
+        self.assertIn(r["verdict"], ("keep", "check", "marginal", "worse"))
+        self.assertFalse(all(p["lor"]["fixed"] for p in s.peaks if p.get("role", "main") == "main" and not p.get("pair")))
+        autofit.relax_undo(s)
+        self.assertEqual(s.relax_level, 0)
+        self.assertEqual([p["lor"]["fixed"] for p in s.peaks], [p["lor"]["fixed"] for p in before])
+        a = autofit.relax_auto(s)
+        self.assertTrue(a["auto"])
+        self.assertLessEqual(s.relax_level, autofit.AUTO_MAX)          # 自动只走低、中风险的级别
+        st = autofit.relax_state(s)
+        self.assertEqual(len(st["ladder"]), len(autofit.RELAX_LEVELS))
+
+
 class Api(unittest.TestCase):
     """不开窗口，直接调用后端 API 走一遍完整流程。"""
     def test_workflow(self):

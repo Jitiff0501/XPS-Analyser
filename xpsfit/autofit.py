@@ -684,6 +684,7 @@ def bic(s, r):
 
 # ------------------------------------------------------------------ 一键拟合
 def run(s, sample_elements=(), ref=None, max_add=4):
+    s.relax_level, s.relax_hist, s.relax_last = 0, [], None
     report = []
     log = report.append
     if s.window:
@@ -830,6 +831,221 @@ def run(s, sample_elements=(), ref=None, max_add=4):
         log("⚠ " + w_)
     log("完成：约化 χ² %.3g，残差 RMS / 峰高 %.1f%%" % (r["rchi2"], 100 * q["rel_rms"]))
     return report
+
+
+# ------------------------------------------------------------------ 逐步放宽约束
+# 默认模型的约束（L% 固定、FWHM 1–3 eV、化合物对称、双峰按文献范围…）偏保守。拟合不理想时按风险从低到高逐级放开，
+# 每放一级都重新拟合，并用 BIC（已计入多出的参数）、新出现的物理警告、化学态比例的变化来判断是否保留。
+def _free_params(s):
+    for p in s.peaks:
+        yield p, core.linked_params(p)
+
+
+def _rx_lor(s):
+    n = 0
+    for p, lk in _free_params(s):
+        if p.get("role", "main") != "main" or "lor" in lk or not p["lor"]["fixed"]:
+            continue
+        p["lor"]["fixed"] = False
+        p["lor"]["min"], p["lor"]["max"] = 0.0, max(60.0, p["lor"]["value"])
+        n += 1
+    return ["%d 个峰的 Lorentzian 比例（L%%）改为在 0–60%% 内拟合（双峰副峰跟随）" % n] if n else []
+
+
+def _rx_bg(s):
+    if s.bg.get("type") not in ("Shirley", "Smart"):
+        return []
+    old = s.bg["type"]
+    s.bg.update({"type": "SlopeShirley", "tilt": 0.0})
+    return ["背景 %s → 主动 Shirley（台阶 + 线性斜坡，斜坡随峰拟合，仍不高于数据）" % old]
+
+
+def _rx_fwhm(s):
+    n = 0
+    for p, lk in _free_params(s):
+        f = p["fwhm"]
+        if "fwhm" not in lk and not f["fixed"] and f["max"] is not None:
+            f["min"] = max(0.4, round(0.7 * (f["min"] if f["min"] is not None else 1.0), 2))
+            f["max"] = round(1.4 * f["max"], 2)
+            n += 1
+    return ["%d 个峰的 FWHM 范围放宽为原来的 0.7–1.4 倍（双峰的 FWHM 倍率仍按文献范围）" % n] if n else []
+
+
+def _rx_tail(s):
+    n = 0
+    for p, lk in _free_params(s):
+        if p.get("shape") != "Asym" or "tail" in lk or p.get("fe_phase"):
+            continue
+        p["tail"]["max"] = max(p["tail"]["max"] or 0.45, 0.8)
+        p["tau"]["max"] = max(p["tau"]["max"] or 2.0, 3.5)
+        n += 1
+    return ["%d 个金属态峰的拖尾范围放宽（T ≤ 0.8，τ ≤ 3.5 eV）" % n] if n else []
+
+
+def _rx_doublet(s):
+    n = 0
+    for p in s.peaks:
+        ln = p.get("link") or {}
+        R = ln.get("ref", "")
+        if not p.get("pair") or p["name"].startswith(R + " ") or p.get("role") == "unknown":
+            continue
+        rule = core.so_rule(s.element, core.is_metal_name(R))
+        if rule and rule["lock"]:
+            continue                          # 分裂远小于峰宽（Al2p、Si2p）：放开也拟合不出来
+        if ln.get("fwhm_ratio_fit") and ln.get("fwhm_ratio_max") is not None:
+            ln["fwhm_ratio_min"] = max(0.7, ln["fwhm_ratio_min"] - 0.1)
+            ln["fwhm_ratio_max"] = ln["fwhm_ratio_max"] + 0.3
+        for k, d, lo_cap in (("dE", 0.1, None), ("area_ratio", 0.05, 0.2)):
+            if ln.get(k) is None:
+                continue
+            if ln.get(k + "_fit") and ln.get(k + "_min") is not None:
+                ln[k + "_min"] -= d
+                ln[k + "_max"] += d
+            else:
+                ln.update({k + "_fit": True, k + "_min": ln[k] - d, k + "_max": ln[k] + d})
+            if lo_cap is not None:
+                ln[k + "_min"] = max(lo_cap, ln[k + "_min"])
+        n += 1
+    return ["%d 对自旋轨道双峰：分裂范围各放宽 0.1 eV、面积比各放宽 0.05、FWHM 倍率下限 −0.1 / 上限 +0.3（可超出文献范围，超出时会提示）" % n] if n else []
+
+
+def _rx_comp_asym(s):
+    n = 0
+    for p, lk in _free_params(s):
+        if p.get("role", "main") != "main" or p.get("shape") == "Asym" or "tail" in lk or core.is_metal_name(p["name"]):
+            continue
+        p["shape"] = "Asym"
+        p["tail"].update(value=0.05, min=0.0, max=0.25, fixed=False)
+        p["tau"].update(value=1.0, min=0.5, max=2.0, fixed=False)
+        n += 1
+    return ["%d 个化合物峰允许轻微不对称（T ≤ 0.25）" % n] if n else []
+
+
+def _rx_center(s):
+    n = 0
+    for p, lk in _free_params(s):
+        c = p["center"]
+        if "center" in lk or c["fixed"] or c["min"] is None or c["max"] is None:
+            continue
+        c["min"] -= 0.5
+        c["max"] += 0.5
+        n += 1
+    return ["%d 个峰的峰位范围两侧各放宽 0.5 eV" % n] if n else []
+
+
+RELAX_LEVELS = [
+    {"key": "lor", "name": "Lorentzian 比例", "risk": "低", "apply": _rx_lor,
+     "why": "仪器展宽（高斯）与寿命展宽（洛伦兹）的比例因谱仪和化学态而异，放开它物理上最没有争议"},
+    {"key": "bg", "name": "背景斜坡", "risk": "低", "apply": _rx_bg,
+     "why": "本底在 Shirley 台阶之外常有线性斜坡；随峰拟合，背景仍不高于数据"},
+    {"key": "fwhm", "name": "FWHM 范围", "risk": "中", "apply": _rx_fwhm,
+     "why": "默认 1–3 eV 适合多数单色 Al Kα 高分辨谱；窄的金属峰或宽的多重分裂峰可能需要更宽的范围"},
+    {"key": "tail", "name": "金属拖尾", "risk": "中", "apply": _rx_tail,
+     "why": "金属的拖尾长度因元素和导电电子而异；过长的拖尾会吃掉相邻氧化态"},
+    {"key": "doublet", "name": "双峰关系超出文献范围", "risk": "高", "apply": _rx_doublet,
+     "why": "1/2 分量常受背景、重叠和 Coster–Kronig 效应影响；超出文献范围时更可能是背景或重叠的问题，而不是物理"},
+    {"key": "asym", "name": "化合物不对称", "risk": "高", "apply": _rx_comp_asym,
+     "why": "多重分裂或未分辨的成分会让化合物峰看起来不对称；但拖尾很容易把相邻化学态的面积吃掉"},
+    {"key": "center", "name": "峰位范围", "risk": "最高", "apply": _rx_center,
+     "why": "峰位放开后，化学态可能互相交换位置；只在能量校正可靠时使用"},
+]
+
+
+def relax_state(s):
+    lvl = getattr(s, "relax_level", 0)
+    kept = {h["level"] for h in getattr(s, "relax_hist", [])}
+    ladder = [{"name": L["name"], "risk": L["risk"], "why": L["why"],
+               "status": "kept" if k + 1 in kept else ("skipped" if k < lvl else "pending")}
+              for k, L in enumerate(RELAX_LEVELS)]
+    return {"level": lvl, "total": len(RELAX_LEVELS), "ladder": ladder, "last": getattr(s, "relax_last", None)}
+
+
+def _fractions(s):
+    st = core.chemical_states(s)
+    tot = sum(a for _, a in st) or 1.0
+    return {n: a / tot for n, a in st}
+
+
+def relax_next(s):
+    """放开下一级约束并重新拟合，返回这一步的评价（不自动撤销；由用户或 relax_auto 决定）。"""
+    if not s.peaks:
+        raise ValueError("请先拟合（一键拟合或添加峰）")
+    lvl = getattr(s, "relax_level", 0)
+    s.relax_hist = getattr(s, "relax_hist", [])
+    if not s.last_fit:
+        s.do_fit()
+    while lvl < len(RELAX_LEVELS):
+        L = RELAX_LEVELS[lvl]
+        r0 = s.last_fit
+        b0, f0, q0 = bic(s, r0), _fractions(s), set(quality(s)["warnings"])
+        snap = (copy.deepcopy(s.peaks), copy.deepcopy(s.bg), copy.deepcopy(s.last_fit))
+        changes = L["apply"](s)
+        lvl += 1
+        s.relax_level = lvl
+        if not changes:
+            continue                          # 这一级不适用（如已经是自定义点背景），直接看下一级
+        r = s.do_fit()
+        r_ms = multistart(s, 3)
+        r = r_ms if r_ms["rchi2"] <= r["rchi2"] else s.do_fit()
+        b, f1, q1 = bic(s, r), _fractions(s), set(quality(s)["warnings"])
+        db = b - b0
+        new_w = sorted(q1 - q0)
+        phys = [w for w in new_w if "不在文献范围" in w or "高于数据" in w]
+        big = max((abs(f1.get(k, 0.0) - f0.get(k, 0.0)) for k in set(f0) | set(f1)), default=0.0)
+        if db < -10 and not phys and big > 0.10:
+            verdict, msg = "check", "BIC 下降 %.0f，但化学态比例变化达 %.0f 个百分点 → 结果对这项约束很敏感，请复核后决定" % (-db, 100 * big)
+        elif db < -10 and not phys:
+            verdict, msg = "keep", "BIC 下降 %.0f（显著改善），没有新的物理问题 → 建议保留" % -db
+        elif db < -10:
+            verdict, msg = "check", "BIC 下降 %.0f，但出现新的物理问题（见下）→ 请判断后决定是否撤销" % -db
+        elif db < 0:
+            verdict, msg = "marginal", "BIC 只下降 %.0f（不显著，多出的参数不值得）→ 建议撤销" % -db
+        else:
+            verdict, msg = "worse", "BIC 没有下降（%+.0f）→ 建议撤销" % db
+        moved = [[k, 100 * f0.get(k, 0.0), 100 * f1.get(k, 0.0)] for k in sorted(set(f0) | set(f1))
+                 if abs(f1.get(k, 0.0) - f0.get(k, 0.0)) >= 0.005]
+        res = {"level": lvl, "name": L["name"], "risk": L["risk"], "changes": changes,
+               "before": {"rchi2": r0["rchi2"], "bic": b0}, "after": {"rchi2": r["rchi2"], "bic": b},
+               "dbic": db, "verdict": verdict, "msg": msg, "fractions": moved, "new_warnings": new_w}
+        s.relax_hist.append({"level": lvl, "snap": snap})
+        s.relax_last = res
+        return res
+    s.relax_last = {"done": True, "msg": "所有约束都已放开过（共 %d 级）" % len(RELAX_LEVELS)}
+    return s.relax_last
+
+
+def relax_undo(s):
+    hist = getattr(s, "relax_hist", [])
+    if not hist:
+        raise ValueError("没有可撤销的放宽步骤")
+    h = hist.pop()
+    s.peaks, s.bg, s.last_fit = h["snap"]
+    s.relax_level = h["level"] - 1
+    s.relax_last = {"undone": True, "msg": "已撤销第 %d 级（%s）" % (h["level"], RELAX_LEVELS[h["level"] - 1]["name"])}
+    return s.relax_last
+
+
+AUTO_MAX = 4      # 自动模式只走低、中风险的前 4 级；高风险的需手动逐级放开
+
+
+def relax_auto(s):
+    """从当前级开始逐级尝试（只到第 AUTO_MAX 级）：BIC 显著下降、没有新的物理问题、比例变化不大才保留，否则撤回并跳过。"""
+    steps = []
+    while getattr(s, "relax_level", 0) < AUTO_MAX:
+        res = relax_next(s)
+        if res.get("done"):
+            break
+        if res["verdict"] == "keep":
+            steps.append([res["level"], res["name"], "保留", res["msg"], res["fractions"]])
+        else:
+            relax_undo(s)
+            s.relax_level = res["level"]          # 跳过这一级，继续下一级
+            steps.append([res["level"], res["name"], "撤回", res["msg"], res["fractions"]])
+    kept = [st for st in steps if st[2] == "保留"]
+    s.relax_last = {"auto": True, "steps": steps,
+                    "msg": "自动放宽完成（低、中风险的前 %d 级）：保留 %d 级%s；高风险的级别请手动逐级放开" % (
+                        AUTO_MAX, len(kept), "（%s）" % "、".join(k[1] for k in kept) if kept else "，默认约束已经合适")}
+    return s.relax_last
 
 
 # ------------------------------------------------------------------ 微调与质量检查

@@ -127,6 +127,7 @@ class State:
                 "window": [s.window[0] + s.shift, s.window[1] + s.shift],
                 "kind": getattr(s, "kind", "region"), "ident": getattr(s, "ident", None),
                 "states": _states(s), "interp": _interp(s), "colors": core.peak_colors(s.peaks),
+                "relax": autofit.relax_state(s),
                 "so": {"metal": core.so_rule(s.element, True), "comp": core.so_rule(s.element, False)}
                 if core.so_rule(s.element) else None}
 
@@ -410,6 +411,12 @@ def api(method, a):
                                     0.6 if a.get("ecf", True) else 0.0, inc)
         used = sorted({t.element for t in st.specs if t.element})
         return {"samples": res, "sf": st.sf, "orbitals": used}
+    elif method == "relax":
+        act_ = a.get("action", "next")
+        res = {"next": autofit.relax_next, "undo": autofit.relax_undo, "auto": autofit.relax_auto}[act_](s)
+        if s.last_fit:
+            _post_fit(s)                          # 不确定度 + 质量警告，与“拟合”按钮一致
+        return dict(st.view(a["i"]), specs=st.summary(), msg=res.get("msg"))
     elif method == "stack":
         return stack_data(a["i"], a)
     elif method == "export_stack":

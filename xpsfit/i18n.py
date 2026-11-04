@@ -7,6 +7,23 @@ import re
 
 # ------------------------------------------------------------------ 整句 / 词组
 PHRASES = {
+    "（风险：低）": " (risk: low)", "（风险：中）": " (risk: medium)", "（风险：高）": " (risk: high)", "（风险：最高）": " (risk: highest)",
+    "逐步放宽约束": "Relax constraints step by step", "放宽一级 ▸": "Relax one level ▸", "撤销": "Undo", "自动": "Auto",
+    "按风险从低到高，放开下一级约束并重新拟合": "Release the next constraint (lowest risk first) and refit",
+    "退回上一级": "Go back one level", "逐级尝试低、中风险的前 4 级：BIC 显著下降、没有新的物理问题才保留": "Try the low/medium-risk levels 1–4 in turn; keep a level only if BIC drops significantly and no new physical problem appears",
+    "逐级尝试放宽约束…": "Trying constraint levels…", "放宽下一级约束并重新拟合…": "Relaxing the next constraint and refitting…", "撤销…": "Undoing…",
+    "所有级别都已放开过": "All levels have been tried",
+    "Lorentzian 比例": "Lorentzian fraction", "背景斜坡": "Background slope", "FWHM 范围": "FWHM range", "金属拖尾": "Metal tail",
+    "双峰关系超出文献范围": "Doublet relations beyond literature", "化合物不对称": "Compound asymmetry", "峰位范围": "Peak position range",
+    "低": "low", "中": "medium", "高": "high", "最高": "highest", "保留": "kept", "撤回": "reverted",
+    "已放开并保留": "released and kept", "已尝试，未保留 / 不适用": "tried, not kept / not applicable", "未放开": "not released",
+    "仪器展宽（高斯）与寿命展宽（洛伦兹）的比例因谱仪和化学态而异，放开它物理上最没有争议": "The ratio of instrumental (Gaussian) to lifetime (Lorentzian) broadening varies with spectrometer and chemical state; freeing it is the least controversial",
+    "本底在 Shirley 台阶之外常有线性斜坡；随峰拟合，背景仍不高于数据": "The background often has a linear slope besides the Shirley step; it is fitted with the peaks and still never exceeds the data",
+    "默认 1–3 eV 适合多数单色 Al Kα 高分辨谱；窄的金属峰或宽的多重分裂峰可能需要更宽的范围": "The default 1–3 eV suits most monochromatic Al Kα high-resolution spectra; narrow metal peaks or broad multiplet peaks may need a wider range",
+    "金属的拖尾长度因元素和导电电子而异；过长的拖尾会吃掉相邻氧化态": "Metal tails vary with element and conduction electrons; overly long tails swallow neighbouring oxide states",
+    "1/2 分量常受背景、重叠和 Coster–Kronig 效应影响；超出文献范围时更可能是背景或重叠的问题，而不是物理": "The 1/2 component is affected by background, overlaps and Coster–Kronig effects; values beyond the literature range more likely indicate a background or overlap problem than physics",
+    "多重分裂或未分辨的成分会让化合物峰看起来不对称；但拖尾很容易把相邻化学态的面积吃掉": "Multiplet splitting or unresolved components can make compound peaks look asymmetric, but tails easily swallow the area of neighbouring states",
+    "峰位放开后，化学态可能互相交换位置；只在能量校正可靠时使用": "With free positions, chemical states may swap places; use only when the energy calibration is reliable",
     "⧉ 堆叠对比": "⧉ Stack compare", "把各样品的同一轨道上下错开叠在一起比较": "Stack the same orbital from all samples for comparison",
     "扣背景归一化": "Bkg-subtracted, normalized", "归一化": "Normalized", "原始": "Raw", "间距": "Spacing", "拟合包络": "Fit envelope",
     "分峰": "Components", "化学态比例": "State fractions", "导出堆叠图": "Export stacked figure", "返回单谱": "Back to single spectrum",
@@ -164,6 +181,29 @@ PHRASES = {
 
 # ------------------------------------------------------------------ 含变量的句子：中文 printf 模板 → 英文（{0}{1}… 为各变量，变量本身也会递归翻译）
 TEMPLATES = [
+    ("%d 个峰的 Lorentzian 比例（L%%）改为在 0–60%% 内拟合（双峰副峰跟随）", "Lorentzian fraction (L%) of {0} peaks now fitted within 0–60% (doublet partners follow)"),
+    ("背景 %s → 主动 Shirley（台阶 + 线性斜坡，斜坡随峰拟合，仍不高于数据）", "Background {0} → active Shirley (step + linear slope fitted with the peaks, still never above the data)"),
+    ("%d 个峰的 FWHM 范围放宽为原来的 0.7–1.4 倍（双峰的 FWHM 倍率仍按文献范围）", "FWHM range of {0} peaks widened to 0.7–1.4× (doublet FWHM ratios stay within the literature range)"),
+    ("%d 个金属态峰的拖尾范围放宽（T ≤ 0.8，τ ≤ 3.5 eV）", "tail range of {0} metal peaks widened (T ≤ 0.8, τ ≤ 3.5 eV)"),
+    ("%d 对自旋轨道双峰：分裂范围各放宽 0.1 eV、面积比各放宽 0.05、FWHM 倍率下限 −0.1 / 上限 +0.3（可超出文献范围，超出时会提示）",
+     "{0} spin–orbit doublets: splitting range widened by 0.1 eV, area ratio by 0.05, FWHM ratio by −0.1 / +0.3 (may leave the literature range; flagged when it does)"),
+    ("%d 个化合物峰允许轻微不对称（T ≤ 0.25）", "{0} compound peaks allowed a slight asymmetry (T ≤ 0.25)"),
+    ("%d 个峰的峰位范围两侧各放宽 0.5 eV", "position range of {0} peaks widened by 0.5 eV on each side"),
+    ("BIC 下降 %.0f，但化学态比例变化达 %.0f 个百分点 → 结果对这项约束很敏感，请复核后决定",
+     "BIC dropped by {0}, but the chemical-state fractions changed by up to {1} percentage points → the result is sensitive to this constraint; review before deciding"),
+    ("BIC 下降 %.0f（显著改善），没有新的物理问题 → 建议保留", "BIC dropped by {0} (significant), no new physical problem → keep"),
+    ("BIC 下降 %.0f，但出现新的物理问题（见下）→ 请判断后决定是否撤销", "BIC dropped by {0}, but a new physical problem appeared (see below) → decide whether to undo"),
+    ("BIC 只下降 %.0f（不显著，多出的参数不值得）→ 建议撤销", "BIC dropped only by {0} (not significant; the extra parameters are not justified) → undo"),
+    ("BIC 没有下降（%s）→ 建议撤销", "BIC did not drop ({0}) → undo"),
+    ("所有约束都已放开过（共 %d 级）", "All constraint levels have been tried ({0} levels)"),
+    ("已撤销第 %d 级（%s）", "Level {0} ({1}) undone"),
+    ("自动放宽完成（低、中风险的前 %d 级）：保留 %d 级%s；高风险的级别请手动逐级放开",
+     "Auto relaxation done (low/medium-risk levels 1–{0}): kept {1} level(s){2}; release the high-risk levels manually, one at a time"),
+    ("，默认约束已经合适", ", the default constraints are already adequate"),
+    ("下一级：%s（风险：%s）— %s", "Next level: {0} (risk: {1}) — {2}"),
+    ("%s（风险：%s）", "{0} (risk: {1})"),
+    ("请先拟合（一键拟合或添加峰）", "Fit first (one-click fit or add peaks)"),
+    ("没有可撤销的放宽步骤", "No relaxation step to undo"),
     ("点击添加双峰（%s：分裂、面积比、FWHM 倍率在文献范围内拟合，起点 %s eV / %s）；Esc 结束",
      "Click to add a doublet ({0}: splitting, area ratio and FWHM ratio are fitted within the literature ranges, starting from {1} eV / {2}); Esc to finish"),
     ("%s：%s 到达文献范围边界（约束在起作用，1/2 区域的背景或重叠值得检查）",
@@ -275,7 +315,8 @@ TEMPLATES = [
     ("默认显示模型 A（B 没有明显更好）", "Showing model A (B is not clearly better)"), ("默认显示模型 B（BIC 更好）", "Showing model B (better BIC)"),
     ("%.1f eV 有峰（%s 范围 %.1f–%.1f）", "peak at {0} eV ({1} range {2}–{3})"), ("+%.2f eV 处有自旋轨道分量", "spin–orbit partner at +{0} eV"),
     ("缺少 +%.2f eV 的自旋轨道分量", "no spin–orbit partner at +{0} eV"),
-    ("%s %s：%s", "{0} {1}: {2}"),
+    ("%s （确认）：%s", "{0} (confirmed): {1}"),
+    ("%s （待确认：只有部分谱线吻合）：%s", "{0} (tentative: only some lines match): {1}"),
     ("未知操作 %s", "Unknown action {0}"), ("没有找到峰，停止", "No peaks found — stopped"), ("没有识别到谱数据", "No spectrum data recognised"),
     ("双峰需要分裂和面积比", "A doublet needs splitting and area ratio"),
     ("无法读取 %s", "Cannot read {0}"), ("%s：%s", "{0}: {1}"),
@@ -329,7 +370,7 @@ for _zh, _en in TEMPLATES:
     PATTERNS.append((_rx, _en))
 # 固定文字越多（越具体）的模板越先匹配
 PATTERNS.sort(key=lambda t: -len(t[0].replace(ANY, "").replace(NUM, "")))
-_COMPILED = [(re.compile(rx, re.S), en) for rx, en in PATTERNS]
+_COMPILED = [(re.compile(rx), en) for rx, en in PATTERNS]       # 通配不跨行：多行文字逐行翻译
 # 兜底的词组替换只用较长的词组（短词会误伤长句，如“轨道”出现在“自旋轨道”里）
 _SUBS = sorted((k for k in PHRASES if len(k) >= 4 and re.search(r"[一-鿿]", k)), key=len, reverse=True)
 _PUNCT = [("、", ", "), ("；", "; "), ("（", " ("), ("）", ")"), ("：", ": "), ("，", ", "), ("。", ". "), ("　", "  ")]
@@ -360,6 +401,8 @@ def tr(text, depth=0):
                 return lead + _punct(en.format(*parts)) + tail
             except (IndexError, KeyError):
                 break
+    if "\n" in core_:                                          # 多行：逐行翻译
+        return lead + "\n".join(tr(x, depth + 1) for x in core_.split("\n")) + tail
     if "；" in core_:                                           # 多条理由：逐条翻译
         return lead + "; ".join(tr(x, depth + 1) for x in core_.split("；")) + tail
     out = core_
