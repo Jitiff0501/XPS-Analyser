@@ -200,6 +200,44 @@ class Core(unittest.TestCase):
         self.assertAlmostEqual(a["Cu2O"]["alpha"], 1849.2, places=1)    # 修正俄歇参数
         self.assertIsNone(reference.for_orbital("Co2p"))                # 未导入的元素
 
+    def test_autofit_classifies_overlap_and_satellite(self):
+        from xpsfit import autofit
+        x = np.arange(925, 965.01, 0.1)
+        cu = core.doublet("Cu", 932.6, 19.8, 0.5, 1.2, 60000, 30)
+        cr_auger = [core.new_peak("auger", 957.9, 5.0, 40000, 0)]
+        y = 125000 + core.model(x, cu)[1] + core.model(x, cr_auger)[1]
+        y = np.random.default_rng(2).poisson(y).astype(float)
+        s = core.Spectrum("Cu2p Scan", x, y)
+        rep = autofit.run(s, ["Cu", "Cr", "O"])
+        names = [p["name"] for p in s.peaks]
+        self.assertTrue(any("Cr" in n and p.get("role") == "unknown" for n, p in zip(names, s.peaks)), (names, rep))
+        q = autofit.quality(s)
+        self.assertLessEqual(q["bg_over"], 1e-6 * y.max())
+        # 同一位置，若样品不含 Cr → 不能硬说是 Cr 俄歇
+        s2 = core.Spectrum("Cu2p Scan", x, y)
+        autofit.run(s2, ["Cu", "O"])
+        self.assertFalse(any("Cr" in p["name"] for p in s2.peaks))
+        # Co：主峰 +6 eV 的信号归为卫星
+        xc = np.arange(772, 808.01, 0.1)
+        co = core.doublet("Co2+", 780.6, 15.5, 0.5, 2.5, 50000, 30)
+        sat = [core.new_peak("s", 786.5, 5, 30000, 0), core.new_peak("s2", 802.5, 5, 15000, 0)]
+        yc = 90000 + core.model(xc, co)[1] + core.model(xc, sat)[1]
+        sc = core.Spectrum("Co2p Scan", xc, np.random.default_rng(3).poisson(yc).astype(float))
+        autofit.run(sc, ["Co", "O"])
+        sats = [p for p in sc.peaks if p.get("role") == "satellite"]
+        self.assertTrue(sats and all(p["link"].get("ref", "").startswith("Co") for p in sats))
+
+    def test_refine_multistart_uncertainty(self):
+        from xpsfit import autofit
+        x, y, _ = synth()
+        s = core.Spectrum("Al2p", x, y)
+        core.apply_template(s, core.builtin_templates()["Al2p: Al 金属 + Al2O3"])
+        r0 = s.do_fit()
+        r1 = autofit.refine(s); r2 = autofit.multistart(s, 4)
+        self.assertLessEqual(r2["rchi2"], r0["rchi2"] * 1.0001)
+        autofit.uncertainties(s)
+        self.assertTrue(s.peaks[0]["center"].get("err", 0) > 0)
+
 
 class Api(unittest.TestCase):
     """不开窗口，直接调用后端 API 走一遍完整流程。"""

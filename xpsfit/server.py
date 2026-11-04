@@ -25,6 +25,7 @@ sys.path.insert(0, HERE)
 
 from xpsfit import core  # noqa: E402
 from xpsfit import reference  # noqa: E402
+from xpsfit import autofit  # noqa: E402
 import avantage_to_xpspeak as conv  # noqa: E402
 
 APP = "XPS Fit Studio"
@@ -287,7 +288,27 @@ def api(method, a):
         st.templates[a["name"]] = user[a["name"]]
         return dict(st.view(a["i"]), templates=list(st.templates), msg="模板已保存")
     elif method == "fit":
-        s.do_fit()
+        s.do_fit(); _post_fit(s)
+    elif method == "autofit":
+        targets = [s] if not a.get("all") else [t for t in st.specs if t.sample == s.sample]
+        reports = []
+        for t in targets:
+            els = sample_elements(t, a.get("extra"))
+            try:
+                rep_ = autofit.run(t, els, reference.for_orbital(t.element, user_dir()))
+                _post_fit(t)
+            except Exception as e:
+                rep_ = ["出错：%s" % e]
+            reports.append({"spectrum": t.name, "sample": t.sample, "elements": els, "steps": rep_})
+        return dict(st.view(a["i"]), specs=st.summary(), report=reports)
+    elif method == "refine":
+        autofit.refine(s, float(a.get("window", 0.3))); _post_fit(s)
+        return dict(st.view(a["i"]), specs=st.summary(), msg="局部微调完成（峰位 ±%.1f eV）" % float(a.get("window", 0.3)))
+    elif method == "multistart":
+        before = s.last_fit["rchi2"] if s.last_fit else None
+        r = autofit.multistart(s, int(a.get("n", 12))); _post_fit(s)
+        msg = "多起点拟合完成：约化 χ² %.4g" % r["rchi2"] + ("（之前 %.4g）" % before if before else "")
+        return dict(st.view(a["i"]), specs=st.summary(), msg=msg)
     elif method == "fit_same":
         n, bad = 0, []
         for t in st.specs:
@@ -347,6 +368,31 @@ def reference_for(s):
     for st_ in ref["states"]:
         st_["near"] = any(abs(st_["median"] - f) <= 0.3 for f in found)
     return out
+
+
+def sample_elements(s, extra=None):
+    """同一样品里有哪些元素（由已打开的谱推断），可附加用户输入的元素。"""
+    els = set()
+    for t in ST.specs:
+        if t.sample == s.sample:
+            m = re.match(r"[A-Z][a-z]?", t.element or "")
+            if m:
+                els.add(m.group(0))
+    for e in re.split(r"[,\s，、]+", extra or ""):
+        if re.fullmatch(r"[A-Z][a-z]?", e.strip()):
+            els.add(e.strip())
+    return sorted(els)
+
+
+def _post_fit(s):
+    try:
+        autofit.uncertainties(s)
+    except Exception:
+        pass
+    q = autofit.quality(s)
+    if s.last_fit is not None:
+        s.last_fit["warnings"] = q["warnings"]
+        s.last_fit["rel_rms"] = q["rel_rms"]
 
 
 def folder_files(d):
@@ -481,6 +527,8 @@ def _arrow_labels(ax, fig, x, bg, comps, env, peaks, cols, o, ylim, yraw=None):
     for k, (p, c) in enumerate(zip(peaks, comps)):
         ln = p.get("link") or {}
         if p.get("pair") and abs(ln.get("dE") or 9) < 1.0:
+            continue
+        if p["name"].endswith("（续）"):           # 同一重叠来源的附属片段不单独标
             continue
         cc = merged.get(k, c)
         if float(np.max(cc)) < 0.03 * big:

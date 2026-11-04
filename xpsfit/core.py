@@ -471,8 +471,10 @@ def area_percents(peaks):
 
 def peak_table(spec):
     """每个峰：名称、类型、位置、FWHM、面积、L%、面积%（未知重叠峰不计）。"""
-    return [{"spectrum": spec.name, "peak": p["name"], "role": p.get("role", "main"),
-             "BE_eV": p["center"]["value"], "FWHM_eV": p["fwhm"]["value"], "area": p["area"]["value"],
+    return [{"spectrum": spec.name, "peak": p["name"], "role": p.get("role", "main"), "shape": p.get("shape", "GL"),
+             "BE_eV": p["center"]["value"], "BE_err": p["center"].get("err"),
+             "FWHM_eV": p["fwhm"]["value"], "FWHM_err": p["fwhm"].get("err"),
+             "area": p["area"]["value"], "area_err": p["area"].get("err"),
              "L_percent": p["lor"]["value"], "area_percent": pct}
             for p, pct in zip(spec.peaks, area_percents(spec.peaks))]
 
