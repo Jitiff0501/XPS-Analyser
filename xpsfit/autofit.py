@@ -54,10 +54,9 @@ SPLIT = {"Al2p": 0.44, "Si2p": 0.61, "P2p": 0.87, "S2p": 1.18, "Cl2p": 1.6, "K2p
 RATIO = {"p": 0.5, "d": 2 / 3, "f": 0.75}
 # 本元素常见的其他化学态（主线 BE 范围，eV）——残差峰落在这里时作为新化学态加入
 KNOWN_STATES = {
-    "Cr2p": [("Cr6+", 579.0, 580.6), ("Cr(OH)3", 576.9, 577.6)],
-    "Co2p": [("Co3+", 779.4, 780.1)],
+    # 只列能与常见主组分分辨（≳1.5 eV）的态；Cr(OH)3/Cr2O3、Al(OH)3/Al2O3、Co3+/Co2+ 在常规分辨率下分不开，不列
+    "Cr2p": [("Cr6+", 579.0, 580.6)],
     "Cu2p": [("Cu2+", 933.3, 934.6)],
-    "Al2p": [("Al(OH)3/AlOOH", 74.9, 75.8)],
     "Ti2p": [("Ti4+", 458.4, 459.2), ("Ti3+", 456.7, 457.7), ("Ti2+", 455.0, 455.9), ("TiN", 454.8, 455.3)],
     "Fe2p": [("Fe3+", 710.5, 711.5), ("Fe2+", 709.2, 710.2)],
     "Ni2p": [("NiO", 853.5, 854.3), ("Ni(OH)2", 855.2, 856.2)],
@@ -66,6 +65,8 @@ KNOWN_STATES = {
     "N1s": [("nitride", 396.4, 397.4), ("C-N", 399.0, 400.5)],
     "O1s": [("O lattice", 529.3, 530.6), ("OH / defect", 531.0, 532.0)],
 }
+# 必须伴随卫星峰的化学态：卫星区间（eV）内没有信号就不能加入（如 Cu²⁺：940–946 eV）
+REQUIRES_SAT = {"Cu2+": (940.0, 946.0), "Ni2+": (859.0, 864.0)}
 # 哪些化学态可以带卫星峰（正则匹配主峰名）；未列出的元素：任何主峰都可以
 SAT_PARENT = {"Cu": r"2\+|CuO|Cu\(OH\)", "C": r"C-C|graph|sp2"}
 
@@ -76,7 +77,9 @@ def _P(name, c, w, lor=30, shape="GL", role="main", lo=None, hi=None, wmin=1.0, 
     p["center"]["min"], p["center"]["max"] = (c - 0.6 if lo is None else lo), (c + 0.6 if hi is None else hi)
     p["fwhm"]["min"], p["fwhm"]["max"] = wmin, wmax
     p["fwhm"]["value"] = min(max(w, wmin), wmax)
-    p["tail"]["max"], p["tau"]["max"] = 0.5, 3.0
+    # 金属峰拖尾的常见范围：过长的拖尾会“吃掉”相邻氧化物 / 高价态的信号
+    p["tail"]["min"], p["tail"]["max"] = 0.05, 0.45
+    p["tau"]["min"], p["tau"]["max"] = 0.5, 2.0
     return p
 
 
@@ -97,9 +100,9 @@ def _D(name, c, split, ratio, w, sub="2p", shape="GL", lo=None, hi=None, split_r
     return [p1, p2]
 
 
-def _SAT(name, ref, c, w, lo, hi, wmax=8.0, ratio=None):
+def _SAT(name, ref, c, w, lo, hi, wmax=8.0, ratio=None, wmin=None):
     """卫星峰；ratio=(min,max) 时面积与主峰之比限制在该范围内拟合。"""
-    p = _P(name, c, w, 0, role="satellite", lo=lo, hi=hi, wmin=1.0, wmax=wmax)
+    p = _P(name, c, w, 0, role="satellite", lo=lo, hi=hi, wmin=wmin or (3.0 if wmax >= 5 else 1.0), wmax=wmax)
     p["link"] = {"ref": ref}
     if ratio:
         p["link"].update(area_ratio=(ratio[0] + ratio[1]) / 2, area_ratio_fit=True,
@@ -128,18 +131,21 @@ def recipe(s, log):
         log("Co2p：Co⁰ 不对称双峰 Δ14.9–15.1；Co²⁺ 双峰 Δ15.2–15.7 + 卫星 ~786 / ~802 eV")
         return (_D("Co0", 778.2, 14.99, 0.5, 1.0, shape="Asym", lo=777.9, hi=778.5, split_rng=(14.9, 15.1), ratio_rng=(0.45, 0.55), fwr=(1.0, 1.4))
                 + _D("Co2+", 780.6, 15.4, 0.5, 2.6, lo=779.9, hi=781.5, split_rng=(15.2, 15.7))
-                + [_SAT("Co2+ sat. 2p3/2", "Co2+ 2p3/2", 786.0, 5.0, 783.0, 789.0, ratio=(0.3, 1.0)),
-                   _SAT("Co2+ sat. 2p1/2", "Co2+ 2p1/2", 802.3, 5.0, 799.5, 805.0, ratio=(0.3, 1.0))])
+                + [_SAT("Co2+ sat. 2p3/2", "Co2+ 2p3/2", 786.0, 5.0, 783.5, 788.5, wmax=6.0, ratio=(0.3, 0.9)),
+                   _SAT("Co2+ sat. 2p1/2", "Co2+ 2p1/2", 802.3, 5.0, 800.0, 804.5, wmax=6.0, ratio=(0.3, 0.9))])
     if el == "Cr2p":
         log("Cr2p：Cr⁰ 不对称双峰 Δ9.2–9.4；Cr³⁺ 双峰 Δ9.6–9.9（多重分裂以宽峰近似）")
         return (_D("Cr0", 574.2, 9.3, 0.5, 1.2, shape="Asym", lo=573.6, hi=574.7, split_rng=(9.2, 9.4), ratio_rng=(0.45, 0.55), fwr=(1.0, 1.5))
                 + _D("Cr3+", 576.4, 9.75, 0.5, 2.6, lo=575.6, hi=577.3, split_rng=(9.6, 9.9)))
     if el == "Cu2p":
-        m = _D("Cu0/Cu+", 932.6, 19.8, 0.5, 1.2, shape="Asym", lo=932.3, hi=932.9, split_rng=(19.7, 20.0), ratio_rng=(0.3, 0.6))
+        m = _D("Cu0/Cu+", 932.6, 19.8, 0.5, 1.2, shape="Asym", lo=932.3, hi=932.9, split_rng=(19.7, 20.0), ratio_rng=(0.42, 0.55))
         f = _signal(s, 940.0, 946.0)
-        if f > 0.04:
-            log("Cu2p：940–946 eV 有卫星信号（占 %.0f%%）→ 加入 Cu²⁺ 及其卫星峰" % (100 * f))
-            m += _D("Cu2+", 933.8, 19.9, 0.5, 2.5, lo=933.4, hi=934.4) + [_SAT("Cu2+ sat.", "Cu2+ 2p3/2", 942.5, 4.0, 940.0, 945.5, ratio=(0.2, 1.0))]
+        if f > 0.02:
+            cu2 = _D("Cu2+", 933.8, 19.9, 0.5, 2.5, lo=933.4, hi=934.4, wmax=3.5) + [_SAT("Cu2+ sat.", "Cu2+ 2p3/2", 942.5, 4.5, 940.0, 945.5, wmax=7.0, ratio=(0.4, 0.75))]
+            for p in cu2:
+                p["optional"] = "Cu2+"
+            log("Cu2p：940–946 eV 有卫星信号（%.1f%%）→ Cu²⁺ 及其卫星峰作为候选，拟合后用 BIC 判断是否保留" % (100 * f))
+            m += cu2
         else:
             log("Cu2p：940–946 eV 无卫星信号（%.1f%%）→ 不加 Cu²⁺，只用 Cu⁰/Cu⁺" % (100 * f))
         return m
@@ -296,6 +302,8 @@ def classify(c, width, s, sample_elements, ref, log_ctx):
                     "%.2f eV 处的残差峰位于 %s 高 BE 侧 +%.1f eV（%s 卫星区间 %.0f–%.0f eV）→ 卫星峰" % (c, par["name"], d, el, rule[0], rule[1]))
     # 3) 本元素常见的其他化学态
     for name, a, b in KNOWN_STATES.get(s.element, []):
+        if name in REQUIRES_SAT and _signal(s, *REQUIRES_SAT[name]) < 0.04:
+            continue
         if a - 0.2 <= c <= b + 0.2 and not any(p["name"].startswith(name) for p in s.peaks):
             return ("main", name, None, "%.2f eV 落在 %s 的常见范围（%.1f–%.1f eV）→ 新化学态" % (c, name, a, b))
     # 4) 参考库里的化学态
@@ -304,6 +312,143 @@ def classify(c, width, s, sample_elements, ref, log_ctx):
         if abs(st["median"] - c) <= max(0.6, st["q3"] - st["q1"]):
             return ("main", st["formula"], None, "%.2f eV 接近 NIST 中 %s（%.2f eV）→ 新化学态" % (c, st["formula"], st["median"]))
     return ("unknown", "unknown @%.1f" % c, None, "%.2f eV 的残差峰无法归属（不是同样品其他元素的谱线，也不在卫星区间）→ 作为未知峰，不计入定量，请确认" % c)
+
+
+def _pinned(peaks):
+    """卡在约束边界上的峰位 / FWHM 参数个数（非绑定、非固定）。"""
+    n = 0
+    for p in peaks:
+        for k in ("center", "fwhm"):
+            par = p[k]
+            if k in core.linked_params(p) or par["fixed"] or par["min"] is None or par["max"] is None:
+                continue
+            if min(abs(par["value"] - par["min"]), abs(par["value"] - par["max"])) < 1e-3 * max(1.0, abs(par["value"]) * 1e-3):
+                n += 1
+    return n
+
+
+def co_alternative(s, r, log):
+    """Co2p：金属 Co 在 +3~+5 eV 有固有损失结构，与 Co²⁺ 卫星区重叠，无法由谱唯一确定。
+    同时拟合模型 B（加入 Co⁰ 损失峰，计入 Co⁰），报告 Co²⁺ 比例的范围，默认保留 BIC 更好的模型。"""
+    import copy as _c
+
+    def frac(peaks):
+        t = _c.deepcopy(s); t.peaks = peaks
+        st = core.chemical_states(t); tot = sum(a for _, a in st) or 1
+        return sum(a for n, a in st if n.startswith("Co2+")) / tot
+    A = _c.deepcopy(s.peaks); bA = bic(s, r); fA = frac(A)
+    loss = [_SAT("Co0 loss +3eV", "Co0 2p3/2", 781.2, 2.5, 780.6, 782.2, wmax=4.0, ratio=(0.03, 0.3)),
+            _SAT("Co0 loss +5eV", "Co0 2p3/2", 783.3, 3.0, 782.6, 784.3, wmax=5.0, ratio=(0.03, 0.3))]
+    s.peaks = s.peaks + loss
+    rB = staged_fit(s); bB = bic(s, rB); fB = frac(s.peaks)
+    lo_, hi_ = sorted((fA, fB))
+    log("Co2p 模型对比：A（780–787 eV 肩峰全归 Co²⁺）Co²⁺ %.0f%%；B（含金属 Co 的 +3/+5 eV 损失峰）Co²⁺ %.0f%%。"
+        "两者都与数据一致，报告 Co²⁺ 范围 %.0f–%.0f%%" % (100 * fA, 100 * fB, 100 * lo_, 100 * hi_))
+    if bB < bA - 6:
+        log("默认显示模型 B（BIC 更好）")
+        return rB
+    s.peaks = A
+    log("默认显示模型 A（B 没有明显更好）")
+    return s.do_fit()
+
+
+def staged_fit(s):
+    """两步拟合：① 不对称峰的拖尾固定在典型值（T=0.25, τ=1.2 eV），先让各组分定位；② 再放开拖尾（在常见范围内）。"""
+    asym = [p for p in s.peaks if p.get("shape") == "Asym" and "tail" not in core.linked_params(p)]
+    saved = [(p["tail"]["fixed"], p["tau"]["fixed"]) for p in asym]
+    for p in asym:
+        p["tail"]["value"], p["tau"]["value"] = 0.25, 1.2
+        p["tail"]["fixed"] = p["tau"]["fixed"] = True
+    s.do_fit()
+    for p, (a, b) in zip(asym, saved):
+        p["tail"]["fixed"], p["tau"]["fixed"] = a, b
+    return s.do_fit()
+
+
+def test_known_states(s, b0, r, log):
+    """主动测试本元素常见的其他化学态（如 Cr⁶⁺）：逐个试加，BIC 明显下降且面积 ≥2% 才保留。"""
+    x = s.be[s.region()]
+    lo, hi = float(x.min()), float(x.max())
+    l_ = (s.element or "x")[-1]
+    split = SPLIT.get(s.element)
+    for name, a, b in KNOWN_STATES.get(s.element, []):
+        c = (a + b) / 2
+        if not (lo + 1 <= c <= hi - 1):
+            continue
+        if name in REQUIRES_SAT and _signal(s, *REQUIRES_SAT[name]) < 0.04:
+            continue                                   # 没有卫星就不可能有该价态
+        if any(re.sub(r"\s.*", "", p["name"]) == name for p in s.peaks):
+            continue
+        # 只测试能分辨的态：与已有组分（含双峰分量）相距 ≥1.5 eV；太近的无法区分，只提示
+        near = [p for p in s.peaks if p.get("role", "main") == "main" and
+                abs(p["center"]["value"] - c) < max(1.5, 0.8 * p["fwhm"]["value"])]
+        if near:
+            log("提示：%s（%.1f–%.1f eV）与 %s 相距不到 1.5 eV，此分辨率下无法区分，未单独拟合（可能包含在该组分中）"
+                % (name, a, b, re.sub(r"\s*\d[spdf]\d/2$", "", near[0]["name"])))
+            continue
+        trial = s.peaks
+        if split and l_ in RATIO and split > 1.0:
+            new = _D(name, c, split, RATIO[l_], 1.8, sub=s.element[-2:], lo=a - 0.2, hi=b + 0.2)
+        else:
+            new = [_P(name, c, 1.8, lo=a - 0.2, hi=b + 0.2)]
+        import copy as _c
+        saved = _c.deepcopy(s.peaks)
+        s.peaks = s.peaks + new
+        r2 = staged_fit(s)
+        b2 = bic(s, r2)
+        tot = sum(p["area"]["value"] for p in s.peaks if core.counted(p)) or 1.0
+        part = sum(p["area"]["value"] for p in s.peaks if p["name"].startswith(name)) / tot
+        if b2 < b0 - 10 and part >= 0.02:
+            b0, r = b2, r2
+            log("化学态测试：加入 %s（%.1f–%.1f eV）使拟合明显改善，占 %.1f%% → 新化学态，保留" % (name, a, b, 100 * part))
+        else:
+            s.peaks = saved
+            r = s.do_fit()
+    return b0, r
+
+
+def prior_overlaps(s, sample_elements, log):
+    """同一样品其他元素的谱线若落在窗口内，预先加入为重叠峰（不计入定量）。
+    与本元素主峰相距 <1 eV 的（如 Al2p 窗口里的 Cr3s 与 Al³⁺）无法区分 → 不加，只提示。"""
+    x, y, bg, _, _ = s.compute()
+    lo, hi = float(x.min()) + 0.5, float(x.max()) - 0.5
+    mains = [p["center"]["value"] for p in s.peaks if p.get("role", "main") == "main"]
+    own = re.match(r"[A-Z][a-z]?", s.element or "")
+    own = own.group(0) if own else ""
+    for el in sample_elements:
+        if el == own:
+            continue
+        for lvl, bes in CORE_BE.get(el, {}).items():
+            inside = [b for b in bes if lo <= b <= hi]
+            if not inside or lvl.endswith(("2p", "3d", "4f")) and len(bes) > 1 and not all(lo <= b <= hi for b in bes[:1]):
+                continue
+            if all(any(abs(b - m) < 1.0 for m in mains) for b in inside):
+                log("⚠ %s（%s eV）与本谱主峰几乎重合，无法拟合区分，可能使比例偏高；请结合该元素含量判断" % (
+                    lvl, "、".join("%.1f" % b for b in inside)))
+                continue
+            if len(inside) == 2:
+                # 双峰能级（如 Cu3p）：按锁定间距/面积比加入，远离主峰的分量把整对峰“锚定”住
+                p1 = _P("overlap: %s" % lvl, inside[0], 2.0, role="unknown", lo=inside[0] - 0.6, hi=inside[0] + 0.6, wmax=3.0)
+                p2 = _P("overlap: %s（分量）" % lvl, inside[1], 2.0, role="unknown", wmax=3.0)
+                p2["link"] = {"ref": p1["name"], "dE": inside[1] - inside[0], "area_ratio": 0.5, "fwhm_ratio": 1.0, "lor_same": True}
+                p2["pair"] = True
+                new = [p1, p2]
+            else:
+                new = [_P("overlap: %s" % lvl, b, 2.0, role="unknown", lo=b - 0.8, hi=b + 0.8, wmax=3.0) for b in inside]
+            for p in new:
+                p["prior"] = True
+                s.peaks.append(p)
+            log("预置重叠峰：样品含 %s，%s（%s eV）落在窗口内 → 预先加入为重叠峰（不计入定量）" % (
+                el, lvl, "、".join("%.1f" % b for b in inside)))
+        for ke in AUGER_KE.get(el, []):
+            b = s.hv - ke
+            if lo <= b <= hi:
+                if any(abs(b - m) < 1.0 for m in mains):
+                    continue
+                p = _P("overlap: %s 俄歇 (KE≈%d)" % (el, ke), b, 5.0, role="unknown", lo=b - 2.0, hi=b + 2.0, wmax=8.0)
+                p["prior"] = True
+                s.peaks.append(p)
+                log("预置重叠峰：样品含 %s，其俄歇峰（KE≈%d → BE≈%.1f eV）落在窗口内 → 预先加入为重叠峰" % (el, ke, b))
 
 
 def residual_bumps(s, noise):
@@ -386,9 +531,41 @@ def run(s, sample_elements=(), ref=None, max_add=4):
     core.apply_template(s, peaks)
     for p, q in zip(s.peaks, peaks):        # 保留模型自己的峰位范围（apply_template 只在没有范围时加 ±1 eV）
         p["center"]["min"], p["center"]["max"] = q["center"]["min"], q["center"]["max"]
-    r = s.do_fit()
+    prior_overlaps(s, sample_elements, log)
+    r = staged_fit(s)
     b0 = bic(s, r)
-    log("初次拟合：约化 χ² %.3g" % r["rchi2"])
+    log("初次拟合：约化 χ² %.3g（先固定金属拖尾定位各组分，再放开拖尾）" % r["rchi2"])
+    # 候选组分：与去掉它们的模型比较 BIC
+    for tag in sorted({p.get("optional") for p in s.peaks if p.get("optional")}):
+        import copy as _c
+        keep = _c.deepcopy(s.peaks)
+        s.peaks = [p for p in s.peaks if p.get("optional") != tag]
+        r_wo = staged_fit(s)
+        b_wo = bic(s, r_wo)
+        if b_wo <= b0 - 2:
+            b0, r = b_wo, r_wo
+            log("候选 %s：去掉后拟合同样好或更好（BIC），不保留" % tag)
+        else:
+            s.peaks = keep
+            r = s.do_fit()
+            pinned = _pinned([p for p in s.peaks if p.get("optional") == tag])
+            if pinned >= 2:
+                s.peaks = [p for p in s.peaks if p.get("optional") != tag]
+                r = staged_fit(s); b0 = bic(s, r)
+                log("候选 %s：BIC 虽更好，但 %d 个参数卡在约束边界（在填补背景/其他信号，不像真实的 %s）→ 不保留" % (tag, pinned, tag))
+            else:
+                for p in s.peaks:
+                    p.pop("optional", None)
+                log("候选 %s：保留后拟合明显更好（BIC），参数都在合理范围内 → 保留" % tag)
+    b0, r = test_known_states(s, b0, r, log)
+    # 预置的重叠峰若拟合后面积很小（<1%），去掉
+    tot = sum(p["area"]["value"] for p in s.peaks) or 1.0
+    small = [p for p in s.peaks if p.get("prior") and p["area"]["value"] / tot < 0.01]
+    if small:
+        names_ = {p["name"] for p in small}
+        s.peaks = [p for p in s.peaks if p["name"] not in names_ and (p.get("link") or {}).get("ref") not in names_]
+        r = s.do_fit(); b0 = bic(s, r)
+        log("预置重叠峰 %s 拟合后面积 <1%%，去掉" % "、".join(sorted(names_)))
     added = 0
     tried = set()
     while added < max_add:
@@ -417,7 +594,7 @@ def run(s, sample_elements=(), ref=None, max_add=4):
                 p = _P(name, c, wv, lo=c - 0.6, hi=c + 0.6)
         if p is not None:
             s.peaks = s.peaks + [p]
-        r2 = s.do_fit()
+        r2 = staged_fit(s)
         b2 = bic(s, r2)
         if b2 < b0 - 6:                     # BIC 显著下降才保留
             b0, r = b2, r2
@@ -427,6 +604,12 @@ def run(s, sample_elements=(), ref=None, max_add=4):
             s.peaks = trial
             r = s.do_fit()
             log("残差峰 %.2f eV（占 %.1f%%）：加入后拟合没有显著改善（BIC），不保留" % (c, 100 * frac))
+    if s.element == "Co2p" and any(p["name"].startswith("Co2+") for p in s.peaks):
+        r = co_alternative(s, r, log)
+    r_ms = multistart(s, 6)                   # 最后用多起点避开局部最优
+    if r_ms["rchi2"] < r["rchi2"] * 0.999:
+        log("多起点拟合：约化 χ² %.3g → %.3g" % (r["rchi2"], r_ms["rchi2"]))
+    r = r_ms
     q = quality(s)
     for w_ in q["warnings"]:
         log("⚠ " + w_)

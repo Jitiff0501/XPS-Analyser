@@ -399,7 +399,7 @@ def auto_identify(t):
     if identify.is_survey(t.be_raw):
         t.kind = "survey"
         t.element = ""
-        t.bg["type"] = "None"            # 全谱不画背景
+        t.bg.update({"type": "SNIP", "lo": None, "hi": None})   # 全谱：SNIP 背景（保留非弹性台阶，不高于数据）
         try:
             t.ident = identify.identify_survey(t.be_raw, t.y, t.hv)
         except Exception:

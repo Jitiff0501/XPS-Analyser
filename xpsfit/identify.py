@@ -105,7 +105,9 @@ def identify_region(be, y):
 def identify_survey(be, y, hv=1486.68):
     """返回 {"elements": [{el, lines:[(名, BE)], score}], "peaks": [(BE, 归属)]}。"""
     x = np.asarray(be, float); o = np.argsort(x); x, y = x[o], np.asarray(y, float)[o]
-    pk, ys = _peaks(x, y, 0.004)
+    # 在扣除 SNIP 背景后的信号上找峰：陡峭的非弹性本底上，弱峰也能被发现
+    bgs = core.snip_background(x, y)
+    pk, ys = _peaks(x, core.smooth(y, 3) - bgs + float(np.min(bgs)), 0.004)
     d = np.diff(y)                                   # 稳健噪声：相邻差值的中位绝对偏差（不受峰形影响）
     noise = float(np.median(np.abs(d - np.median(d))) / 0.6745 / math.sqrt(2)) or 1.0
     pk = [(c, p) for c, p in pk if p > 6 * noise]

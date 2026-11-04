@@ -109,6 +109,26 @@ def points_background(x, pts, interp="smooth"):
     return out
 
 
+def snip_background(x, y, width_ev=12.0):
+    """SNIP（统计敏感非线性迭代削峰）背景，用于全谱：逐级削去宽度小于 width_ev 的峰，保留随 BE 抬升的非弹性台阶。
+    LLS 变换压缩动态范围；窗口由大到小迭代，结果再限制为不高于平滑数据。"""
+    x = np.asarray(x, float); y = np.asarray(y, float)
+    step = float(np.median(np.diff(x))) if len(x) > 1 else 1.0
+    m = max(3, int(round(width_ev / max(step, 1e-6))))
+    ys = smooth(y, 5)
+    v = np.log(np.log(np.sqrt(np.clip(ys, 0, None) + 1) + 1) + 1)
+    n = len(v)
+    for p in range(m, 0, -1):                        # 窗口递减 → 背景更平滑
+        a = np.empty_like(v); a[:] = v
+        mid = 0.5 * (v[:n - 2 * p] + v[2 * p:]) if n > 2 * p else None
+        if mid is None:
+            continue
+        a[p:n - p] = np.minimum(v[p:n - p], mid)
+        v = a
+    bg = (np.exp(np.exp(v) - 1) - 1) ** 2 - 1
+    return np.minimum(bg, ys)
+
+
 def background(x, y, kind="Shirley", navg=3, tougaard_B=2866.0, tougaard_C=1643.0, ylo=None, yhi=None,
                points=None, interp="smooth"):
     """x 为升序 BE。返回与 y 同长的背景。
@@ -117,6 +137,8 @@ def background(x, y, kind="Shirley", navg=3, tougaard_B=2866.0, tougaard_C=1643.
     x = np.asarray(x, float); y = np.asarray(y, float)
     if kind in (None, "", "None", "无"):
         return np.zeros_like(y)
+    if kind == "SNIP":
+        return snip_background(x, y)
     if kind == "Points":
         if points and len(points) >= 1:
             # 点之间的平滑曲线可能略越过数据凹处 → 同 Smart，限制为不高于（平滑后的）数据
