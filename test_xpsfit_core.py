@@ -402,6 +402,22 @@ class Api(unittest.TestCase):
             back = server.ST.load_path(pj)
             self.assertEqual(back[0].annots[1]["len"], 90.0)
             self.assertEqual(server.ST.stack_annots["Al2p"][0]["text"], "(a)")
+            # 默认值与单位：字号 36 pt 不加粗；线 1.5 pt、段长 10、间隔 5；箭头 1.5 pt 实心三角。导出图里就是 pt
+            d = server.clean_annots([{"type": "text", "text": "x"}, {"type": "vline", "x": 73}, {"type": "arrow"}])
+            self.assertEqual((d[0]["size"], d[0]["bold"]), (36.0, False))
+            self.assertEqual((d[1]["width"], d[1]["dash"], d[1]["gap"]), (1.5, 10.0, 5.0))
+            self.assertEqual((d[2]["width"], d[2]["head"]), (1.5, "filled"))
+            from matplotlib.figure import Figure
+            from matplotlib.backends.backend_agg import FigureCanvasAgg
+            fig = Figure(); FigureCanvasAgg(fig); ax = fig.add_subplot(111)
+            server.draw_annots(ax, d, screen_h=300)
+            self.assertEqual(ax.texts[0].get_fontsize(), 36.0)
+            self.assertEqual(ax.lines[0].get_linewidth(), 1.5)
+            h = server.api("ann_metrics", {"i": 0, "ctx": "spec", "opts": {"width_cm": 8.5, "height_cm": 7}})["h_pt"]
+            self.assertTrue(120 < h < 7 / 2.54 * 72, h)          # 坐标轴高度 < 整图高度
+            h2 = server.api("ann_metrics", {"i": 0, "ctx": "spec", "opts": {"height_cm": 14}})["h_pt"]
+            self.assertGreater(h2, 1.8 * h)
+            self.assertGreater(server.api("ann_metrics", {"i": 0, "ctx": "stack", "opts": {"mode": "bgsub"}})["h_pt"], 100)
         finally:
             server.user_dir = old
 

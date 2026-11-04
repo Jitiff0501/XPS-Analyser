@@ -432,6 +432,8 @@ def api(method, a):
         else:
             s.annots = items
         return {"ok": True, "n": len(items)}
+    elif method == "ann_metrics":
+        return {"h_pt": ann_axes_pt(a["i"], a.get("ctx"), a.get("opts") or {})}
     elif method == "stack":
         return stack_data(a["i"], a)
     elif method == "export_stack":
@@ -655,7 +657,7 @@ FIG_DEFAULTS = {"fmt": "png", "width_cm": 8.5, "height_cm": 7.0, "dpi": 600, "fo
                 "xmin": None, "xmax": None, "xstep": None, "xminor": 1,
                 "ynumbers": True, "ylabel": "Intensity (CPS)", "xlabel": "Binding Energy (eV)",
                 "legend": True, "legend_loc": "best", "title": True, "labels": "legend", "background": True, "envelope": True, "raw": "line",
-                "fill": True}
+                "fill": True, "screen_h": None}
 
 
 def pretty_label(name):
@@ -827,16 +829,22 @@ def figure(s, path, opts=None, dpi=None):
         yl = ax.get_ylim()
         top = _arrow_labels(ax, fig, x, bg, comps, env, s.peaks, cols, o, yl, yraw=y)
         ax.set_ylim(yl[0], max(yl[1], top))
-    draw_annots(ax, getattr(s, "annots", []))
+    draw_annots(ax, getattr(s, "annots", []), o.get("screen_h"))
     fmt = o["fmt"] if o["fmt"] != "tif" else "tiff"
     fig.savefig(path, dpi=dpi or float(o["dpi"]), format=fmt)
 
 
 # ------------------------------------------------------------------ 标注（单谱图与堆叠对比图通用）
-# 文字：{type:"text", text, x(BE), y(坐标轴高度 %), size(pt), color, bold}；上标写 ^{…}，下标写 _{…}
-# 垂直虚线：{type:"vline", x(BE), len(从坐标轴底部起，占高度 %), width(pt), dash, gap(pt；dash=0 为实线), color}
-ANN_DEFAULTS = {"text": {"text": "", "x": 0.0, "y": 90.0, "size": 9.0, "color": "#333333", "bold": False},
-                "vline": {"x": 0.0, "len": 85.0, "width": 0.8, "dash": 4.0, "gap": 3.0, "color": "#666666"}}
+# 坐标：x 为 BE（eV），y 为坐标轴高度 %（0 = 坐标轴底部）。尺寸（字号、线宽、虚线段长 / 间隔、箭头大小）
+# 都是导出图里的 pt（36 = 36 pt）；屏幕按“屏幕坐标轴高度 px / 导出图坐标轴高度 pt”等比例预览（ann_axes_pt）。
+# 文字：{type:"text", text, x, y, size, color, bold}；上标写 ^{…}，下标写 _{…}
+# 垂直线：{type:"vline", x, len(%), width, dash, gap, color}（底端固定在坐标轴底部；dash=0 为实线）
+# 箭头：{type:"arrow", x0, y0（尾）, x1, y1（头）, width, head(filled/open/none), size（箭头长度）, color}
+ANN_DEFAULTS = {"text": {"text": "", "x": 0.0, "y": 90.0, "size": 36.0, "color": "#333333", "bold": False},
+                "vline": {"x": 0.0, "len": 85.0, "width": 1.5, "dash": 10.0, "gap": 5.0, "color": "#666666"},
+                "arrow": {"x0": 0.0, "y0": 80.0, "x1": 0.0, "y1": 60.0, "width": 1.5, "head": "filled", "size": 10.0,
+                          "color": "#333333"}}
+ARROW_HEADS = ("filled", "open", "none")
 
 
 def clean_annots(items):
@@ -858,13 +866,69 @@ def clean_annots(items):
                     pass
             elif k == "color":
                 d[k] = it[k] if re.fullmatch(r"#[0-9a-fA-F]{6}", str(it[k])) else v
+            elif k == "head":
+                d[k] = it[k] if it[k] in ARROW_HEADS else v
             else:
                 d[k] = str(it[k])[:200]
-        for k, lo, hi in (("y", -20, 120), ("len", 0, 100), ("size", 4, 40), ("width", 0.1, 6), ("dash", 0, 20), ("gap", 0, 20)):
+        for k, lo, hi in (("y", -20, 120), ("y0", -20, 120), ("y1", -20, 120), ("len", 0, 100), ("width", 0.1, 10),
+                          ("dash", 0, 40), ("gap", 0, 40)):
             if k in d:
                 d[k] = min(max(d[k], lo), hi)
+        if "size" in d:
+            d["size"] = min(max(d["size"], 2.0), 120.0)
         out.append(d)
     return out
+
+
+_AX_PT = {}
+
+
+def _axes_pt(w_cm, h_cm, font, title, ynumbers, xlabel, ylabel):
+    """按导出图的版式（尺寸、字号、轴标题、图名、y 轴数字）排版一次，返回坐标轴高度（pt）。"""
+    key = (w_cm, h_cm, font, title, ynumbers, xlabel, ylabel)
+    if key not in _AX_PT:
+        import matplotlib
+        matplotlib.use("Agg")
+        from matplotlib.figure import Figure
+        from matplotlib.backends.backend_agg import FigureCanvasAgg
+        matplotlib.rcParams.update({"font.family": "sans-serif", "font.size": font})
+        fig = Figure(figsize=(w_cm / 2.54, h_cm / 2.54))
+        FigureCanvasAgg(fig)
+        ax = fig.add_subplot(111)
+        ax.plot([700, 800], [0, 12000])
+        ax.set_xlim(800, 700)
+        if not ynumbers:
+            ax.set_yticks([])
+        ax.set_xlabel(xlabel); ax.set_ylabel(ylabel)
+        if title:
+            ax.set_title("Co2p", fontsize=font)
+        fig.tight_layout()
+        if len(_AX_PT) > 200:
+            _AX_PT.clear()
+        _AX_PT[key] = ax.get_window_extent(fig.canvas.get_renderer()).height * 72.0 / fig.dpi
+    return _AX_PT[key]
+
+
+def ann_axes_pt(i, ctx, opts):
+    """导出图坐标轴高度（pt），供屏幕按比例预览标注。ctx = "stack" 用堆叠对比图的版式。"""
+    def num(k, d):
+        try:
+            v = float(opts.get(k))
+            return v if v > 0 else d
+        except (TypeError, ValueError):
+            return d
+    if ctx == "stack":
+        o = STACK_DEFAULTS
+        el = ST.S(i).element
+        n = len(opts["members"]) if opts.get("members") is not None else \
+            sum(1 for t in ST.specs if t.element == el and getattr(t, "kind", "region") != "survey")
+        h = float(o["height_cm"] or (4.0 + 2.3 * max(n, 1)))
+        return _axes_pt(float(o["width_cm"]), h, float(o["font"]), True, opts.get("mode") == "raw", "Binding Energy (eV)",
+                        "Intensity (CPS)" if opts.get("mode") == "raw" else "Intensity (a.u.)")
+    o = FIG_DEFAULTS
+    return _axes_pt(num("width_cm", o["width_cm"]), num("height_cm", o["height_cm"]), num("font", o["font"]),
+                    bool(opts.get("title", True)), bool(opts.get("ynumbers", True)),
+                    str(opts.get("xlabel") or o["xlabel"]), str(opts.get("ylabel") or o["ylabel"]))
 
 
 def mathtext(t):
@@ -875,20 +939,31 @@ def mathtext(t):
     return t.replace("$$", "")
 
 
-def draw_annots(ax, items):
+def draw_annots(ax, items, screen_h=None):
+    """尺寸直接是 pt（screen_h 仅为兼容旧调用，不再使用）。"""
     from matplotlib.transforms import blended_transform_factory
+    if not items:
+        return
     tr = blended_transform_factory(ax.transData, ax.transAxes)
-    for a in items or []:
+    k = 1.0
+    for a in items:
         if a["type"] == "vline":
-            ls = (0, (a["dash"], a["gap"])) if a["dash"] > 0 else "-"
-            ax.axvline(a["x"], ymin=0, ymax=a["len"] / 100.0, color=a["color"], lw=a["width"], linestyle=ls, zorder=5)
+            ls = (0, (a["dash"] / a["width"], max(a["gap"], 0.01) / a["width"])) if a["dash"] > 0 else "-"
+            ax.axvline(a["x"], ymin=0, ymax=a["len"] / 100.0, color=a["color"], lw=a["width"] * k, linestyle=ls, zorder=5)
+        elif a["type"] == "arrow":
+            style = {"filled": "-|>", "open": "->", "none": "-"}[a["head"]]
+            ax.annotate("", xy=(a["x1"], a["y1"] / 100.0), xytext=(a["x0"], a["y0"] / 100.0), xycoords=tr, textcoords=tr,
+                        annotation_clip=False, zorder=6,
+                        arrowprops=dict(arrowstyle=style, lw=a["width"] * k, color=a["color"], shrinkA=0, shrinkB=0,
+                                        mutation_scale=a["size"] * k / 0.4))
         elif a.get("text"):
-            ax.text(a["x"], a["y"] / 100.0, mathtext(a["text"]), transform=tr, ha="center", va="bottom",
-                    fontsize=a["size"], color=a["color"], fontweight="bold" if a["bold"] else "normal", zorder=6, clip_on=False)
+            ax.text(a["x"], a["y"] / 100.0, mathtext(a["text"]), transform=tr, ha="center", va="center",
+                    fontsize=a["size"] * k, color=a["color"], fontweight="bold" if a["bold"] else "normal", zorder=6, clip_on=False)
 
 
 # ------------------------------------------------------------------ 多样品同一轨道堆叠对比
 STACK_DEFAULTS = {"mode": "bgsub", "offset": 1.15, "fit": True, "comps": False, "members": None, "states": False, "names": True,
+                  "screen_h": None,
                   "fmt": "png", "width_cm": 8.5, "height_cm": None, "dpi": 600, "font": 9, "xmin": None, "xmax": None}
 
 
@@ -989,7 +1064,7 @@ def export_stack(i, a):
         m = (x >= lo_x) & (x <= hi_x)
         ymax = float(np.max(yy[m])) if m.any() else 0.0
         t.set_y(sh + max(ymax, 0.0) + 0.05 * span)
-    draw_annots(ax, ST.stack_annots.get(d["element"], []))
+    draw_annots(ax, ST.stack_annots.get(d["element"], []), o.get("screen_h"))
     fmt = o["fmt"] if o["fmt"] != "tif" else "tiff"
     s0 = ST.S(i)
     p = os.path.join(ST.out_dir(s0), conv.safe_name("stack_%s_%d-samples" % (d["element"], n)) + "." + o["fmt"])

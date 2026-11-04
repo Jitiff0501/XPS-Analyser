@@ -7,6 +7,19 @@ import re
 
 # ------------------------------------------------------------------ 整句 / 词组
 PHRASES = {
+    "加线": "Add line", "加文字": "Add text", "拉箭头": "Draw arrow", "点击加线": "Click to add line", "点击加文字": "Click to add text",
+    "主峰位置加线": "Lines at main peaks", "全部清除": "Clear all", "线": "Line", "箭头": "Arrow", "头 x": "Head x", "头 y%": "Head y%",
+    "尾 x": "Tail x", "尾 y%": "Tail y%", "实心三角": "Filled triangle", "开口": "Open", "大小": "Size", "删除": "Delete", "颜色": "Color",
+    "在图上点击加垂直线（底端固定在 x 轴上，可拖动、拉长）": "Click on the plot to add a vertical line (bottom fixed on the x axis; drag to move, drag the top to lengthen)",
+    "在图上点击加文字（可拖动）": "Click on the plot to add text (draggable)", "在图上按住拖动画箭头（从尾到头）": "Press and drag on the plot to draw an arrow (tail to head)",
+    "然后在图上点击加线": "then click on the plot to add a line", "然后在图上点击加文字": "then click on the plot to add text",
+    "然后在图上按住拖动画箭头": "then press and drag on the plot to draw an arrow",
+    "在当前谱每个主峰（含 1/2 分量，不含卫星和重叠峰）的峰位加垂直线": "Add a vertical line at every main peak of this spectrum (incl. 1/2 components, excl. satellites and overlaps)",
+    "在图上点击加线，可连续添加；拖线身移动、拖上端拉长；Esc 结束": "Click on the plot to add lines (repeatable); drag a line to move it, drag its top to lengthen; Esc to finish",
+    "在图上点击加文字，可连续添加；文字可拖动；Esc 结束": "Click on the plot to add text (repeatable); text can be dragged; Esc to finish",
+    "在图上按住拖动画箭头（从尾到头）；拖头 / 尾调整；Esc 结束": "Press and drag on the plot to draw an arrow (tail to head); drag head / tail to adjust; Esc to finish",
+    "图上操作：拖线身左右移动、拖线的上端拉长（底端固定在 x 轴）；拖箭头的头 / 尾改变指向，拖中间整体移动；文字直接拖。点开每一项可改参数。上标写 Co^{2+}，下标写 2p_{3/2}。字号、线宽、段长、间隔、箭头大小都是导出图里的 pt；屏幕按导出图的比例预览，所见即所得。":
+        "On the plot: drag a line sideways to move it, drag its top to lengthen it (the bottom stays on the x axis); drag an arrow's head / tail to re-point it, its middle to move it; drag text directly. Open an item to edit its parameters. Superscript: Co^{2+}; subscript: 2p_{3/2}. Font size, line width, dash, gap and arrow size are pt in the exported figure; the screen previews them at the exported figure's proportions.",
     "标注": "Annotations", "＋ 文字": "＋ Text", "＋ 垂直虚线": "＋ Vertical line", "主峰位置加虚线": "Lines at main peaks",
     "图上点击放文字": "Click to place text", "图上点击放虚线": "Click to place line", "图角标 (a)": "Panel label (a)",
     "在图中间加一个文字标注": "Add a text label in the middle of the plot", "在图中间加一条垂直虚线": "Add a vertical line in the middle of the plot",
@@ -16,7 +29,7 @@ PHRASES = {
     "上标写 Co^{2+}，下标写 2p_{3/2}。文字可在图上直接拖动。y 与虚线长度都按坐标轴高度的百分比，0% = 坐标轴底部（y 轴 0）。线宽、段长、间隔、字号的单位都是 pt（与导出的图一致）。":
         "Superscript: Co^{2+}; subscript: 2p_{3/2}. Text can be dragged on the plot. y and line length are percentages of the axis height, 0% = bottom of the axis (y = 0). Line width, dash, gap and font size are in pt (as in the exported figure).",
     "清除本图全部标注": "Clear all annotations of this figure", "清除当前图上的全部标注？": "Clear all annotations of the current figure?",
-    "文字": "Text", "虚线": "Line", "字号": "Size", "粗体": "Bold", "长度%": "Length %", "线宽": "Width", "段长": "Dash", "间隔": "Gap",
+    "文字": "Text", "虚线": "Line", "字号": "Size", "粗体": "Bold", "长度%": "Length %", "线宽": "Width", "段长": "Dash", "间隔": "Gap", "字号 pt": "Size pt", "线宽 pt": "Width pt", "段长 pt": "Dash pt", "间隔 pt": "Gap pt", "大小 pt": "Size pt",
     "0 = 实线": "0 = solid", "本谱": "this spectrum", "已加入": "Added", "没有新的主峰位置": "No new main-peak positions",
     "在图上点击放置文字": "Click on the plot to place the text", "在图上点击放置虚线": "Click on the plot to place the line",
     "样品名": "Sample names",
@@ -204,6 +217,10 @@ PHRASES = {
     "批量": "Batch", "暂无拟合结果": "No fit yet", "第 1 步": "Step 1", "第 2 步": "Step 2", "第 3 步": "Step 3",
     "打开样品文件夹": "Open a sample folder",
     "检查报告，按需微调，导出": "Check the report, fine-tune if needed, export",
+    # 内置模板名（下拉框只翻显示文字，值仍为中文键）
+    "Al2p: Al 金属 + Al2O3": "Al2p: Al metal + Al2O3", "Al2p: 单一 Al2O3": "Al2p: Al2O3 only",
+    "C1s: 碳化物 + C-C / C-O / C=O / O-C=O": "C1s: carbide + C-C / C-O / C=O / O-C=O",
+    "O1s: 晶格 / 缺陷·OH / 吸附": "O1s: lattice / defect·OH / adsorbed",
 }
 
 # ------------------------------------------------------------------ 含变量的句子：中文 printf 模板 → 英文（{0}{1}… 为各变量，变量本身也会递归翻译）
