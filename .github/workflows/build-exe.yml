@@ -46,9 +46,6 @@ jobs:
           - runner: macos-14          # Apple Silicon (M1–M4)
             arch: arm64
             experimental: false
-          - runner: macos-13          # Intel（GitHub 可能逐步停用该机型，失败不影响发布）
-            arch: intel
-            experimental: true
     runs-on: ${{ matrix.runner }}
     continue-on-error: ${{ matrix.experimental }}
     steps:
@@ -108,4 +105,4 @@ jobs:
           ls -la out
           gh release delete latest --yes --cleanup-tag || true
           gh release create latest out/* --title "XPS Fit Studio (Windows / macOS)" --target "$GITHUB_SHA" --notes "Windows：XPSFitStudio.exe（拟合程序）、Avantage2XPSPEAK.exe（转换器），双击运行。
-          macOS：XPSFitStudio-macOS-arm64.zip（Apple 芯片 M1–M4）/ -intel.zip（Intel 芯片，如有），解压后把 XPS Fit Studio 拖到“应用程序”。首次打开：右键 → 打开（未签名程序）。"
+          macOS：XPSFitStudio-macOS-arm64.zip（Apple 芯片 M1–M4），解压后把 XPS Fit Studio 拖到“应用程序”。首次打开：右键 → 打开（未签名程序）。"

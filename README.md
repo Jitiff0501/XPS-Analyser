@@ -5,7 +5,7 @@
 | 程序 | 用途 |
 |---|---|
 | `XPSFitStudio.exe` | Windows：XPS 峰拟合（替代 XPSPEAK 4.1）。双击运行，无需安装 Python |
-| `XPSFitStudio-macOS-arm64.zip` | macOS（Apple 芯片 M1–M4）：解压得到 `XPS Fit Studio.app`，拖进“应用程序”。Intel Mac 用 `-intel.zip`（如有） |
+| `XPSFitStudio-macOS-arm64.zip` | macOS（Apple 芯片 M1–M4）：解压得到 `XPS Fit Studio.app`，拖进“应用程序”（Intel Mac 暂不提供） |
 | `Avantage2XPSPEAK.exe` | 把 Avantage `.VGD` / 导出表格转成 XPSPEAK 4.1 的两列 txt |
 
 ### macOS 首次打开
