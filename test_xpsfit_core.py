@@ -440,5 +440,43 @@ class Api(unittest.TestCase):
             server.user_dir = old
 
 
+class Assessment(unittest.TestCase):
+    """检出限（未检出 / 弱 / 充足）、未检出时不拟合峰、定量给上限、总体评估。"""
+
+    def test_detection_quant_and_grade(self):
+        from xpsfit import autofit
+        rng = np.random.default_rng(0)
+        x = np.arange(770, 810.01, 0.1)
+        base = 2e4 + 20 * (x - 770)
+        _, sig = core.model(x, core.doublet("Co0", 778.2, 14.99, 0.5, 1.2, 1.0, 20))
+        sig = sig / sig.max()
+        noise = core.Spectrum("Co2p Scan", x, rng.poisson(base).astype(float))
+        d = autofit.detection(noise)
+        self.assertEqual(d["status"], "nd")
+        self.assertGreater(d["upper"], 0)
+        autofit.run(noise, ["Co"])
+        self.assertEqual(noise.peaks, [])                                 # 未检出：不拟合峰
+        self.assertEqual(autofit.assess(noise)["grade"], "nd")
+        weak = core.Spectrum("Co2p Scan", x, rng.poisson(base + 350 * sig).astype(float))
+        self.assertEqual(autofit.detection(weak)["status"], "weak")
+        strong = core.Spectrum("Co2p Scan", x, rng.poisson(base + 2e4 * sig).astype(float))
+        self.assertEqual(autofit.detection(strong)["status"], "ok")
+        autofit.run(strong, ["Co"])
+        strong.last_fit.update(warnings=autofit.quality(strong)["warnings"])
+        a = autofit.assess(strong)
+        self.assertIn(a["grade"], ("ok", "check"))
+        self.assertTrue(any(i["level"] == "good" for i in a["items"]))
+        self.assertTrue(all("text" in i for i in autofit.assess(strong, "en")["items"]))
+        # 定量：未检出的轨道不计面积，给出上限
+        ni = core.Spectrum("Ni2p Scan", np.arange(845, 885.01, 0.1), rng.poisson(np.full(401, 3e4)).astype(float))
+        for t in (strong, ni):
+            t.sample = "A"
+            t.det = autofit.detection(t)
+        q = core.quantify_samples([strong, ni], {"Co2p": 3.59, "Ni2p": 4.04})[0]
+        self.assertAlmostEqual(q["elements"]["Co2p"], 100.0)
+        self.assertIn("Ni2p", q["nd"])
+        self.assertTrue(0 < q["nd"]["Ni2p"] < 5)
+
+
 if __name__ == "__main__":
     unittest.main()

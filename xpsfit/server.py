@@ -107,7 +107,7 @@ class State:
 
     # ---------------------------------------------------------- 视图数据
     def summary(self):
-        return [{"name": s.name, "element": s.element, "fitted": bool(s.last_fit), "npeaks": len(s.peaks),
+        return [{"name": s.name, "element": s.element, "fitted": bool(s.last_fit), "npeaks": len(s.peaks), "grade": _grade(s),
                  "sample": s.sample or "(未分组)"} for s in self.specs]
 
     def view(self, i):
@@ -131,7 +131,7 @@ class State:
                 "window": [s.window[0] + s.shift, s.window[1] + s.shift],
                 "kind": getattr(s, "kind", "region"), "ident": getattr(s, "ident", None),
                 "states": _states(s), "interp": _interp(s), "colors": core.peak_colors(s.peaks),
-                "relax": autofit.relax_state(s),
+                "relax": autofit.relax_state(s), "assess": _assess(s),
                 "annots": getattr(s, "annots", []), "stack_annots": self.stack_annots.get(s.element, []),
                 "so": {"metal": core.so_rule(s.element, True), "comp": core.so_rule(s.element, False)}
                 if core.so_rule(s.element) else None}
@@ -153,9 +153,25 @@ def load_lang():
 
 
 ST.lang = load_lang()
+def _assess(s):
+    """拟合总体评估（同时记下等级，供谱列表显示）。"""
+    try:
+        r = autofit.assess(s, ST.lang)          # 评估文字按界面语言直接生成
+    except Exception:
+        r = None
+    s.grade = r and r["grade"]
+    return r
+
+
+def _grade(s):
+    if not hasattr(s, "grade"):
+        _assess(s)
+    return s.grade
+
+
 def _interp(s):
     try:
-        return autofit.interpret(s)
+        return autofit.interpret(s, warnings=False)
     except Exception:
         return None
 
@@ -424,6 +440,8 @@ def api(method, a):
             with open(os.path.join(user_dir(), "sensitivity_factors.json"), "w", encoding="utf-8") as f:
                 json.dump({"factors": st.sf}, f, ensure_ascii=False, indent=1)
         inc = a.get("include")
+        for t in st.specs:                        # 检出限：未检出的轨道按上限给出，不用噪声的面积
+            t.det = autofit.detection(t)
         res = core.quantify_samples(st.specs, st.sf, a.get("use_fit", True),
                                     0.6 if a.get("ecf", True) else 0.0, inc)
         used = sorted({t.element for t in st.specs if t.element})
@@ -574,6 +592,8 @@ def _post_fit(s):
     if s.last_fit is not None:
         s.last_fit["warnings"] = q["warnings"]
         s.last_fit["rel_rms"] = q["rel_rms"]
+        s.last_fit["bg_over"] = q["bg_over"]
+    _assess(s)
 
 
 def folder_files(d):
@@ -642,6 +662,17 @@ def export(kind, a):
                 rows.append(r)
         with pd.ExcelWriter(p, engine="openpyxl") as w:
             pd.DataFrame(rows).to_excel(w, sheet_name="Peaks", index=False)
+            ass = []
+            for s in st.specs:
+                r = _assess(s)
+                if r is None:
+                    continue
+                ass.append({"sample": s.sample, "spectrum": s.name, "orbital": s.element, "assessment": r["label"],
+                            "S/N": round(r["snr"], 1) if r.get("snr") is not None else None,
+                            "details": "\n".join(("✓ " if i["level"] == "good" else "• " if i["level"] == "info" else "⚠ ") + i["text"]
+                                                 for i in r["items"])})
+            if ass:
+                pd.DataFrame(ass).to_excel(w, sheet_name="Assessment", index=False)
             used = set()
             for s in st.specs:
                 nm = conv.safe_name(s.name)[:28]

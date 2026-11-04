@@ -197,6 +197,19 @@ details.sec>summary .sub{font-weight:400;color:var(--ink3);font-size:12px;overfl
 .rx-card ul{margin:4px 0 0 16px;padding:0}.rx-card .fr{color:var(--ink2)}
 .summary .interp{margin-top:4px;padding:8px 10px;border-radius:9px;background:var(--sunk);font-size:12px;line-height:1.5;color:var(--ink2)}
 #qwarn details.more summary{cursor:pointer;color:var(--ink3);font-size:12px;margin-top:2px}
+.assess{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;background:var(--panel)}
+.assess .ah{display:flex;align-items:center;gap:8px;font-weight:600;font-size:12.5px}
+.assess .ah .sn{margin-left:auto;font-weight:400;color:var(--ink3);font-size:11.5px}
+.grade{display:inline-flex;align-items:center;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;color:#fff}
+.grade.ok{background:#2E8B57}.grade.check{background:#C98A1B}.grade.bad{background:#C0392B}.grade.nd{background:#8C8A83}.grade.none{background:var(--line2);color:var(--ink2)}
+.assess ul{margin:6px 0 0;padding:0;list-style:none}
+.assess li{display:flex;gap:6px;line-height:1.45;margin:3px 0;color:var(--ink2)}
+.assess li i{font-style:normal;flex:none;width:12px;text-align:center}
+.assess li.bad i{color:#C0392B}.assess li.warn i{color:#C98A1B}.assess li.good i{color:#2E8B57}.assess li.info i{color:var(--ink3)}
+.assess li.bad,.assess li.warn{color:var(--ink)}
+.assess details summary{cursor:pointer;color:var(--ink3);font-size:11.5px;margin-top:4px}
+.assess .acc{margin-top:6px;color:var(--ink3);font-size:11.5px;line-height:1.45}
+.dot.g-ok{background:#2E8B57}.dot.g-check{background:#C98A1B}.dot.g-bad{background:#C0392B}.dot.g-nd{background:none;border:1.5px solid #8C8A83;width:5px;height:5px}
 .qwarn{border:1px solid #F0D9C9;background:#FBF3EE;border-radius:10px;padding:8px 10px;font-size:12px;color:#8A4A2E;max-height:140px;overflow:auto}
 .qwarn div{margin:2px 0}
 .rep h5{font:600 13px/1.3 var(--sans);margin:12px 0 4px}
@@ -368,7 +381,7 @@ input[type=checkbox]{accent-color:var(--accent)}
       <button class="btn primary fitbtn" onclick="autoFit(false)" title="自动选背景、按元素建模、检查残差并区分重叠峰/卫星峰">⚡ 一键拟合</button>
       <button class="btn wide" onclick="autoFit(true)">⚡ 一键拟合本样品全部谱</button>
       <div id="summary" class="summary"><div class="note" style="margin:0">暂无拟合结果</div></div>
-      <div id="qwarn" class="qwarn" hidden></div>
+      <div id="assess" class="assess" hidden></div>
       <div class="grid3 tight">
         <button class="btn sm" onclick="act('fit').then(()=>toast('拟合完成'))" title="按当前设置拟合">拟合</button>
         <button class="btn sm" onclick="act('refine',{window:0.3})" title="峰位限制在当前值 ±0.3 eV 内重新拟合">局部微调</button>
@@ -663,7 +676,7 @@ function renderSpecs(){
     const items=box.querySelector(".items");
     groups[g].forEach(i=>{const s=S.specs[i];
       const d=document.createElement("div");d.className="spec"+(i===S.cur?" on":"");
-      d.innerHTML=`<span class="dot ${s.fitted?"ok":""}"></span><span class="nm"></span>${s.element&&s.element!==s.name?`<span class="chip">${s.element}</span>`:""}`;
+      d.innerHTML=`<span class="dot ${s.grade?"g-"+s.grade:s.fitted?"ok":""}" title="${s.grade?esc(TR(GRADE_LABEL[s.grade]||"")):""}"></span><span class="nm"></span>${s.element&&s.element!==s.name?`<span class="chip">${s.element}</span>`:""}`;
       d.querySelector(".nm").textContent=s.name;d.title=g+" / "+s.name+"\n双击重命名，右键移除";
       d.onclick=()=>select(i);
       d.ondblclick=async()=>{const n=prompt("重命名",s.name);if(n){S.cur=i;await act("rename",{name:n})}};
@@ -701,7 +714,7 @@ function setView(v){
   const f=v.fit;$("fitinfo").textContent=f?`约化 χ² ${fmt(f.rchi2,3)}${f.rel_rms!=null?`   残差 RMS ${(100*f.rel_rms).toFixed(1)}%`:""}   自由参数 ${f.nfree}${f.success?"":"   ⚠ "+f.message}`:"";
   renderSummary(v);renderRelax(v);setTimeout(placePlot,0);
   $("bgsum").textContent=v.bg.type+(v.bg.type!=="None"&&v.region?` · ${v.region[0].toFixed(1)}–${v.region[1].toFixed(1)} eV`:"");
-  const qw=$("qwarn"),W=(f&&f.warnings)||[];qw.hidden=!W.length;qw.innerHTML=W.slice(0,3).map(w=>`<div>⚠ ${esc(w)}</div>`).join("")+(W.length>3?`<details class="more"><summary>+${W.length-3} 条提示</summary>${W.slice(3).map(w=>`<div>⚠ ${esc(w)}</div>`).join("")}</details>`:"");
+  renderAssess(v);
   if(S.sel!==null&&S.sel>=v.peaks.length)S.sel=null;
   renderPeaks();draw();
 }
@@ -1318,9 +1331,21 @@ function renderSummary(v){
   if(v.kind==="survey"){const E=((v.ident&&v.ident.elements)||[]).filter(e=>e.confirmed).map(e=>e.el);
     box.innerHTML=`<div class="note" style="margin:0">${esc(E.join(" · ")||"—")}</div>`;return}
   const st=(v.states||[]).filter(x=>x[1]>0.0005);
+  if(v.assess&&v.assess.grade==="nd"){box.innerHTML=`<div class="note" style="margin:0">${esc(TR(`未检出（S/N ${v.assess.snr.toFixed(1)} < 4）`))}</div>`;return}
   if(!st.length||!v.peaks.length){box.innerHTML='<div class="note" style="margin:0">暂无拟合结果</div>';return}
   box.innerHTML=st.map(([n,f],k)=>`<div class="srow"><span class="nm" title="${esc(n)}">${esc(n)}</span><span class="pc">${(100*f).toFixed(1)}%</span><div class="sbar"><i style="width:${(100*f).toFixed(1)}%;background:${(st[k]&&st[k][2])||COLORS[k%8]}"></i></div></div>`).join("")
     +(v.interp?`<div class="interp">${esc(v.interp)}</div>`:"")}
+/* ---------- 拟合评估：检出限、残差、文献规则、约束边界、比例是否唯一、不确定度 → 可靠 / 需检查 / 不可靠 / 未检出 ---------- */
+const GRADE_LABEL={ok:"可靠",check:"需检查",bad:"不可靠",nd:"未检出",none:"未拟合"};
+function renderAssess(v){const box=$("assess"),a=v.assess;if(!a||v.kind==="survey"||(a.grade==="none"&&!v.peaks.length&&!a.items.length)){box.hidden=true;return}
+  const ic={bad:"✕",warn:"⚠",good:"✓",info:"•"},li=i=>`<li class="${i.level}"><i>${ic[i.level]}</i><span>${esc(i.text)}</span></li>`;
+  const main=a.items.filter(i=>i.level==="bad"||i.level==="warn"),rest=a.items.filter(i=>i.level==="good"||i.level==="info");
+  const tip={ok:"拟合本身没有发现问题",check:"有需要注意的地方，见下面各项",bad:"有严重问题或问题较多，结果不宜直接使用",nd:"主线区间内没有高于噪声的信号",none:"还没有拟合"}[a.grade];
+  box.hidden=false;
+  box.innerHTML=`<div class="ah"><span>拟合评估</span><span class="grade ${a.grade}" title="${esc(tip)}">${esc(a.label)}</span>${a.snr!=null?`<span class="sn">S/N ${a.snr>=100?a.snr.toFixed(0):a.snr.toFixed(1)}</span>`:""}</div>`
+    +(main.length?`<ul>${main.map(li).join("")}</ul>`:"")
+    +(rest.length?(main.length?`<details><summary>已通过的检查与说明（${rest.length}）</summary><ul>${rest.map(li).join("")}</ul></details>`:`<ul>${rest.map(li).join("")}</ul>`):"")
+    +(a.accuracy?`<div class="acc">${esc(a.accuracy)}</div>`:"")}
 function renderSurvey(){
   const v=S.v,b=$("refbody");$("refsrc").textContent="全谱识别";
   const E=(v.ident&&v.ident.elements)||[];
@@ -1401,7 +1426,7 @@ async function quant(sf){
   $("qsf").innerHTML="";
   Q.orbitals.forEach(o=>{const w=document.createElement("label");w.className="switch";w.innerHTML=`<span style="min-width:0;color:var(--ink2)">${o}</span><input class="in num" style="width:66px;text-align:right" value="${Q.sf[o]??""}">`;
     w.querySelector("input").onchange=e=>quant({[o]:e.target.value});$("qsf").append(w)});
-  const els=[...new Set(Q.samples.flatMap(r=>Object.keys(r.elements)))];
+  const els=[...new Set(Q.samples.flatMap(r=>[...Object.keys(r.elements),...Object.keys(r.nd||{})]))];
   const sts=[...new Set(Q.samples.flatMap(r=>Object.keys(r.states)))];
   table("qel",els,r=>r.elements);table("qst",sts,r=>r.states);
   const opts=[...els.map(e=>["E:"+e,e+"（元素）"]),...sts.map(e=>["S:"+e,e])];
@@ -1414,7 +1439,7 @@ function lbl(k){return k.slice(2)}
 function table(id,cols,get){
   const t=$(id);if(!cols.length){t.innerHTML='<tr><td class="note">（无）</td></tr>';return}
   t.innerHTML=`<thead><tr><th>样品</th>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>`+
-    Q.samples.map(r=>`<tr><td>${esc(r.sample)}${r.duplicates.length?` <span class="tag" title="${esc(r.duplicates.join(", "))}">（有重复轨道，已用第一条）</span>`:""}</td>${cols.map(c=>`<td>${get(r)[c]!=null?get(r)[c].toFixed(2):"—"}</td>`).join("")}</tr>`).join("")+"</tbody>";
+    Q.samples.map(r=>`<tr><td>${esc(r.sample)}${r.duplicates.length?` <span class="tag" title="${esc(r.duplicates.join(", "))}">（有重复轨道，已用第一条）</span>`:""}</td>${cols.map(c=>`<td>${get(r)[c]!=null?get(r)[c].toFixed(2):r.nd&&c in r.nd&&get(r)===r.elements?`<span title="${esc(TR("未检出：S/N 低于检出限，按检出限给出上限"))}">&lt; ${r.nd[c]!=null?r.nd[c].toFixed(2):"?"} ${esc(TR("（未检出）"))}</span>`:"—"}</td>`).join("")}</tr>`).join("")+"</tbody>";
 }
 function ratioCols(){const a=$("q_a").value,b=$("q_b").value;const cur=a&&b?[[a,b]]:[];return [...RATIOS,...cur.filter(([x,y])=>!RATIOS.some(([p,q])=>p===x&&q===y))]}
 function ratio(){

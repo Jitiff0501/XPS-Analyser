@@ -242,6 +242,13 @@ PHRASES = {
     "样品名可上下拖动（双击恢复自动位置）；拖线身左右移动、拖线的上端拉长；拖箭头的头 / 尾、文字直接拖":
         "Sample names can be dragged up / down (double-click to reset); drag a line sideways, its top to lengthen; drag arrow heads / tails and text directly", "箭头长 pt": "Head length pt", "箭头宽 pt": "Head width pt",
     "在每个主峰（含 1/2 分量，不含卫星和重叠峰）的峰位加垂直线": "Add a vertical line at every main peak (incl. 1/2 components, excl. satellites and overlaps)",
+    # 拟合评估
+    "拟合评估": "Fit assessment", "可靠": "Reliable", "需检查": "Check", "不可靠": "Unreliable", "未检出": "Not detected", "未拟合": "Not fitted",
+    "拟合本身没有发现问题": "No problems found in the fit itself", "有需要注意的地方，见下面各项": "Some points need attention, see below",
+    "有严重问题或问题较多，结果不宜直接使用": "Serious or many problems; do not use the result as is",
+    "主线区间内没有高于噪声的信号": "No signal above noise in the main-line range", "还没有拟合": "Not fitted yet",
+    "未检出：S/N 低于检出限，按检出限给出上限": "Not detected: S/N below the detection limit; upper limit from the detection limit",
+    "（未检出）": "(not detected)",
     # 内置模板名（下拉框只翻显示文字，值仍为中文键）
     "Al2p: Al 金属 + Al2O3": "Al2p: Al metal + Al2O3", "Al2p: 单一 Al2O3": "Al2p: Al2O3 only",
     "C1s: 碳化物 + C-C / C-O / C=O / O-C=O": "C1s: carbide + C-C / C-O / C=O / O-C=O",
@@ -250,6 +257,13 @@ PHRASES = {
 
 # ------------------------------------------------------------------ 含变量的句子：中文 printf 模板 → 英文（{0}{1}… 为各变量，变量本身也会递归翻译）
 TEMPLATES = [
+    ("已通过的检查与说明（%d）", "Passed checks and notes ({0})"),
+    ("未检出（S/N %s < 4）", "Not detected (S/N {0} < 4)"),
+    ("未检出：%s 主线区间 %.1f–%.1f eV 内 S/N %.1f < %.0f（检出限）→ 没有可靠的信号，不拟合峰；定量时按检出限给出上限",
+     "Not detected: {0} main-line range {1}–{2} eV has S/N {3} < {4} (detection limit) → no reliable signal, no peaks fitted; quantification gives an upper limit"),
+    ("信号：S/N %.0f", "Signal: S/N {0}"),
+    ("信号：S/N %.0f（≥ %.0f 已检出，但 < %.0f 定量限：照常拟合，比例的不确定性大）",
+     "Signal: S/N {0} (≥ {1} detected, but < {2} quantification limit: fitted as usual, fractions uncertain)"),
     ("堆叠对比 · %s", "Stack compare · {0}"),
     ("⚠ 样品一致性：%s 的氧化态比例（%.0f%%）明显高于更易氧化的 %s。按热力学，%s 不应先于它们氧化——%s 的“氧化态”可能是金属线形（长拖尾、损失结构、2p1/2 展宽）造成的假象；可用“仅金属”对比",
      "⚠ Sample consistency: the oxide fraction of {0} ({1}%) is clearly higher than that of the more easily oxidized {2}. Thermodynamically {3} should not oxidize before them — the “oxide” of {4} may be an artefact of the metal line shape (long tail, loss features, 2p1/2 broadening); compare with “Metal only”"),

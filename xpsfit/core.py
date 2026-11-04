@@ -759,8 +759,11 @@ def quantify_samples(specs, sf_table, use_fit=True, ecf_exp=0.6, include=None):
         for s in ss:
             (dup if s.element in seen else use).append(s); seen.add(s.element)
         rows = quantify(use, sf_table, use_fit, ecf_exp)
-        elements, states = {}, {}
+        elements, states, nd = {}, {}, {}
         for s, r in zip(use, rows):
+            if r.get("nd"):
+                nd[s.element or s.name] = r.get("upper_percent")
+                continue
             at = r["atomic_percent"]
             if at is None:
                 continue
@@ -769,7 +772,7 @@ def quantify_samples(specs, sf_table, use_fit=True, ecf_exp=0.6, include=None):
             tot = sum(a for _, a in st) or 1.0
             for nm, a in st:
                 states["%s: %s" % (s.element or s.name, nm)] = at * a / tot
-        out.append({"sample": sample, "elements": elements, "states": states, "rows": rows,
+        out.append({"sample": sample, "elements": elements, "states": states, "rows": rows, "nd": nd,
                     "duplicates": [s.name for s in dup]})
     return out
 
@@ -779,6 +782,15 @@ def quantify(specs, sf_table, use_fit=True, ecf_exp=0.6):
     rows = []
     for s in specs:
         sf = sf_table.get(s.element)
+        det = getattr(s, "det", None)
+        if det and det.get("status") == "nd":     # 未检出：面积按 0 计，另给检出限对应的上限
+            x, y, bg, _, _ = s.compute()
+            be = 0.5 * sum(det["range"])
+            ke = max(s.hv - be, 1.0)
+            up = det.get("upper") or 0.0
+            rows.append({"spectrum": s.name, "orbital": s.element, "BE_eV": be, "area": 0.0, "SF": sf, "corrected": 0.0,
+                         "nd": True, "upper_corrected": up / (sf * ke ** ecf_exp) if sf else None})
+            continue
         if use_fit and s.peaks:
             pk = [p for p in s.peaks if counted(p)]
             area = sum(p["area"]["value"] for p in pk)
@@ -794,6 +806,8 @@ def quantify(specs, sf_table, use_fit=True, ecf_exp=0.6):
     tot = sum(r["corrected"] for r in rows if r["corrected"])
     for r in rows:
         r["atomic_percent"] = 100.0 * r["corrected"] / tot if r["corrected"] and tot else None
+        if r.get("nd") and r.get("upper_corrected"):
+            r["upper_percent"] = 100.0 * r["upper_corrected"] / (tot + r["upper_corrected"])
     return rows
 
 

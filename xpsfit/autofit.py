@@ -261,14 +261,15 @@ def fe_phases(s):
 PHASE_LABEL = {"FeO": "FeO（Fe₁₋ₓO）", "Fe3O4": "Fe₃O₄", "Fe2O3": "Fe₂O₃（或 FeOOH）", "Fe2+": "Fe²⁺", "Fe3+": "Fe³⁺"}
 
 
-def interpret(s):
-    """按拟合结果给出化合物解读（Fe2p：FeO / Fe3O4 / Fe2O3·FeOOH；Al/Co/Cr：氧化态比例不唯一时的范围）。返回文字或 None。"""
-    if getattr(s, "mode_warn", None) and s.peaks:
+def interpret(s, warnings=True):
+    """按拟合结果给出化合物解读（Fe2p：FeO / Fe3O4 / Fe2O3·FeOOH；Al/Co/Cr：氧化态比例不唯一时的范围）。返回文字或 None。
+    warnings=False：不返回提醒类内容（选择与数据矛盾、样品一致性、比例不唯一）——界面上这些在“拟合评估”里。"""
+    if warnings and getattr(s, "mode_warn", None) and s.peaks:
         return s.mode_warn
-    if getattr(s, "consistency_warn", None) and s.peaks:
+    if warnings and getattr(s, "consistency_warn", None) and s.peaks:
         return s.consistency_warn
     alt = getattr(s, "oxide_alt", None)
-    if alt and s.element != "Fe2p" and s.peaks:
+    if warnings and alt and s.element != "Fe2p" and s.peaks:
         return ("氧化态比例无法由谱唯一确定：仅金属模型（金属拖尾放宽）%s（ΔBIC %+.0f），报告范围 0–%.0f%%；样品已知为金属态时选“仅金属”"
                 % ("同样好" if alt["dbic"] > -10 else "更好", alt["dbic"], 100 * alt["range"][1]))
     if s.element != "Fe2p" or not s.peaks:
@@ -778,6 +779,15 @@ def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
     except Exception:
         pass
     noise = choose_background(s, log)
+    det = detection(s)
+    if det:
+        if det["status"] == "nd":
+            log("未检出：%s 主线区间 %.1f–%.1f eV 内 S/N %.1f < %.0f（检出限）→ 没有可靠的信号，不拟合峰；定量时按检出限给出上限"
+                % (s.element or "", det["range"][0], det["range"][1], det["snr"], LOD_SNR))
+            s.peaks, s.last_fit = [], None
+            return report
+        log("信号：S/N %.0f%s" % (det["snr"], "（≥ %.0f 已检出，但 < %.0f 定量限：照常拟合，比例的不确定性大）" % (LOD_SNR, LOQ_SNR)
+                                 if det["status"] == "weak" else ""))
     if oxide != "auto":
         log("氧化态：%s%s" % (OXIDE_MODES[oxide], "" if s.element in OXIDE_ELEMENTS else "（此轨道没有金属 / 氧化态模型，该选项不适用）"))
     peaks = recipe(s, log, oxide if s.element in OXIDE_ELEMENTS else "auto")
@@ -1397,3 +1407,285 @@ def uncertainties(s):
             p[k].pop("err", None)
     for (i, k), e in zip(layout, err):
         s.peaks[i][k]["err"] = float(e)
+
+
+# ------------------------------------------------------------------ 检出限：元素主线区间内有没有高于噪声的信号
+# 匹配滤波：在主线 BE 区间内逐点、按三种峰宽（0.9 / 1.6 / 2.8 eV）拟合“高斯 + 局部直线背景”，
+# S/N = 高斯幅度 / 其标准误差（噪声 σ 由二阶差分的中位绝对偏差估计，不受峰影响）。
+# 纯噪声谱上，因为在多个位置、峰宽上搜索，S/N 的 99% 分位约 3.1–3.7（模拟：平坦 / 斜坡 / 台阶背景各 150 次），
+# 所以取 S/N ≥ 4 为检出（误判约 1%），S/N ≥ 10 为可定量（IUPAC 定量限 10σ 的惯例）。
+LOD_SNR, LOQ_SNR = 4.0, 10.0
+DET_WIDTHS = (0.9, 1.6, 2.8)
+
+
+def noise_sigma(y):
+    """逐点噪声 σ：二阶差分的中位绝对偏差（峰、背景的平滑变化几乎不影响）。"""
+    d2 = np.diff(np.asarray(y, float), 2)
+    if len(d2) < 5:
+        return 1.0
+    mad = float(np.median(np.abs(d2 - np.median(d2))))
+    return (mad / 0.6745 / np.sqrt(6.0)) or float(np.std(d2) / np.sqrt(6.0)) or 1.0
+
+
+def expected_range(element):
+    """元素主线（如 2p3/2）常见的 BE 区间（金属到最高价态），两侧各放宽 1.5 eV。"""
+    from . import identify
+    L = identify.LINES.get(element or "")
+    return (L[0][0] - 1.5, L[0][1] + 1.5) if L else None
+
+
+def _det_scan(x, y, lo, hi, sig, widths=DET_WIDTHS):
+    step = float(np.median(np.diff(x))) if len(x) > 1 else 0.1
+    best = {"snr": 0.0, "center": None, "width": None, "sa": None}
+    for w in widths:
+        half, sg = 1.6 * w, w / 2.3548
+        for c in np.arange(lo, hi + 1e-9, max(step, w / 6.0)):
+            m = (x >= c - half) & (x <= c + half)
+            if m.sum() < 8:
+                continue
+            xs = x[m] - c
+            A = np.column_stack([np.exp(-0.5 * (xs / sg) ** 2), np.ones_like(xs), xs])
+            try:
+                cov = np.linalg.inv(A.T @ A)
+            except np.linalg.LinAlgError:
+                continue
+            coef = cov @ (A.T @ y[m])
+            sa = sig * float(np.sqrt(cov[0, 0]))
+            if sa > 0 and coef[0] / sa > best["snr"]:
+                best = {"snr": float(coef[0] / sa), "center": float(c), "width": float(w), "sa": sa}
+    return best
+
+
+def detection(s):
+    """返回 {status: ok / weak / nd, snr, center, range, noise, upper}。upper：未检出时面积上限（S/N = 4 的 1.6 eV 峰）。"""
+    if getattr(s, "kind", "region") == "survey" or s.y is None or len(s.y) < 12:
+        return None
+    key = (s.element, round(float(s.shift), 4), len(s.y), round(float(np.sum(s.y)), 3))
+    c = getattr(s, "_det", None)
+    if c and c[0] == key:
+        return c[1]
+    x = np.asarray(s.be, float)
+    y = np.asarray(s.y, float)
+    o = np.argsort(x)
+    x, y = x[o], y[o]
+    sig = noise_sigma(y)
+    rng = expected_range(s.element)
+    lo, hi = (max(rng[0], x[0]), min(rng[1], x[-1])) if rng else (float(x[0]), float(x[-1]))
+    whole = hi - lo < 1.0
+    if whole:                                   # 窗口里没有该元素的主线区间：在整个窗口里找
+        lo, hi = float(x[0]), float(x[-1])
+    b = _det_scan(x, y, lo, hi, sig)
+    snr = b["snr"]
+    status = "nd" if snr < LOD_SNR else "weak" if snr < LOQ_SNR else "ok"
+    up = None
+    if status == "nd":                          # 上限：区间中点一个 FWHM 1.6 eV 的峰，幅度 = 检出限 × 幅度标准误差
+        mid, w = 0.5 * (lo + hi), 1.6
+        m = np.abs(x - mid) <= 1.6 * w
+        if m.sum() >= 8:
+            xs = x[m] - mid
+            A = np.column_stack([np.exp(-0.5 * (xs / (w / 2.3548)) ** 2), np.ones_like(xs), xs])
+            sa = sig * float(np.sqrt(np.linalg.pinv(A.T @ A)[0, 0]))
+            up = LOD_SNR * sa * w * 1.0645          # 高斯面积 = 幅度 × FWHM × 1.0645
+    d = {"status": status, "snr": snr, "center": b["center"], "width": b["width"], "range": [float(lo), float(hi)],
+         "noise": float(sig), "upper": up, "lod": LOD_SNR, "loq": LOQ_SNR, "whole_window": whole}
+    s._det = (key, d)
+    return d
+
+
+# ------------------------------------------------------------------ 拟合总体评估
+GRADE_TEXT = {"ok": ("可靠", "Reliable"), "check": ("需检查", "Check"), "bad": ("不可靠", "Unreliable"),
+              "nd": ("未检出", "Not detected"), "none": ("未拟合", "Not fitted")}
+# 线形模型本身的系统偏差，拟合内部的检查看不出来。以已知真值的合成谱（tools/benchmark_autofit.py，每个轨道 16 次，
+# 带 Shirley 台阶、斜坡、泊松噪声、随机比例）上自动拟合的化学态比例误差（百分点）作为参考：（中位，90% 以内）
+MODEL_ACCURACY = {"Co2p": (7, 10), "Cr2p": (6, 9), "Cu2p": (4, 6), "C1s": (3, 5), "Al2p": (1, 3), "O1s": (1, 3)}
+
+
+def accuracy_text(element, lang="zh"):
+    en = lang == "en"
+    if element == "Fe2p":
+        return ("Synthetic-spectrum validation: main phase correct in 45/48; Fe²⁺/(Fe²⁺+Fe³⁺) error median ≈ 0.05, up to ±0.2 "
+                "for mixed oxides (a range is reported); Fe⁰ fraction error up to ≈ 0.17. Such systematic bias is invisible to the fit itself"
+                if en else
+                "合成谱验证：主物相判断 45/48 正确；Fe²⁺/(Fe²⁺+Fe³⁺) 误差中位约 0.05，两种氧化物混合时可达 ±0.2（会给出范围）；"
+                "Fe⁰ 比例误差最大约 0.17。拟合本身看不出这类系统偏差")
+    a = MODEL_ACCURACY.get(element)
+    if not a:
+        return None
+    if en:
+        return ("Synthetic-spectrum validation: for this orbital the automatic fit's state fractions are off by a median of "
+                "±%d percentage points, 90%% within ±%d%s. This is systematic bias of the line-shape model, invisible to the "
+                "fit's own checks; allow for it when reporting fractions"
+                % (a[0], a[1], " (up to ≈ 10 when overlapping with Cu3p)" if element == "Al2p" else ""))
+    return ("合成谱验证：本轨道自动拟合的化学态比例误差中位 ±%d 个百分点，90%% 在 ±%d 以内%s。"
+            "这是线形模型本身的系统偏差，拟合内部的检查看不出来，报告比例时应考虑"
+            % (a[0], a[1], "；与 Cu3p 重叠时最大约 10 个百分点" if element == "Al2p" else ""))
+
+
+def _state_fraction_errors(s):
+    """各化学态比例的 1σ（由面积不确定度传递；同组峰按主峰的相对误差，组内完全相关）。"""
+    st = {}
+    for j, p in enumerate(s.peaks):
+        if not core.counted(p):
+            continue
+        r = s.peaks[core.group_root(s.peaks, j)]
+        rel = (r["area"].get("err") or 0.0) / (r["area"]["value"] or 1.0)
+        nm = core.state_name(r["name"])
+        a, e = st.get(nm, (0.0, 0.0))
+        st[nm] = (a + p["area"]["value"], e + rel * p["area"]["value"])
+    T = sum(a for a, _ in st.values()) or 1.0
+    out = {}
+    for nm, (a, e) in st.items():
+        f = a / T
+        others = sum(ee ** 2 for n2, (_, ee) in st.items() if n2 != nm)
+        out[nm] = (f, float(np.sqrt(((1 - f) * e / T) ** 2 + (f / T) ** 2 * others)))
+    return out
+
+
+def assess(s, lang="zh"):
+    """把检出限、残差、文献规则、边界、未归属峰、比例是否唯一、不确定度等检查汇总为一个结论。
+    返回 {grade, label, snr, items:[{level: good / info / warn / bad, text}], accuracy}；文字按 lang（zh / en）。
+    grade：nd 未检出；none 未拟合；bad 不可靠（有严重问题或 ≥ 4 项需注意）；check 需检查；ok 可靠。"""
+    from . import i18n
+    en = lang == "en"
+    L = lambda zh, e: e if en else zh
+    tr = (lambda t: i18n.tr(t)) if en else (lambda t: t)
+    items = []
+    add = lambda lv, t: items.append({"level": lv, "text": t})
+    if getattr(s, "kind", "region") == "survey":
+        return None
+    det = detection(s)
+    lab = lambda g: GRADE_TEXT[g][1 if en else 0]
+    if det and det["status"] == "nd":
+        add("bad", L("未检出：主线区间 %.1f–%.1f eV 内 S/N %.1f < %.0f（检出限）。没有可靠的信号，不拟合峰；定量按检出限给上限",
+                     "Not detected: S/N %.1f < %.0f (detection limit) in the main-line range. No reliable signal, so no peaks are "
+                     "fitted; quantification reports an upper limit") % ((det["range"][0], det["range"][1], det["snr"], LOD_SNR)
+                                                                            if not en else (det["snr"], LOD_SNR)))
+        return {"grade": "nd", "label": lab("nd"), "snr": det["snr"], "items": items}
+    if not s.peaks or not s.last_fit:
+        if det:
+            add("info", "S/N %.0f" % det["snr"])
+        return {"grade": "none", "label": lab("none"), "snr": det and det["snr"], "items": items}
+    lf = s.last_fit
+    if det:
+        if det["status"] == "weak":
+            add("warn", L("信号弱：S/N %.1f（≥ %.0f 已检出，但 < %.0f 定量限）→ 面积和化学态比例的不确定性大",
+                          "Weak signal: S/N %.1f (≥ %.0f detected, but < %.0f quantification limit) → area and state fractions are uncertain")
+                % (det["snr"], LOD_SNR, LOQ_SNR))
+        else:
+            add("good", L("信号充足：S/N %.0f", "Strong signal: S/N %.0f") % det["snr"])
+    if lf.get("success") is False:
+        add("bad", L("拟合没有收敛：", "The fit did not converge: ") + tr(str(lf.get("message", ""))))
+    # 残差：与噪声比，也与峰高比。信号很强时（S/N 上百），线形的微小差异也会远大于噪声，所以两者都看
+    x, y, bg, comps, env = s.compute()
+    sig = det["noise"] if det else noise_sigma(y)
+    res = y - bg - env
+    rms = float(np.sqrt(np.mean(res ** 2)))
+    k = rms / (sig or 1.0)
+    rel = rms / (float(np.max(env)) or 1.0)
+    if k <= 2.0:                               # 相邻数据点常有相关，噪声估计略偏低，2 倍以内视为与噪声相当
+        add("good", L("残差与噪声相当（残差 RMS = %.1f × 噪声）", "Residual comparable to noise (residual RMS = %.1f × noise)") % k)
+    elif rel <= 0.012:
+        add("good", L("残差 RMS 为峰高的 %.1f%%（是噪声的 %.1f 倍：信号很强时线形的细微差异会超过噪声，属正常）",
+                      "Residual RMS is %.1f%% of the peak height (%.1f × noise: with a strong signal, small line-shape differences "
+                      "exceed the noise — normal)") % (100 * rel, k))
+    elif rel <= 0.03 or k <= 4.0:
+        add("warn", L("残差 RMS 为峰高的 %.1f%%、噪声的 %.1f 倍：峰形或背景有系统偏差",
+                      "Residual RMS is %.1f%% of the peak height and %.1f × noise: systematic deviation in line shape or background")
+            % (100 * rel, k))
+    else:
+        add("bad", L("残差 RMS 为峰高的 %.1f%%、噪声的 %.1f 倍：模型明显没有描述数据",
+                     "Residual RMS is %.1f%% of the peak height and %.1f × noise: the model clearly does not describe the data")
+            % (100 * rel, k))
+    try:
+        bumps = residual_bumps(s, sig)
+    except Exception:
+        bumps = []
+    if bumps:
+        lst = ", ".join("%.1f eV %.0f%%" % (c, 100 * f) for c, _, f in bumps[:3])
+        add("warn", L("残差中还有 %d 处未拟合的信号（%s）", "%d unfitted signal(s) remain in the residual (%s)") % (len(bumps), lst))
+    # 质量检查（背景高于数据、参数卡边界、自旋轨道参数与文献不符……）：卡边界的按峰和参数重新整理
+    W = lf.get("warnings") or []
+    pin_main, pin_sat, pin_narrow = [], [], []
+    for p in s.peaks:
+        for kk in ("center", "fwhm"):
+            par = p[kk]
+            if kk in core.linked_params(p) or par["fixed"] or par["min"] is None or par["max"] is None:
+                continue
+            at_lo, at_hi = abs(par["value"] - par["min"]) < 1e-3, abs(par["value"] - par["max"]) < 1e-3
+            if not (at_lo or at_hi):
+                continue
+            txt = "%s %s %.2f" % (p["name"], L("峰位", "position") if kk == "center" else "FWHM", par["value"])
+            if kk == "fwhm" and at_lo:
+                pin_narrow.append(txt)            # FWHM 在下限：峰很窄（下限是仪器 / 物理最小宽度），不算问题
+            elif p.get("role") in ("satellite", "unknown"):
+                pin_sat.append(txt)
+            else:
+                pin_main.append(txt)
+    for w in W:
+        if "卡在边界" in w:
+            continue
+        if w.startswith("背景在某处高于数据"):
+            add("bad" if lf.get("bg_over", 0) > 5 * sig else "warn", tr(w))
+        elif "到达文献范围边界" in w:
+            nm, rest = (w.split("：", 1) + [""])[:2]
+            what = rest.split(" 到达文献范围边界")[0]
+            add("info", L("%s：%s 到达文献范围边界（文献约束在起作用）", "%s: %s at the edge of the literature range (the literature constraint is active)")
+                % (nm, tr(what)))
+        else:
+            add("warn", tr(w))                    # 不在文献范围、面积比偏离理论值等
+    if pin_main:
+        add("warn", L("%d 个主峰参数卡在约束边界：%s（模型可能缺峰或背景不合适）",
+                      "%d main-peak parameter(s) at a constraint limit: %s (a peak may be missing or the background unsuitable)")
+            % (len(pin_main), "; ".join(pin_main[:3])))
+    else:
+        add("good", L("主峰的峰位、FWHM 没有卡在约束边界", "No main-peak position or FWHM at a constraint limit"))
+    if pin_sat:
+        add("info", L("%d 个卫星 / 损失峰参数在约束边界（宽峰常见，影响小）",
+                      "%d satellite / loss-peak parameter(s) at a limit (common for broad peaks, minor effect)") % len(pin_sat))
+    if pin_narrow:
+        add("info", L("FWHM 在下限（峰很窄）：", "FWHM at its lower limit (narrow peak): ") + "; ".join(pin_narrow[:3]))
+    if core.so_rule(s.element) and any(p.get("pair") for p in s.peaks) and not any(("文献范围" in w and "边界" not in w) or "理论值" in w for w in W):
+        add("good", L("自旋轨道分裂、面积比、FWHM 倍率都在文献范围内", "Spin–orbit splitting, area ratio and FWHM ratio all within literature ranges"))
+    # 未归属的峰 / 重叠峰
+    unk = [p["name"] for p in s.peaks if p.get("role") == "unknown" and not p["name"].startswith("overlap")]
+    ovl = sorted({p["name"].replace("overlap: ", "") for p in s.peaks if p.get("role") == "unknown" and p["name"].startswith("overlap")})
+    if unk:
+        add("warn", L("有 %d 个无法归属的峰（%s），不计入定量，请确认来源", "%d unassigned peak(s) (%s), not counted; please check their origin")
+            % (len(unk), ", ".join(unk[:3])))
+    if ovl:
+        add("info", L("重叠峰已单独拟合、不计入定量：", "Overlapping peaks fitted separately and not counted: ") + ", ".join(tr(o) for o in ovl[:3]))
+    # 结果是否唯一、与选择 / 其他元素是否一致
+    if getattr(s, "mode_warn", None):
+        add("bad", tr(s.mode_warn.lstrip("⚠ ")))
+    if getattr(s, "consistency_warn", None):
+        add("warn", tr(s.consistency_warn.lstrip("⚠ ")))
+    alt = getattr(s, "oxide_alt", None)
+    if alt and s.element != "Fe2p":
+        add("warn", L("氧化态比例不唯一：仅金属模型同样能描述数据（ΔBIC %+.0f），报告范围 0–%.0f%%",
+                      "Oxide fraction not unique: a metal-only model describes the data as well (ΔBIC %+.0f); reported range 0–%.0f%%")
+            % (alt["dbic"], 100 * alt["range"][1]))
+    fa = getattr(s, "fe_alt", None)
+    if fa and s.element == "Fe2p":
+        add("info", L("Fe²⁺ 比例随物相组合变化：%.0f–%.0f%%", "Fe²⁺ fraction depends on the phase combination: %.0f–%.0f%%")
+            % (100 * fa["range"][0], 100 * fa["range"][1]))
+    # 化学态比例的不确定度
+    try:
+        fe = _state_fraction_errors(s)
+    except Exception:
+        fe = {}
+    big = [(n, f, e) for n, (f, e) in fe.items() if f >= 0.05 and e > 0.08]
+    if big:
+        txt = L("化学态比例不确定度大：", "Large uncertainty of state fractions: ") + ", ".join(
+            "%s %.0f ± %.0f%%" % (n, 100 * f, 100 * e) for n, f, e in big[:3])
+        add("info" if alt and s.element != "Fe2p" else "warn", txt)   # 与“比例不唯一”是同一件事时不重复计
+    elif len(fe) > 1:
+        add("good", L("化学态比例的不确定度小（≤ ±8%）", "Small uncertainty of state fractions (≤ ±8%)"))
+    if getattr(s, "relax_level", 0):
+        add("info", L("已逐步放开 %d 级约束（见“逐步放开限制”）", "%d constraint level(s) relaxed (see “Stepwise relaxation”)") % s.relax_level)
+    nb = sum(1 for i in items if i["level"] == "bad")
+    nw = sum(1 for i in items if i["level"] == "warn")
+    grade = "bad" if nb or nw >= 4 else "check" if nw else "ok"
+    order = {"bad": 0, "warn": 1, "info": 2, "good": 3}
+    items.sort(key=lambda i: order[i["level"]])
+    return {"grade": grade, "label": lab(grade), "snr": det and det["snr"], "items": items,
+            "accuracy": accuracy_text(s.element, lang) if len(core.chemical_states(s)) > 1 else None}
