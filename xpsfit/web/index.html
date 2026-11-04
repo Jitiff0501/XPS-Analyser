@@ -170,6 +170,13 @@ details.sec>summary .sub{font-weight:400;color:var(--ink3);font-size:12px;overfl
 .oxrow{display:flex;align-items:center;gap:8px}
 .oxrow .oxl{font-size:12.5px;color:var(--ink2);white-space:nowrap}
 .oxrow .seg{flex:1;display:flex}.oxrow .seg button{flex:1;padding:5px 4px;font-size:12px}
+.annlist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.ann{border:1px solid var(--line);border-radius:10px;padding:6px 8px;display:flex;flex-direction:column;gap:4px;background:var(--panel)}
+.ann-r{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--ink2)}
+.ann-r label{display:flex;align-items:center;gap:3px}
+.ann-r .in.num{width:60px}.ann-r .in.num[data-k=x]{width:74px}.ann-r .in[data-k=text]{flex:1;min-width:90px}
+.ann-r input[type=color]{width:26px;height:22px;border:none;padding:0;background:none}
+.ann-t{font-size:11.5px;color:var(--ink3);min-width:28px}
 .relax{border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:6px}
 .relax-h{display:flex;align-items:baseline;gap:8px;font-weight:600;font-size:13px}
 .rx-steps{display:flex;gap:3px}
@@ -305,7 +312,8 @@ input[type=checkbox]{accent-color:var(--accent)}
         <label class="stk-l">间距 <input type="range" id="stk_off" min="0.3" max="2" step="0.05" value="1.15"></label>
         <label class="switch"><input type="checkbox" id="stk_fit" checked> 拟合包络</label>
         <label class="switch"><input type="checkbox" id="stk_comps"> 分峰</label>
-        <label class="switch"><input type="checkbox" id="stk_states" checked> 化学态比例</label>
+        <label class="switch"><input type="checkbox" id="stk_names" checked> 样品名</label>
+        <label class="switch"><input type="checkbox" id="stk_states"> 化学态比例</label>
         <span class="stk-m" id="stk_members"></span>
         <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
           <select class="in" id="stk_fmt" style="width:auto"><option value="png">PNG</option><option value="svg">SVG</option><option value="pdf">PDF</option><option value="tif">TIFF</option></select>
@@ -361,6 +369,19 @@ input[type=checkbox]{accent-color:var(--accent)}
         <button class="btn sm" onclick="saveTpl()">存为模板</button>
       </div>
       <div class="row" style="margin-top:10px"><select class="in" id="tpl"></select><button class="btn sm" onclick="useTpl()">套用</button></div>
+    </details>
+    <details class="sec" data-sec="annot"><summary>标注 <span class="sub" id="annctx"></span></summary>
+      <div class="grid3">
+        <button class="btn sm" onclick="annAdd('text')" title="在图中间加一个文字标注">＋ 文字</button>
+        <button class="btn sm" onclick="annAdd('vline')" title="在图中间加一条垂直虚线">＋ 垂直虚线</button>
+        <button class="btn sm" onclick="annPeakLines()" title="在当前谱每个主峰（含 1/2 分量，不含卫星和重叠峰）的峰位加垂直虚线">主峰位置加虚线</button>
+        <button class="btn sm" onclick="annPlace('text')" title="然后在图上点击放置文字">图上点击放文字</button>
+        <button class="btn sm" onclick="annPlace('vline')" title="然后在图上点击放置虚线">图上点击放虚线</button>
+        <button class="btn sm" onclick="annAdd('corner')" title="在左上角加图角标，如 (a)">图角标 (a)</button>
+      </div>
+      <div id="annlist" class="annlist"></div>
+      <p class="note" style="margin:6px 0 0">上标写 Co^{2+}，下标写 2p_{3/2}。文字可在图上直接拖动。y 与虚线长度都按坐标轴高度的百分比，0% = 坐标轴底部（y 轴 0）。线宽、段长、间隔、字号的单位都是 pt（与导出的图一致）。</p>
+      <button class="btn sm ghost" onclick="annClear()" style="margin-top:6px">清除本图全部标注</button>
     </details>
     <details class="sec" data-sec="bg"><summary>背景 <span class="sub" id="bgsum"></span></summary>
       <div class="row"><label>类型</label>
@@ -633,7 +654,7 @@ function setView(v){
   if(isP){$("bginterp").value=v.bg.interp||"smooth";$("bgpts_n").textContent=`${(v.bg.points||[]).length} 个点`+((v.bg.points||[]).length<2?"（至少 2 个）":"")}
   const man=v.bg.ylo!=null||v.bg.yhi!=null;$("bgends").textContent=man?`手动（低 BE 端 ${v.bgline[0]?.toFixed(0)} · 高 BE 端 ${v.bgline[v.bgline.length-1]?.toFixed(0)}）`:"自动（端点平均）";$("bgauto").disabled=!man;$("bglo").value=v.region[0].toFixed(2);$("bghi").value=v.region[1].toFixed(2);$("bgn").value=v.bg.navg||3;
   const f=v.fit;$("fitinfo").textContent=f?`约化 χ² ${fmt(f.rchi2,3)}${f.rel_rms!=null?`   残差 RMS ${(100*f.rel_rms).toFixed(1)}%`:""}   自由参数 ${f.nfree}${f.success?"":"   ⚠ "+f.message}`:"";
-  renderSummary(v);renderRelax(v);
+  renderSummary(v);renderRelax(v);renderAnn();
   $("bgsum").textContent=v.bg.type+(v.bg.type!=="None"&&v.region?` · ${v.region[0].toFixed(1)}–${v.region[1].toFixed(1)} eV`:"");
   const qw=$("qwarn"),W=(f&&f.warnings)||[];qw.hidden=!W.length;qw.innerHTML=W.slice(0,3).map(w=>`<div>⚠ ${esc(w)}</div>`).join("")+(W.length>3?`<details class="more"><summary>+${W.length-3} 条提示</summary>${W.slice(3).map(w=>`<div>⚠ ${esc(w)}</div>`).join("")}</details>`:"");
   if(S.sel!==null&&S.sel>=v.peaks.length)S.sel=null;
@@ -660,12 +681,12 @@ function renderPeaks(){
 }
 /* ---------- 堆叠对比：各样品的同一轨道 ---------- */
 function stackOpts(){const st=S.stack;return {mode:st.mode,offset:+$("stk_off").value,fit:$("stk_fit").checked,comps:$("stk_comps").checked,
-  states:$("stk_states").checked,members:st.members}}
+  states:$("stk_states").checked,names:$("stk_names").checked,members:st.members}}
 async function toggleStack(){
   if(S.stack){S.stack=null;S.stackData=null;$("stackbar").hidden=true;$("stackbtn").classList.remove("on");$("modes").hidden=false;
-    $("plot").style.top="";draw();setTimeout(()=>Plotly.Plots.resize("plot"),0);return}
+    $("plot").style.top="";draw();renderAnn();setTimeout(()=>Plotly.Plots.resize("plot"),0);return}
   if(S.cur===null)return;setMode("view");
-  S.stack={mode:"bgsub",members:null};$("stackbar").hidden=false;$("stackbtn").classList.add("on");$("modes").hidden=true;
+  S.stack={mode:"bgsub",members:null};$("stackbar").hidden=false;setTimeout(renderAnn,0);$("stackbtn").classList.add("on");$("modes").hidden=true;
   $("clickkind").hidden=$("clickasym").hidden=true;placeStackBar();await loadStack()}
 function placeStackBar(){const b=$("stackbar");if(b.hidden)return;$("plot").style.top=(b.offsetTop+b.offsetHeight+6)+"px";
   setTimeout(()=>Plotly.Plots.resize("plot"),0)}
@@ -694,17 +715,20 @@ function drawStack(){
     if($("stk_fit").checked&&it.env)T.push({x:it.x,y:add(it.env),mode:"lines",line:{color:"#C96442",width:1.6},showlegend:false,hoverinfo:"skip"});
     // 标签：高 BE 一侧，放在该段曲线最高点之上
     const x0=xmax-0.45*(xmax-xmin);let ym=0;it.x.forEach((x,k)=>{if(x>=x0){ym=Math.max(ym,it.y[k],it.env?it.env[k]:-Infinity)}});
-    ann.push({x:xmax-0.01*(xmax-xmin),y:sh+ym+0.05*span,xanchor:"left",yanchor:"bottom",showarrow:false,text:esc(stackLabel(it)),font:{size:12,color:"#3d3c38"}})});
+    if($("stk_names").checked)ann.push({x:xmax-0.01*(xmax-xmin),y:sh+ym+0.05*span,xanchor:"left",yanchor:"bottom",showarrow:false,text:esc(stackLabel(it)),font:{size:12,color:"#3d3c38"}})});
   const L={margin:{l:64,r:18,t:34,b:46},paper_bgcolor:"#fff",plot_bgcolor:"#fff",font:{family:getComputedStyle(document.body).fontFamily,size:12,color:"#3d3c38"},
     title:{text:d.element+" · "+n+" "+TR("个样品"),font:{size:13},x:0.01,y:0.985,yanchor:"top"},annotations:ann,showlegend:false,hovermode:"closest",dragmode:"zoom",
     xaxis:{range:[xmax,xmin],title:{text:"Binding Energy (eV)"},showgrid:false,zeroline:false,linecolor:"#D9D5C8",ticks:"outside",tickcolor:"#D9D5C8"},
     yaxis:{title:{text:raw?"Intensity (CPS)":"Intensity (a.u.)"},showticklabels:raw,gridcolor:"#F1EFE8",zeroline:false,linecolor:"#D9D5C8",
       range:[ylo-0.04*(yhi-ylo),yhi+0.14*(yhi-ylo)]},uirevision:"stack:"+d.element+":"+d.mode};
-  Plotly.react("plot",T,L,{displaylogo:false,displayModeBar:false,responsive:true,doubleClick:"reset"})}
+  if(S.annPlace)L.hovermode="x";
+  annApply(L);
+  Plotly.react("plot",T,L,{displaylogo:false,displayModeBar:false,responsive:true,doubleClick:"reset",edits:{annotationPosition:true}});
+  annEvents(ev=>{if(S.annPlace&&ev.points&&ev.points.length)annPlaceAt(ev.points[0].x)})}
 async function exportStack(){const r=await call("export_stack",Object.assign({i:S.cur,fmt:$("stk_fmt").value},stackOpts()));toast(r.msg,r.path)}
 document.querySelectorAll("#stk_mode button").forEach(b=>b.onclick=()=>{S.stack.mode=b.dataset.v;
   document.querySelectorAll("#stk_mode button").forEach(x=>x.classList.toggle("on",x===b));loadStack()});
-["stk_off","stk_fit","stk_states"].forEach(id=>$(id).addEventListener("input",()=>S.stack&&drawStack()));
+["stk_off","stk_fit","stk_states","stk_names"].forEach(id=>$(id).addEventListener("input",()=>S.stack&&drawStack()));
 $("stk_comps").addEventListener("change",()=>S.stack&&loadStack());
 function draw(){
   if(S.stack){drawStack();return}
@@ -746,8 +770,9 @@ function draw(){
   else if(S.full){L.uirevision=v.i+":full:"+(S.resetN||0)}
   else if(!S.full&&v.window){const[lo,hi]=v.window,yr=winY(v,lo,hi);L.xaxis.autorange=false;L.xaxis.range=[hi+0.3,lo-0.3];
     if(yr){L.yaxis.autorange=false;L.yaxis.range=yr}L.uirevision=v.i+":"+lo+":"+hi+":"+S.resetN}
-  Plotly.react("plot",T,L,{displaylogo:false,displayModeBar:false,responsive:true,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"]});
-  const pl=$("plot");pl.removeAllListeners&&pl.removeAllListeners("plotly_click");pl.on("plotly_click",onClick);
+  annApply(L);
+  Plotly.react("plot",T,L,{displaylogo:false,displayModeBar:false,responsive:true,doubleClick:"reset",modeBarButtonsToRemove:["select2d","lasso2d","autoScale2d"],edits:{annotationPosition:true}});
+  const pl=$("plot");annEvents(onClick);
   pl.removeAllListeners&&pl.removeAllListeners("plotly_selected");
   pl.on("plotly_selected",ev=>{if(S.mode!=="bg"||!ev||!ev.range||!ev.range.x)return;const[a,b]=ev.range.x.slice().sort((a,b)=>a-b);
     $("bglo").value=a.toFixed(2);$("bghi").value=b.toFixed(2);setMode("view");setBg()});
@@ -891,6 +916,7 @@ function setMode(m){
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){document.querySelectorAll(".scrim.open").forEach(s=>s.classList.remove("open"));setMode("view")}});
 async function onClick(ev){
   const x=ev.points[0].x;
+  if(S.annPlace){annPlaceAt(x);return}
   if(S.mode==="peak"){
     if(CK==="doublet"){const d=dblDefaults(S.v.element)||{split:5.7,ratio:0.5};
       const lit=!!(S.v&&S.v.so);   // 有文献约束：ΔE 与面积比在文献范围内拟合
@@ -1051,6 +1077,51 @@ let REF=null,REFALL=false;const MARKS={};   // 每个轨道勾选显示的化合
 function marks(){const o=REF&&REF.orbital||"";return MARKS[o]||(MARKS[o]=new Set())}
 async function loadRef(){
   if(S.cur===null)return;REF=await call("reference",{i:S.cur});renderRef();draw()}
+/* ---------- 标注（单谱图与堆叠对比图通用；导出的图画法相同） ---------- */
+const ANN_DEF={text:{type:"text",text:"",x:0,y:90,size:9,color:"#333333",bold:false},vline:{type:"vline",x:0,len:85,width:0.8,dash:4,gap:3,color:"#666666"}};
+function annCtx(){return S.stack?"stack":"spec"}
+function annItems(){if(!S.v)return [];const k=annCtx()==="stack"?"stack_annots":"annots";if(!S.v[k])S.v[k]=[];return S.v[k]}
+let annTimer=null;
+function annSave(){clearTimeout(annTimer);const ctx=annCtx(),items=annItems(),i=S.cur;annTimer=setTimeout(()=>call("set_annots",{i,ctx,items}),250)}
+function annHtml(t){return esc(t).replace(/\^\{([^{}]*)\}/g,"<sup>$1</sup>").replace(/_\{([^{}]*)\}/g,"<sub>$1</sub>")}
+function annRange(){const l=$("plot").layout;const r=l&&l.xaxis&&l.xaxis.range;return r&&isFinite(r[0])?r:[S.v.window?S.v.window[1]:800,S.v.window?S.v.window[0]:700]}
+function redrawAnn(){S.stack?drawStack():draw()}
+function annAdd(t,x){if(!S.v)return;const r=annRange(),corner=t==="corner";const a=Object.assign({},ANN_DEF[corner?"text":t]);
+  if(corner){a.text="(a)";a.x=+(r[0]-0.05*(r[0]-r[1])).toFixed(2);a.y=92;a.size=11;a.bold=true}
+  else{a.x=+(x!=null?x:(r[0]+r[1])/2).toFixed(2);if(t==="text")a.text=TR("文字")}
+  annItems().push(a);annSave();renderAnn();redrawAnn()}
+function annPeakLines(){if(!S.v)return;const items=annItems();let n=0;
+  S.v.peaks.forEach((p,j)=>{const ref=(p.link||{}).ref;if((p.role||"main")!=="main"||(ref&&p.name.startsWith(ref+" ")))return;
+    const x=+p.center.value.toFixed(2);if(items.some(a=>a.type==="vline"&&Math.abs(a.x-x)<0.05))return;
+    items.push(Object.assign({},ANN_DEF.vline,{x,color:(S.v.colors&&S.v.colors[j])||"#666666"}));n++});
+  annSave();renderAnn();redrawAnn();toast(n?TR("已加入")+" "+n:TR("没有新的主峰位置"))}
+function annPlace(t){if(!S.v)return;S.annPlace=t;toast(TR(t==="text"?"在图上点击放置文字":"在图上点击放置虚线"));if(S.stack)drawStack()}
+function annPlaceAt(x){const t=S.annPlace;S.annPlace=null;annAdd(t,x)}
+function annDel(k){annItems().splice(k,1);annSave();renderAnn();redrawAnn()}
+function annClear(){if(!annItems().length||!confirm("清除当前图上的全部标注？"))return;annItems().length=0;annSave();renderAnn();redrawAnn()}
+function renderAnn(){if(!S.v)return;$("annctx").textContent=S.stack?`堆叠对比 · ${S.v.element}`:"本谱";
+  const box=$("annlist");box.innerHTML="";
+  annItems().forEach((a,k)=>{const d=document.createElement("div");d.className="ann";
+    d.innerHTML=a.type==="text"?`<div class="ann-r"><b class="ann-t">文字</b><input class="in" data-k="text" placeholder="Co^{2+}"><button class="btn sm ghost" data-del>×</button></div>
+      <div class="ann-r"><label>x <input class="in num" data-k="x" step="0.1" type="number"></label><label>y% <input class="in num" data-k="y" type="number"></label><label>字号 <input class="in num" data-k="size" type="number" step="0.5"></label><input type="color" data-k="color" title="颜色"><label class="switch"><input type="checkbox" data-k="bold"> 粗体</label></div>`
+     :`<div class="ann-r"><b class="ann-t">虚线</b><label>x <input class="in num" data-k="x" step="0.1" type="number"></label><label>长度% <input class="in num" data-k="len" type="number"></label><input type="color" data-k="color" title="颜色"><button class="btn sm ghost" data-del>×</button></div>
+      <div class="ann-r"><label>线宽 <input class="in num" data-k="width" type="number" step="0.1"></label><label>段长 <input class="in num" data-k="dash" type="number" step="0.5" title="0 = 实线"></label><label>间隔 <input class="in num" data-k="gap" type="number" step="0.5"></label></div>`;
+    d.querySelectorAll("[data-k]").forEach(inp=>{const kk=inp.dataset.k;if(inp.type==="checkbox")inp.checked=!!a[kk];else inp.value=a[kk];
+      inp.oninput=()=>{const v=inp.type==="checkbox"?inp.checked:(inp.type==="color"||kk==="text")?inp.value:parseFloat(inp.value);
+        if(typeof v==="number"&&!isFinite(v))return;a[kk]=v;annSave();redrawAnn()}});
+    d.querySelector("[data-del]").onclick=()=>annDel(k);box.append(d)})}
+function annApply(L){const items=annItems();L.annotations=L.annotations||[];L.shapes=L.shapes||[];S.annOff=L.annotations.length;S.annMap=[];
+  items.forEach((a,k)=>{if(a.type==="vline")L.shapes.push({type:"line",xref:"x",yref:"y domain",x0:a.x,x1:a.x,y0:0,y1:a.len/100,layer:"above",
+      line:{color:a.color,width:a.width*1.333,dash:a.dash>0?`${(a.dash*1.333).toFixed(1)}px,${(a.gap*1.333).toFixed(1)}px`:"solid"}});
+    else if(a.text){S.annMap.push(k);L.annotations.push({x:a.x,y:a.y/100,xref:"x",yref:"y domain",showarrow:false,xanchor:"center",yanchor:"bottom",
+      text:(a.bold?"<b>":"")+annHtml(a.text)+(a.bold?"</b>":""),font:{size:a.size*1.333,color:a.color},captureevents:false})}})}
+function annEvents(onclick){const pl=$("plot");if(!pl.removeAllListeners)return;
+  pl.removeAllListeners("plotly_click");pl.on("plotly_click",onclick);
+  pl.removeAllListeners("plotly_relayout");pl.on("plotly_relayout",ev=>{let ch=false;const items=annItems();
+    for(const key in ev){const m=key.match(/^annotations\[(\d+)\]\.(x|y)$/);if(!m)continue;const k=S.annMap[+m[1]-S.annOff];
+      if(k==null||!items[k])continue;if(m[2]==="x")items[k].x=+(+ev[key]).toFixed(2);else items[k].y=+(100*ev[key]).toFixed(1);ch=true}
+    if(ch){annSave();renderAnn()}})}
+
 /* ---------- 氧化态选择（一键拟合） ---------- */
 S.oxide=(()=>{try{return localStorage.getItem("xpsfit_oxide")||"auto"}catch(e){return "auto"}})();
 function setOxide(o){S.oxide=o;document.querySelectorAll("#oxseg button").forEach(b=>b.classList.toggle("on",b.dataset.o===o));

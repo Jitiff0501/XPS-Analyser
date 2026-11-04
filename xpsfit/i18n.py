@@ -7,6 +7,19 @@ import re
 
 # ------------------------------------------------------------------ 整句 / 词组
 PHRASES = {
+    "标注": "Annotations", "＋ 文字": "＋ Text", "＋ 垂直虚线": "＋ Vertical line", "主峰位置加虚线": "Lines at main peaks",
+    "图上点击放文字": "Click to place text", "图上点击放虚线": "Click to place line", "图角标 (a)": "Panel label (a)",
+    "在图中间加一个文字标注": "Add a text label in the middle of the plot", "在图中间加一条垂直虚线": "Add a vertical line in the middle of the plot",
+    "在当前谱每个主峰（含 1/2 分量，不含卫星和重叠峰）的峰位加垂直虚线": "Add a vertical line at every main peak of this spectrum (incl. 1/2 components, excl. satellites and overlaps)",
+    "然后在图上点击放置文字": "then click on the plot to place text", "然后在图上点击放置虚线": "then click on the plot to place a line",
+    "在左上角加图角标，如 (a)": "Add a panel label such as (a) in the top-left corner",
+    "上标写 Co^{2+}，下标写 2p_{3/2}。文字可在图上直接拖动。y 与虚线长度都按坐标轴高度的百分比，0% = 坐标轴底部（y 轴 0）。线宽、段长、间隔、字号的单位都是 pt（与导出的图一致）。":
+        "Superscript: Co^{2+}; subscript: 2p_{3/2}. Text can be dragged on the plot. y and line length are percentages of the axis height, 0% = bottom of the axis (y = 0). Line width, dash, gap and font size are in pt (as in the exported figure).",
+    "清除本图全部标注": "Clear all annotations of this figure", "清除当前图上的全部标注？": "Clear all annotations of the current figure?",
+    "文字": "Text", "虚线": "Line", "字号": "Size", "粗体": "Bold", "长度%": "Length %", "线宽": "Width", "段长": "Dash", "间隔": "Gap",
+    "0 = 实线": "0 = solid", "本谱": "this spectrum", "已加入": "Added", "没有新的主峰位置": "No new main-peak positions",
+    "在图上点击放置文字": "Click on the plot to place the text", "在图上点击放置虚线": "Click on the plot to place the line",
+    "样品名": "Sample names",
     "一键拟合时使用的化学态（Al2p、Co2p、Cr2p、Cu2p、Fe2p）": "Chemical states used by the one-click fit (Al2p, Co2p, Cr2p, Cu2p, Fe2p)",
     "金属态、氧化态都先放进模型，由 BIC 判断是否需要；比例不唯一时给出范围": "Metal and oxide both start in the model; BIC decides whether each is needed; a range is given when the fraction is not unique",
     "金属+氧化": "Metal+oxide", "金属态与氧化态都保留": "Keep both metal and oxide states", "仅金属": "Metal only", "仅氧化": "Oxide only",
@@ -195,6 +208,7 @@ PHRASES = {
 
 # ------------------------------------------------------------------ 含变量的句子：中文 printf 模板 → 英文（{0}{1}… 为各变量，变量本身也会递归翻译）
 TEMPLATES = [
+    ("堆叠对比 · %s", "Stack compare · {0}"),
     ("⚠ 样品一致性：%s 的氧化态比例（%.0f%%）明显高于更易氧化的 %s。按热力学，%s 不应先于它们氧化——%s 的“氧化态”可能是金属线形（长拖尾、损失结构、2p1/2 展宽）造成的假象；可用“仅金属”对比",
      "⚠ Sample consistency: the oxide fraction of {0} ({1}%) is clearly higher than that of the more easily oxidized {2}. Thermodynamically {3} should not oxidize before them — the “oxide” of {4} may be an artefact of the metal line shape (long tail, loss features, 2p1/2 broadening); compare with “Metal only”"),
     ("%s（仅金属）：金属拖尾放宽到 T ≤ 0.8、τ ≤ 8 eV，L%% 在 0–80%% 内拟合（没有氧化态需要保护）",

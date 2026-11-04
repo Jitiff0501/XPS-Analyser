@@ -387,6 +387,21 @@ class Api(unittest.TestCase):
             self.assertTrue(os.path.getsize(out) > 100, out)
             v = server.api("set_color", {"i": 0, "j": 1, "color": "#112233"})
             self.assertEqual(v["colors"][0], "#112233")                    # 双峰副峰的颜色作用于整组
+            # 标注：单谱图与堆叠图各一套，导出时画上，随项目保存
+            server.api("set_annots", {"i": 0, "ctx": "spec", "items": [
+                {"type": "text", "text": "Al^{3+} 2p_{3/2}", "x": 74.6, "y": 80, "size": 10, "color": "#c00000"},
+                {"type": "vline", "x": 72.7, "len": 90, "width": 1, "dash": 4, "gap": 2}]})
+            server.api("set_annots", {"i": 0, "ctx": "stack", "items": [{"type": "text", "text": "(a)", "x": 79}]})
+            v = server.api("view", {"i": 0})
+            self.assertEqual([a["type"] for a in v["annots"]], ["text", "vline"])
+            self.assertEqual(v["stack_annots"][0]["text"], "(a)")
+            self.assertTrue(os.path.getsize(server.api("export_figure", {"i": 0})["path"]) > 100)
+            self.assertTrue(os.path.getsize(server.api("export_stack", {"i": 0, "dpi": 80})["path"]) > 100)
+            pj = server.api("save_project", {})["path"]
+            server.ST.stack_annots = {}
+            back = server.ST.load_path(pj)
+            self.assertEqual(back[0].annots[1]["len"], 90.0)
+            self.assertEqual(server.ST.stack_annots["Al2p"][0]["text"], "(a)")
         finally:
             server.user_dir = old
 

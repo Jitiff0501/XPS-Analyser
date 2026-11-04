@@ -48,6 +48,7 @@ def _f(v):
 class State:
     def __init__(self):
         self.specs = []
+        self.stack_annots = {}                    # 堆叠对比图的标注：{轨道: [标注…]}
         self.lock = threading.Lock()
         self.sf = core.load_sf(os.path.join(user_dir(), "sensitivity_factors.json")) or core.load_sf()
         self.templates = core.builtin_templates()
@@ -75,6 +76,7 @@ class State:
         if path.lower().endswith(".json"):
             with open(path, encoding="utf-8") as f:
                 d = json.load(f)
+            self.stack_annots.update(d.get("stack_annots") or {})
             return [core.Spectrum.from_dict(s) for s in d.get("spectra", [])]
         folder = os.path.basename(os.path.dirname(os.path.abspath(path)))
         out = []
@@ -128,6 +130,7 @@ class State:
                 "kind": getattr(s, "kind", "region"), "ident": getattr(s, "ident", None),
                 "states": _states(s), "interp": _interp(s), "colors": core.peak_colors(s.peaks),
                 "relax": autofit.relax_state(s),
+                "annots": getattr(s, "annots", []), "stack_annots": self.stack_annots.get(s.element, []),
                 "so": {"metal": core.so_rule(s.element, True), "comp": core.so_rule(s.element, False)}
                 if core.so_rule(s.element) else None}
 
@@ -422,6 +425,13 @@ def api(method, a):
         if s.last_fit:
             _post_fit(s)                          # 不确定度 + 质量警告，与“拟合”按钮一致
         return dict(st.view(a["i"]), specs=st.summary(), msg=res.get("msg"))
+    elif method == "set_annots":
+        items = clean_annots(a.get("items") or [])
+        if a.get("ctx") == "stack":
+            st.stack_annots[s.element] = items
+        else:
+            s.annots = items
+        return {"ok": True, "n": len(items)}
     elif method == "stack":
         return stack_data(a["i"], a)
     elif method == "export_stack":
@@ -432,7 +442,8 @@ def api(method, a):
     elif method == "save_project":
         p = os.path.join(st.out_dir(st.specs[0]), a.get("name") or "project.xpsfit.json")
         with open(p, "w", encoding="utf-8") as f:
-            json.dump({"app": APP, "version": 1, "spectra": [t.to_dict() for t in st.specs]}, f, ensure_ascii=False)
+            json.dump({"app": APP, "version": 1, "spectra": [t.to_dict() for t in st.specs],
+                       "stack_annots": st.stack_annots}, f, ensure_ascii=False)
         return {"path": p, "msg": "项目已保存"}
     elif method == "open_folder":
         p = a["path"]
@@ -816,12 +827,68 @@ def figure(s, path, opts=None, dpi=None):
         yl = ax.get_ylim()
         top = _arrow_labels(ax, fig, x, bg, comps, env, s.peaks, cols, o, yl, yraw=y)
         ax.set_ylim(yl[0], max(yl[1], top))
+    draw_annots(ax, getattr(s, "annots", []))
     fmt = o["fmt"] if o["fmt"] != "tif" else "tiff"
     fig.savefig(path, dpi=dpi or float(o["dpi"]), format=fmt)
 
 
+# ------------------------------------------------------------------ 标注（单谱图与堆叠对比图通用）
+# 文字：{type:"text", text, x(BE), y(坐标轴高度 %), size(pt), color, bold}；上标写 ^{…}，下标写 _{…}
+# 垂直虚线：{type:"vline", x(BE), len(从坐标轴底部起，占高度 %), width(pt), dash, gap(pt；dash=0 为实线), color}
+ANN_DEFAULTS = {"text": {"text": "", "x": 0.0, "y": 90.0, "size": 9.0, "color": "#333333", "bold": False},
+                "vline": {"x": 0.0, "len": 85.0, "width": 0.8, "dash": 4.0, "gap": 3.0, "color": "#666666"}}
+
+
+def clean_annots(items):
+    out = []
+    for it in items[:200]:
+        t = it.get("type")
+        if t not in ANN_DEFAULTS:
+            continue
+        d = dict(ANN_DEFAULTS[t], type=t)
+        for k, v in ANN_DEFAULTS[t].items():
+            if k not in it:
+                continue
+            if isinstance(v, bool):
+                d[k] = bool(it[k])
+            elif isinstance(v, float):
+                try:
+                    d[k] = float(it[k])
+                except (TypeError, ValueError):
+                    pass
+            elif k == "color":
+                d[k] = it[k] if re.fullmatch(r"#[0-9a-fA-F]{6}", str(it[k])) else v
+            else:
+                d[k] = str(it[k])[:200]
+        for k, lo, hi in (("y", -20, 120), ("len", 0, 100), ("size", 4, 40), ("width", 0.1, 6), ("dash", 0, 20), ("gap", 0, 20)):
+            if k in d:
+                d[k] = min(max(d[k], lo), hi)
+        out.append(d)
+    return out
+
+
+def mathtext(t):
+    """Co^{2+} → Co$^{2+}$，2p_{3/2} → 2p$_{3/2}$（matplotlib 数学文本）。"""
+    t = str(t).replace("$", r"\$")
+    t = re.sub(r"\^\{([^{}]*)\}", lambda m: "$^{%s}$" % m.group(1).replace(" ", r"\ "), t)
+    t = re.sub(r"_\{([^{}]*)\}", lambda m: "$_{%s}$" % m.group(1).replace(" ", r"\ "), t)
+    return t.replace("$$", "")
+
+
+def draw_annots(ax, items):
+    from matplotlib.transforms import blended_transform_factory
+    tr = blended_transform_factory(ax.transData, ax.transAxes)
+    for a in items or []:
+        if a["type"] == "vline":
+            ls = (0, (a["dash"], a["gap"])) if a["dash"] > 0 else "-"
+            ax.axvline(a["x"], ymin=0, ymax=a["len"] / 100.0, color=a["color"], lw=a["width"], linestyle=ls, zorder=5)
+        elif a.get("text"):
+            ax.text(a["x"], a["y"] / 100.0, mathtext(a["text"]), transform=tr, ha="center", va="bottom",
+                    fontsize=a["size"], color=a["color"], fontweight="bold" if a["bold"] else "normal", zorder=6, clip_on=False)
+
+
 # ------------------------------------------------------------------ 多样品同一轨道堆叠对比
-STACK_DEFAULTS = {"mode": "bgsub", "offset": 1.15, "fit": True, "comps": False, "members": None, "states": True,
+STACK_DEFAULTS = {"mode": "bgsub", "offset": 1.15, "fit": True, "comps": False, "members": None, "states": False, "names": True,
                   "fmt": "png", "width_cm": 8.5, "height_cm": None, "dpi": 600, "font": 9, "xmin": None, "xmax": None}
 
 
@@ -914,7 +981,7 @@ def export_stack(i, a):
     fig.tight_layout()
     # 标签：放在高 BE 一侧，按实际文字宽度找出这一段曲线的最高点，放在其上方，避免压住峰
     r = fig.canvas.get_renderer()
-    for j, sh, x, yy in labels:
+    for j, sh, x, yy in (labels if o["names"] else []):
         t = ax.text(xmax - 0.02 * (xmax - xmin), sh, pretty_label(_stack_label(items[j], o["states"])),
                     ha="left", va="bottom", fontsize=float(o["font"]) * 0.8)
         bb = t.get_window_extent(r).transformed(ax.transData.inverted())
@@ -922,6 +989,7 @@ def export_stack(i, a):
         m = (x >= lo_x) & (x <= hi_x)
         ymax = float(np.max(yy[m])) if m.any() else 0.0
         t.set_y(sh + max(ymax, 0.0) + 0.05 * span)
+    draw_annots(ax, ST.stack_annots.get(d["element"], []))
     fmt = o["fmt"] if o["fmt"] != "tif" else "tiff"
     s0 = ST.S(i)
     p = os.path.join(ST.out_dir(s0), conv.safe_name("stack_%s_%d-samples" % (d["element"], n)) + "." + o["fmt"])
