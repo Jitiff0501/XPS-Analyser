@@ -201,17 +201,21 @@ def fe_select(s, log):
         bg0["tilt"] = 0.0
     res = []
     for combo in FE_COMBOS:
-        s.bg = copy.deepcopy(bg0)
-        s.peaks = copy.deepcopy(base) + _seed(s, [q for ph in combo for q in fe_phase_peaks(ph)])
-        r = staged_fit(s, max_nfev=400)       # 比较阶段限制迭代（提高到 1500 结果不变）；选中的模型再完整拟合
-        d = fe_phases(s)
-        res.append({"bic": bic(s, r), "combo": combo, "peaks": copy.deepcopy(s.peaks), "bg": copy.deepcopy(s.bg),
-                    "x2": d["x2"], "phases": d["phases"]})
-    for t in res:                             # 单相模型在粗拟合的基础上完整收敛后再比较（主动 Shirley 的斜坡需要更多迭代）
-        if len(t["combo"]) == 1:
-            s.peaks, s.bg = copy.deepcopy(t["peaks"]), copy.deepcopy(t["bg"])
-            r1 = s.do_fit()
-            t.update(bic=bic(s, r1), peaks=copy.deepcopy(s.peaks), bg=copy.deepcopy(s.bg))
+        start = copy.deepcopy(base) + _seed(s, [q for ph in combo for q in fe_phase_peaks(ph)])
+        # 主动 Shirley 的斜坡与卫星峰耦合，存在多个局部最优，结果取决于优化路径。单相模型用两条路径
+        # （① 直接完整拟合；② 先限迭代粗拟合再完整收敛）各拟合一次，取 BIC 更好的；两相模型只用于给范围，限迭代
+        paths = (lambda: staged_fit(s), lambda: (staged_fit(s, max_nfev=400), s.do_fit())[1]) if len(combo) == 1 \
+            else (lambda: staged_fit(s, max_nfev=400),)
+        best_t = None
+        for run_path in paths:
+            s.bg, s.peaks = copy.deepcopy(bg0), copy.deepcopy(start)
+            r = run_path()
+            b_ = bic(s, r)
+            if best_t is None or b_ < best_t["bic"]:
+                d = fe_phases(s)
+                best_t = {"bic": b_, "combo": combo, "peaks": copy.deepcopy(s.peaks), "bg": copy.deepcopy(s.bg),
+                          "x2": d["x2"], "phases": d["phases"]}
+        res.append(best_t)
     singles = sorted((t for t in res if len(t["combo"]) == 1), key=lambda t: t["bic"])
     best = singles[0]
     s.peaks, s.bg = best["peaks"], best["bg"]
