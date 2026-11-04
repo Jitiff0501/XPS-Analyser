@@ -1,53 +1,52 @@
-# XPS Fit Studio + Avantage2XPSPEAK
+# XPS Fit Studio
 
-下载：仓库右侧 **Releases → latest**
+XPS 峰拟合桌面程序，用来替代 XPSPEAK 4.1。读入 Thermo Avantage 的 `.VGD`（也支持导出的 Excel / CSV、XPSPEAK txt），一键拟合（按元素使用文献约束），自动判断检出限和拟合是否可靠，定量，并导出带标注的论文图。界面中文 / English 可切换。
 
-| 程序 | 用途 |
+*Desktop XPS peak-fitting app (a replacement for XPSPEAK 4.1): one-click fitting with literature constraints, detection limit and fit assessment, quantification, and publication figures with annotations. Chinese / English UI.*
+
+## 下载
+
+Releases → **latest**（每次更新自动构建）：
+
+| 文件 | 说明 |
 |---|---|
-| `XPSFitStudio.exe` | Windows：XPS 峰拟合（替代 XPSPEAK 4.1）。双击运行，无需安装 Python |
-| `XPSFitStudio-macOS-arm64.zip` | macOS（Apple 芯片 M1–M4）：解压得到 `XPS Fit Studio.app`，拖进“应用程序”（Intel Mac 暂不提供） |
-| `Avantage2XPSPEAK.exe` | 把 Avantage `.VGD` / 导出表格转成 XPSPEAK 4.1 的两列 txt |
+| [XPSFitStudio.exe](../../releases/download/latest/XPSFitStudio.exe) | Windows，双击运行，无需安装 Python |
+| [XPSFitStudio-macOS-arm64.zip](../../releases/download/latest/XPSFitStudio-macOS-arm64.zip) | macOS（Apple 芯片 M1–M4）：解压得到 `XPS Fit Studio.app`，拖进“应用程序” |
+| [Avantage2XPSPEAK.exe](../../releases/download/latest/Avantage2XPSPEAK.exe) | 小工具：把 Avantage `.VGD` / 导出表格转成 XPSPEAK 4.1 的两列 txt |
 
-### macOS 首次打开
-程序没有苹果开发者签名，第一次打开时系统会拦截：在“应用程序”里 **右键（或按住 Control 点按）→ 打开 → 打开**，之后就能正常双击。
-若提示“已损坏，无法打开”，在“终端”运行一次：`xattr -cr "/Applications/XPS Fit Studio.app"`。
-用户模板、灵敏度因子、导入的 NIST 数据保存在 `~/XPSFitStudio/`。
+**macOS 首次打开**：程序没有苹果开发者签名，第一次请在“应用程序”里 **右键 → 打开 → 打开**；若提示“已损坏”，在终端运行一次 `xattr -cr "/Applications/XPS Fit Studio.app"`。
 
-## XPS Fit Studio 使用
-1. **打开文件夹**（每种轨道自动使用文献常用的显示/背景范围，如 Al2p 70–80、C1s 280–292、Cu2p 925–965 eV；“全谱”看整个采集范围，“复位”回到默认范围）：一次读入样品文件夹（含子文件夹）里所有元素的 `.VGD`，按样品分组；图上方的元素标签（或键盘 ← →）切换元素。也可“打开文件”选单个文件（`.VGD`、Avantage 导出 Excel/CSV、XPSPEAK txt），或拖拽到左侧。
-2. **能量校正**：在 C1s 谱选中 C-C 峰（注意：含碳化物的样品，最高峰可能是 ~283 eV 的碳化物，不是 C-C；可用“C1s: 碳化物 + …”模板） → “选中峰 → C1s 284.8 eV”，同文件夹（同样品）的谱一起平移。
-3. **背景**：Shirley / Smart（Shirley 但不高于数据）/ **自定义点**（在图上点选背景经过的点，平滑或折线连接，可拖动、右键删除）/ Linear / Tougaard；范围可输入、框选，或直接拖动图上背景两端的方块（左右改范围、上下改端点强度，双击恢复自动）。
-4. **加峰**：“＋ 添加峰”可选 **单峰 / 双峰 / 卫星峰 / 未知重叠峰**；“－ 删除峰”（删除双峰主峰时副峰一起删）。也可套用模板（Al2p、C1s、O1s、Ti2p）。
-   - 双峰：间距、面积比可修改，并可选择拟合时**锁定**或在范围内**自由拟合**。
-   - 卫星峰：归属某个主峰，ΔE / 面积比可锁定或自由；计入面积%。
-   - 未知重叠峰：参与拟合，但**不计入**面积% 和原子% 定量。
-   - FWHM / L%：“参数相等…”里选参考峰并**多选**要相等的峰（取消勾选即解除）；勾选“固定”可锁定数值。
-   - 图上拖动峰顶圆点：左右移位置、上下改高度，按住 Shift 左右拖改 FWHM；框选放大，双击或“⤢ 复位”恢复。
-   - 峰型：**对称 GL** 或 **不对称**（高 BE 侧指数拖尾，适合金属 Co、Cr、Cu、Ni、Ti、Al 等），拖尾高度 T 与长度 τ 可拟合/固定；面积为真实面积，可直接定量；双峰副峰跟随主峰峰型。
-   - FWHM 默认范围 1–3 eV（卫星峰 1–8 eV），可在编辑中修改。
-   - 双击峰可设固定、上下限、绑定关系。
-4b. **根据谱图自动识别**：文件名里没有轨道信息时，按峰位、自旋轨道分裂和采集窗口自动识别是哪个轨道（如 Al2p、Co2p）；文件名与谱图不符时一键拟合会提醒。**全谱（survey）**自动识别元素：光电子主线、自旋轨道分量、俄歇峰、次要能级综合判断，区分“确认 / 待确认”（如 Co 俄歇不会被误认成 Fe2p、O2s 不会被误认成 Ta4f），并在图上标注；确认的元素自动用于同一样品高分辨谱的重叠峰判断。
+用户模板、灵敏度因子、导入的 NIST 数据保存在 `~/XPSFitStudio/`（Windows：`%USERPROFILE%\XPSFitStudio\`）。
 
-5. **⚡ 一键拟合**（当前谱或本样品全部谱）：
-   - 自动选背景：Shirley；若会高于数据 → Smart；若本底反向或窗口内有其他谱线 → 自定义点背景（自动取平坦区最低点，避开峰尾）。
-   - 按元素建模（Al2p、Co2p、Cr2p、Cu2p、O1s、C1s 使用文献约束：不对称金属峰、双峰间距/面积比/FWHM 比范围、卫星峰面积比）；其他元素按 NIST 参考或数据中的峰建模。未校正时以金属峰为参照整体平移并提示校正。
-   - 残差检查，自动区分：**重叠峰**（同一样品其他元素的俄歇峰或能级，如 Cu2p 中的 Cr LMM、Al2p 中的 Cu3p；不计入定量）、**卫星峰**（本元素主峰高 BE 侧的卫星区间，如 Co²⁺、Cu²⁺）、**新化学态**（如 Cr⁶⁺）、**无法归属**（提示确认）。每加一个峰都用 BIC 判断是否保留。
-   - 生成报告；可在报告里补充样品中其他元素（如 survey 中的 Ni、Fe）后重新拟合。
-   **微调**：“局部微调”（峰位 ±0.3 eV 内重拟合）、“多起点”（12 组随机起点取最优）；峰表悬停显示 ± 不确定度，⚠ 标出卡在边界的参数；面板显示质量警告（背景高于数据、面积比偏离理论值等）。
-   普通 **拟合**，看残差；“用相同设置拟合全部同类谱”可批量处理（如深度剖析）。
-6. **导出**：拟合图（PNG / TIFF / SVG / PDF，带实时预览；峰标注可选“图例”或“箭头指向峰”（标签自动避让、不压曲线，小分裂双峰合并标注，Al⁰ / Co²⁺ / 2p₃/₂ 等自动上下标）；可设 x 范围、主刻度间距、次刻度，y 轴数字和刻度开关，图例位置、尺寸、字号、DPI），Excel（全部峰参数 + 每条谱的曲线），CSV（给 Origin），XPSPEAK txt。保存在原数据旁的 `xpsfit_output\`。
-6b. **推荐峰位（NIST）**：右侧列出当前轨道各化合物在 NIST XPS 数据库（SRD 20）中的结合能分布（中位数、四分位范围、记录数）、双峰间距、卫星峰，以及俄歇动能与修正俄歇参数 α′（区分 Cu⁰ / Cu₂O 等峰位重合的化学态）。勾选的化合物在图上标出；“＋”按该化学态添加单峰/双峰（金属态自动用不对称峰）。已内置 Cu；其他元素用顶部“导入 NIST”导入同格式的 zip / csv（保存在 `%USERPROFILE%\XPSFitStudio\reference\`）。
+## 主要功能
 
-7. **定量与比例**：按样品列出元素原子%、化学态原子%（主峰 + 双峰副峰 + 卫星峰；未知重叠峰不计），可任选两项（如 O/Al、Al2O3/Al0）组成比例表，一键复制到 Excel。ALTHERMO1 灵敏度因子，原子% ∝ 面积 / (SF·KE^0.6)，SF 可修改。
+- **打开整个样品文件夹**：所有元素的谱按样品分组；文件名没有轨道信息时根据谱图识别轨道；全谱（survey）自动识别元素。
+- **⚡ 一键拟合**：自动选背景（Shirley / Smart / 自定义点；Fe2p 用主动 Shirley），任何情况下背景不高于数据；按元素建模（Al2p、Co2p、Cr2p、Cu2p、Fe2p、O1s、C1s 等），每个候选化学态、残差里的每个峰都用 BIC 判断是否保留，并区分重叠峰 / 卫星峰 / 新化学态。
+  - 自旋轨道双峰（2p1/2 与 2p3/2）的分裂、面积比、FWHM 倍率限制在文献范围内（金属与化合物分别给出）。
+  - **Fe2p 物相**：FeO / Fe₃O₄ / Fe₂O₃（及与金属 Fe 的组合），给出 Fe²⁺:Fe³⁺ 和范围。
+  - **氧化态选择**：自动 / 金属+氧化 / 仅金属 / 仅氧化；选择与数据矛盾时会提醒。
+  - 氧化态比例无法由谱唯一确定时（金属线形与氧化物难以区分），给出范围而不是一个数；同一样品各元素的氧化程度不符合热力学顺序时提醒。
+  - **逐步放开约束**：一级一级放开（Lorentzian 比例、背景斜坡、FWHM 范围、金属拖尾、双峰关系超出文献范围、化合物不对称），每一步用 BIC 判断是否保留，可撤销。
+- **检出限与拟合评估**：
+  - 主线区间内 S/N < 4 判为**未检出**（不拟合峰，定量给出上限），4–10 为弱信号，≥ 10 可定量。
+  - 每次拟合给出 **可靠 / 需检查 / 不可靠 / 未检出**，并列出依据（残差与噪声、约束边界、文献规则、未归属峰、比例是否唯一、不确定度……），同时给出该轨道在合成谱上的实测准确度。
+- **手动调整**：拖动峰顶改位置 / 高度 / 宽度；单峰、双峰、卫星峰、未知重叠峰；固定、上下限、参数相等；局部微调、多起点拟合；同组峰同色、可自选颜色。
+- **定量**：元素原子 %、化学态原子 %、任意两项的比例，一键复制到 Excel。
+- **堆叠对比**：多个样品的同一轨道上下错开对比（扣背景归一化 / 归一化 / 原始）。
+- **导出**：先出预览，在预览上**加线、加文字、拉箭头**、改峰颜色，确认后导出 PNG / TIFF / SVG / PDF（字体 Arial，尺寸单位 pt，预览与导出 1:1）；堆叠图的样品名可上下拖动。另可导出 Excel（全部峰参数、曲线、评估）、CSV（给 Origin）、XPSPEAK txt、项目文件（可继续修改）。
 
-用户模板、修改过的 SF 保存在 `%USERPROFILE%\XPSFitStudio\`。
+## 文档
 
-峰型为 Gaussian–Lorentzian 混合（GL sum，L% 默认 20–30 固定），拟合用带边界的最小二乘（泊松权重）。
+- [自动拟合操作规程（SOP）](docs/AUTOFIT_SOP.md)：操作流程、每一步算法、文献约束、检出限与评估的阈值、验证结果、参考文献。
+- [合成谱验证结果](docs/benchmark_results.md)、[真实数据稳定性](docs/stability_real_data.md)。
 
 ## 开发
+
 ```
 pip install numpy scipy matplotlib pandas openpyxl xlrd pywebview
-python run_xpsfit.py                 # 桌面窗口（无 pywebview 时用浏览器）
+python run_xpsfit.py                 # 桌面窗口（没有 pywebview 时用浏览器打开）
 python -m unittest test_xpsfit_core test_avantage_to_xpspeak
+python tools/benchmark_autofit.py 8  # 已知真值的合成谱验证
 ```
-推送到 main 后 GitHub Actions 自动在 Windows 上测试、打包并发布到 Releases。
+
+推送到 `main` 后，GitHub Actions 在 Windows 与 macOS 上测试、打包，并发布到 Releases 的 `latest`。
