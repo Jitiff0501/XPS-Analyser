@@ -119,7 +119,8 @@ def background(x, y, kind="Shirley", navg=3, tougaard_B=2866.0, tougaard_C=1643.
         return np.zeros_like(y)
     if kind == "Points":
         if points and len(points) >= 1:
-            return points_background(x, points, interp)
+            # 点之间的平滑曲线可能略越过数据凹处 → 同 Smart，限制为不高于（平滑后的）数据
+            return np.minimum(points_background(x, points, interp), smooth(y))
         kind = "Linear"
     yl, yh = _ends(x, y, navg)          # 低 BE 端、高 BE 端
     if ylo is not None: yl = float(ylo)

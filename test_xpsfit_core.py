@@ -135,8 +135,10 @@ class Core(unittest.TestCase):
 
     def test_points_background(self):
         x = np.arange(927, 963.01, 0.1)
-        y = np.full_like(x, 1000.0)
+        y = np.full_like(x, 200000.0)
         pts = [[928, 128000], [949, 125500], [938, 125000], [962, 130000]]
+        low = core.background(x, np.full_like(x, 1000.0), "Points", points=pts)
+        self.assertLessEqual(low.max(), 1000.0 + 1e-6)          # 不高于数据
         bg = core.background(x, y, "Points", points=pts)
         for px, py in pts:
             self.assertAlmostEqual(float(np.interp(px, x, bg)), py, delta=1.0)
