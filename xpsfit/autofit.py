@@ -263,6 +263,10 @@ PHASE_LABEL = {"FeO": "FeO（Fe₁₋ₓO）", "Fe3O4": "Fe₃O₄", "Fe2O3": "F
 
 def interpret(s):
     """按拟合结果给出化合物解读（Fe2p：FeO / Fe3O4 / Fe2O3·FeOOH；Al/Co/Cr：氧化态比例不唯一时的范围）。返回文字或 None。"""
+    if getattr(s, "mode_warn", None) and s.peaks:
+        return s.mode_warn
+    if getattr(s, "consistency_warn", None) and s.peaks:
+        return s.consistency_warn
     alt = getattr(s, "oxide_alt", None)
     if alt and s.element != "Fe2p" and s.peaks:
         return ("氧化态比例无法由谱唯一确定：仅金属模型（金属拖尾放宽）%s（ΔBIC %+.0f），报告范围 0–%.0f%%；样品已知为金属态时选“仅金属”"
@@ -340,8 +344,9 @@ def recipe(s, log, oxide="auto"):
         if oxide == "metal":                  # 没有氧化态要保护：金属线形的拖尾放宽（真实金属峰常有较长的拖尾）
             for p in m:
                 if p.get("shape") == "Asym" and not p.get("pair"):
-                    p["tail"]["max"], p["tau"]["max"] = 0.8, 3.5
-            log("%s（仅金属）：金属拖尾放宽到 T ≤ 0.8、τ ≤ 3.5 eV（没有氧化态需要保护）" % el)
+                    p["tail"]["max"], p["tau"]["max"] = 0.8, 8.0
+                    p["lor"].update(fixed=False, min=0.0, max=80.0)
+            log("%s（仅金属）：金属拖尾放宽到 T ≤ 0.8、τ ≤ 8 eV，L%% 在 0–80%% 内拟合（没有氧化态需要保护）" % el)
         if oxide == "auto":                   # 两组都作为候选：拟合后与去掉该组的模型比较 BIC
             for p in m:
                 p["optional"] = "金属态"
@@ -582,8 +587,9 @@ def co_metal_loss(with_half=True):
     with_half：2p1/2 处也加一组——只在“仅金属”时使用；与 Co²⁺ 同时存在时会吃掉 Co²⁺ 2p1/2 的面积（模拟验证）。"""
     out = []
     for tag, d, rng in (("+3eV", 3.0, (2.5, 3.6)), ("+5eV", 5.0, (4.5, 5.8))):
-        a = _SATR("Co0 loss %s 2p3/2" % tag, "Co0 2p3/2", 778.2, d, 2.5 if tag == "+3eV" else 3.0, rng, (0.03, 0.3),
-                  wmin=1.0, wmax=4.0 if tag == "+3eV" else 5.0)
+        # 金属 Co 的损失结构弱而窄：面积 ≤ 主峰的 15%、FWHM ≤ 3.5–4 eV。不能让它们变成覆盖 780–800 eV 的宽“毯子”
+        a = _SATR("Co0 loss %s 2p3/2" % tag, "Co0 2p3/2", 778.2, d, 2.0 if tag == "+3eV" else 2.5, rng, (0.02, 0.15),
+                  wmin=1.0, wmax=3.5 if tag == "+3eV" else 4.0)
         b = _P("Co0 loss %s 2p1/2" % tag, 778.2 + 15.0 + d, a["fwhm"]["value"], 0, role="satellite", wmin=1.0, wmax=a["fwhm"]["max"])
         b["link"] = {"ref": a["name"], "dE": 15.0, "dE_fit": True, "dE_min": 14.8, "dE_max": 15.3, "area_ratio": 0.5, "fwhm_ratio": 1.0}
         out += [a, b] if with_half else [a]
@@ -751,7 +757,7 @@ def bic(s, r):
 def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
     s_in = copy.deepcopy(s) if _alt else None
     s.relax_level, s.relax_hist, s.relax_last = 0, [], None
-    s.oxide_alt = None
+    s.oxide_alt = s.mode_warn = s.consistency_warn = None
     report = []
     log = report.append
     oxide = oxide if oxide in OXIDE_MODES else "auto"
@@ -976,10 +982,52 @@ def _check_mode(s, s_in, sample_elements, ref, b_sel, oxide, log):
     names = [k for k in fr if any(p.get("state_kind") == kind and core.state_name(p["name"]) == k for p in t.peaks)]
     share = "、".join("%s %.0f%%" % (k, 100 * fr[k]) for k in names)
     if names and b_auto < b_sel - 10:
+        s.mode_warn = ("⚠ 数据显示存在%s：自动判断（含%s）的 BIC 低 %.0f（%s）。按选择未加入，当前比例可能不可靠"
+                       % (other, other, b_sel - b_auto, share))
         log("⚠ 数据显示存在%s：自动判断（含%s）的 BIC 低 %.0f（%s）。按选择未加入；若无充分理由，建议改用“自动判断”"
             % (other, other, b_sel - b_auto, share))
     else:
         log("对比：自动判断%s，BIC 不比当前更好（ΔBIC %+.0f），与选择一致" % ("也不含%s" % other if not names else "加入%s" % other, b_auto - b_sel))
+
+
+# 金属氧化物的生成自由能（每 mol O2，越负越容易氧化）：Al > Cr > Fe > Co > Ni > Cu
+OXOPHILIC = ["Al", "Cr", "Fe", "Co", "Ni", "Cu"]
+
+
+def oxidized_fraction(s):
+    """氧化态（含卫星）占该谱已定量面积的比例；没有金属 / 氧化态区分的谱返回 None。"""
+    if s.element not in OXIDE_ELEMENTS or not s.peaks:
+        return None
+    st = core.chemical_states(s)
+    tot = sum(a for _, a in st) or 0.0
+    if tot <= 0:
+        return None
+    kinds = {core.state_name(s.peaks[core.group_root(s.peaks, j)]["name"]): p.get("state_kind")
+             for j, p in enumerate(s.peaks)}
+    ox = sum(a for n, a in st if kinds.get(n) == "oxide" or (kinds.get(n) is None and not core.is_metal_name(n)))
+    return ox / tot
+
+
+def sample_consistency(specs):
+    """同一样品中各元素的氧化比例应大致符合热力学顺序（易氧化的元素先氧化）。
+    不易氧化的元素（如 Co）氧化比例明显高于易氧化的元素（如 Cr、Al）时，前者的“氧化态”可能是金属线形
+    （长拖尾、损失结构、1/2 分量展宽）造成的假象。返回 [(谱, 提示)]。"""
+    fr = {}
+    for t in specs:
+        f = oxidized_fraction(t)
+        el = re.match(r"[A-Z][a-z]?", t.element or "")
+        if f is not None and el and el.group(0) in OXOPHILIC:
+            fr[el.group(0)] = (f, t)
+    out = []
+    for e, (f, t) in fr.items():
+        more = [(k, fr[k][0]) for k in OXOPHILIC[:OXOPHILIC.index(e)] if k in fr and f - fr[k][0] > 0.2]
+        if more:
+            msg = ("⚠ 样品一致性：%s 的氧化态比例（%.0f%%）明显高于更易氧化的 %s。按热力学，%s 不应先于它们氧化——"
+                   "%s 的“氧化态”可能是金属线形（长拖尾、损失结构、2p1/2 展宽）造成的假象；可用“仅金属”对比"
+                   % (e, 100 * f, "、".join("%s（%.0f%%）" % (k, 100 * v) for k, v in more), e, e))
+            t.consistency_warn = msg
+            out.append((t, msg))
+    return out
 
 
 # ------------------------------------------------------------------ 逐步放宽约束
@@ -1013,11 +1061,13 @@ def _rx_fwhm(s):
     n = 0
     for p, lk in _free_params(s):
         f = p["fwhm"]
+        if p.get("role") == "satellite":
+            continue                          # 卫星 / 损失峰有各自的物理范围，不在这一级放宽
         if "fwhm" not in lk and not f["fixed"] and f["max"] is not None:
             f["min"] = max(0.4, round(0.7 * (f["min"] if f["min"] is not None else 1.0), 2))
             f["max"] = round(1.4 * f["max"], 2)
             n += 1
-    return ["%d 个峰的 FWHM 范围放宽为原来的 0.7–1.4 倍（双峰的 FWHM 倍率仍按文献范围）" % n] if n else []
+    return ["%d 个峰的 FWHM 范围放宽为原来的 0.7–1.4 倍（卫星峰不变；双峰的 FWHM 倍率仍按文献范围）" % n] if n else []
 
 
 def _rx_tail(s):

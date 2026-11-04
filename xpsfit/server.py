@@ -380,6 +380,11 @@ def api(method, a):
             except Exception as e:
                 rep_ = ["出错：%s" % e]
             reports.append({"spectrum": t.name, "sample": t.sample, "elements": els, "steps": rep_})
+        if a.get("all"):                          # 整个样品：各元素氧化程度是否符合热力学顺序
+            for t_, msg in autofit.sample_consistency([t for t in targets if getattr(t, "kind", "") != "survey"]):
+                for rp in reports:
+                    if rp["spectrum"] == t_.name and rp["sample"] == t_.sample:
+                        rp["steps"].append(msg)
         return dict(st.view(a["i"]), specs=st.summary(), report=reports)
     elif method == "refine":
         autofit.refine(s, float(a.get("window", 0.3))); _post_fit(s)

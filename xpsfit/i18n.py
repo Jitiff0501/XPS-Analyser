@@ -195,6 +195,14 @@ PHRASES = {
 
 # ------------------------------------------------------------------ 含变量的句子：中文 printf 模板 → 英文（{0}{1}… 为各变量，变量本身也会递归翻译）
 TEMPLATES = [
+    ("⚠ 样品一致性：%s 的氧化态比例（%.0f%%）明显高于更易氧化的 %s。按热力学，%s 不应先于它们氧化——%s 的“氧化态”可能是金属线形（长拖尾、损失结构、2p1/2 展宽）造成的假象；可用“仅金属”对比",
+     "⚠ Sample consistency: the oxide fraction of {0} ({1}%) is clearly higher than that of the more easily oxidized {2}. Thermodynamically {3} should not oxidize before them — the “oxide” of {4} may be an artefact of the metal line shape (long tail, loss features, 2p1/2 broadening); compare with “Metal only”"),
+    ("%s（仅金属）：金属拖尾放宽到 T ≤ 0.8、τ ≤ 8 eV，L%% 在 0–80%% 内拟合（没有氧化态需要保护）",
+     "{0} (metal only): metal tail widened to T ≤ 0.8, τ ≤ 8 eV, L% fitted within 0–80% (no oxide state to protect)"),
+    ("⚠ 数据显示存在%s：自动判断（含%s）的 BIC 低 %.0f（%s）。按选择未加入，当前比例可能不可靠",
+     "⚠ The data indicate {0}: the automatic fit (with {1}) has a BIC lower by {2} ({3}). Not added as chosen; the current fractions may be unreliable"),
+    ("%s（仅金属）：金属拖尾放宽到 T ≤ 0.8、τ ≤ 8 eV（没有氧化态需要保护）", "{0} (metal only): metal tail widened to T ≤ 0.8, τ ≤ 8 eV (no oxide state to protect)"),
+    ("%d 个峰的 FWHM 范围放宽为原来的 0.7–1.4 倍（卫星峰不变；双峰的 FWHM 倍率仍按文献范围）", "FWHM range of {0} peaks widened to 0.7–1.4× (satellites unchanged; doublet FWHM ratios stay within the literature range)"),
     ("⚠ 数据显示存在%s：自动判断（含%s）的 BIC 低 %.0f（%s）。按选择未加入；若无充分理由，建议改用“自动判断”",
      "⚠ The data indicate {0}: the automatic fit (with {1}) has a BIC lower by {2} ({3}). Not added as chosen; unless you have good reason, use “Auto”"),
     ("对比：自动判断%s，BIC 不比当前更好（ΔBIC %s），与选择一致", "Check: the automatic fit {0} and its BIC is not better (ΔBIC {1}), consistent with the choice"),

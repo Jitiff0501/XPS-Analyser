@@ -597,7 +597,9 @@ def guess_orbital(name):
 #   dE    分裂范围 (eV) 与常用值：取自 NIST XPS Database (SRD 20) 的分布、Thermo Fisher “XPS Simplified” 元素页、
 #         Biesinger et al. (Appl. Surf. Sci. 257 (2010) 887；257 (2011) 2717)；金属态与化合物（氧化物等）分开
 #   ratio 面积比：理论 (2j+1) 比 p 0.5 / d 0.667 / f 0.75，允许 ±0.05 左右（背景与 Coster–Kronig 效应）
-#   fwr   FWHM 比：2p 的 1/2 分量因 Coster–Kronig 衰变更宽（Ti、V 最明显），3d / 4f 基本相等
+#   fwr   FWHM 比：2p 的 1/2 分量因 Coster–Kronig 衰变更宽（Ti、V 最明显），3d / 4f 基本相等。
+#         Fe、Co、Ni 金属：L2 能级自然宽度约为 L3 的 2 倍（L2–L3M45 Coster–Kronig；Campbell & Papp, ADNDT 77 (2001) 1），
+#         叠加仪器展宽后 2p1/2 : 2p3/2 的 FWHM 约 1.4–1.7，面积比实测常略低于 0.5
 #   lock  分裂远小于峰宽、拟合无法分辨时按惯例锁定在常用值（Al2p、Si2p）
 SPIN_ORBIT = {
     # 轨道: {"metal": (ΔE 常用, ΔE 范围), "comp": (ΔE 常用, ΔE 范围), "ratio": 范围, "fwr": 范围[, "fwr_metal"], "lock"}
@@ -612,9 +614,9 @@ SPIN_ORBIT = {
     "V2p": {"metal": (7.55, (7.40, 7.70)), "comp": (7.40, (7.20, 7.60)), "ratio": (0.40, 0.55), "fwr": (1.2, 2.5), "fwr_metal": (1.0, 1.8)},
     "Cr2p": {"metal": (9.30, (9.20, 9.40)), "comp": (9.75, (9.50, 9.90)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.4), "fwr_metal": (1.0, 1.5)},
     "Mn2p": {"metal": (11.15, (11.00, 11.30)), "comp": (11.65, (11.40, 11.90)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.5)},
-    "Fe2p": {"metal": (13.10, (13.00, 13.25)), "comp": (13.60, (13.40, 13.90)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.4), "fwr_metal": (1.0, 1.5)},
-    "Co2p": {"metal": (15.00, (14.90, 15.10)), "comp": (15.50, (15.10, 16.00)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.3), "fwr_metal": (1.0, 1.4)},
-    "Ni2p": {"metal": (17.30, (17.20, 17.40)), "comp": (17.70, (17.40, 18.00)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.4)},
+    "Fe2p": {"metal": (13.10, (13.00, 13.25)), "comp": (13.60, (13.40, 13.90)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.4), "fwr_metal": (1.0, 1.7), "ratio_metal": (0.40, 0.55)},
+    "Co2p": {"metal": (15.00, (14.90, 15.10)), "comp": (15.50, (15.10, 16.00)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.3), "fwr_metal": (1.0, 1.7), "ratio_metal": (0.40, 0.55)},
+    "Ni2p": {"metal": (17.30, (17.20, 17.40)), "comp": (17.70, (17.40, 18.00)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.4), "fwr_metal": (1.0, 1.7), "ratio_metal": (0.40, 0.55)},
     "Cu2p": {"metal": (19.80, (19.70, 20.00)), "comp": (19.90, (19.80, 20.10)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.3)},
     "Zn2p": {"metal": (23.10, (23.00, 23.20)), "comp": (23.10, (23.00, 23.20)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.2)},
     "Cu3p": {"metal": (2.30, (2.20, 2.40)), "comp": (2.30, (2.20, 2.40)), "ratio": (0.45, 0.55), "fwr": (1.0, 1.2)},
@@ -646,7 +648,7 @@ def so_rule(orbital, metal=False):
     if not r:
         return None
     dE, rng = r["metal" if metal else "comp"]
-    rr = r.get("ratio") or _SO_DEFAULT.get((orbital or "x")[-1], (0.45, 0.55))
+    rr = (r.get("ratio_metal") if metal and r.get("ratio_metal") else r.get("ratio")) or _SO_DEFAULT.get((orbital or "x")[-1], (0.45, 0.55))
     fw = r.get("fwr_metal") if metal and r.get("fwr_metal") else r.get("fwr", (1.0, 1.0))
     th = {"p": 0.5, "d": 2 / 3, "f": 0.75}.get((orbital or "x")[-1], 0.5)
     return {"dE": dE, "dE_rng": rng, "ratio": th, "ratio_rng": rr, "fwr_rng": fw, "lock": bool(r.get("lock"))}
