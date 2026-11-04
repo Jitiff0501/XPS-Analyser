@@ -49,6 +49,7 @@ class State:
     def __init__(self):
         self.specs = []
         self.stack_annots = {}                    # 堆叠对比图的标注：{轨道: [标注…]}
+        self.stack_labels = {}                    # 堆叠对比图样品名的上下位置：{轨道: {样品名: dy}}（相对该谱的基线，单位为谱高）
         self.lock = threading.Lock()
         self.sf = core.load_sf(os.path.join(user_dir(), "sensitivity_factors.json")) or core.load_sf()
         self.templates = core.builtin_templates()
@@ -77,6 +78,7 @@ class State:
             with open(path, encoding="utf-8") as f:
                 d = json.load(f)
             self.stack_annots.update(d.get("stack_annots") or {})
+            self.stack_labels.update(d.get("stack_labels") or {})
             return [core.Spectrum.from_dict(s) for s in d.get("spectra", [])]
         folder = os.path.basename(os.path.dirname(os.path.abspath(path)))
         out = []
@@ -446,6 +448,14 @@ def api(method, a):
         o["dpi"] = _preview_dpi(o.get("width_cm") or STACK_DEFAULTS["width_cm"], a.get("px"))
         geo = export_stack(a["i"], o, out=buf, annots=False)
         return {"png": base64.b64encode(buf.getvalue()).decode(), "geo": geo}
+    elif method == "set_stack_label":
+        # 堆叠对比图样品名只能上下移动：dy = 标签基线相对该谱基线的高度（单位为谱高）；dy 为空 = 恢复自动位置
+        lab = st.stack_labels.setdefault(s.element, {})
+        if a.get("dy") is None:
+            lab.pop(str(a["key"]), None)
+        else:
+            lab[str(a["key"])] = min(max(float(a["dy"]), -2.0), 5.0)
+        return {"ok": True, "label_dy": lab}
     elif method == "stack":
         return stack_data(a["i"], a)
     elif method == "export_stack":
@@ -457,7 +467,7 @@ def api(method, a):
         p = os.path.join(st.out_dir(st.specs[0]), a.get("name") or "project.xpsfit.json")
         with open(p, "w", encoding="utf-8") as f:
             json.dump({"app": APP, "version": 1, "spectra": [t.to_dict() for t in st.specs],
-                       "stack_annots": st.stack_annots}, f, ensure_ascii=False)
+                       "stack_annots": st.stack_annots, "stack_labels": st.stack_labels}, f, ensure_ascii=False)
         return {"path": p, "msg": "项目已保存"}
     elif method == "open_folder":
         p = a["path"]
@@ -897,8 +907,8 @@ def figure(s, path, opts=None, dpi=None, annots=True):
 # 文字：{type:"text", text, x, y, size, color, bold}；上标写 ^{…}，下标写 _{…}
 # 垂直线：{type:"vline", x, len(%), width, dash, gap, color}（底端固定在坐标轴底部；dash=0 为实线）
 # 箭头：{type:"arrow", x0, y0（尾）, x1, y1（头）, width, head(filled/open/none), size（箭头长）, hw（箭头宽）, color}
-ANN_DEFAULTS = {"text": {"text": "", "x": 0.0, "y": 90.0, "size": 24.0, "color": "#333333", "bold": False},
-                "vline": {"x": 0.0, "len": 85.0, "width": 1.5, "dash": 10.0, "gap": 5.0, "color": "#666666"},
+ANN_DEFAULTS = {"text": {"text": "", "x": 0.0, "y": 90.0, "size": 8.0, "color": "#333333", "bold": False},
+                "vline": {"x": 0.0, "len": 85.0, "width": 0.7, "dash": 3.0, "gap": 2.0, "color": "#666666"},
                 "arrow": {"x0": 0.0, "y0": 80.0, "x1": 0.0, "y1": 60.0, "width": 1.5, "head": "filled", "size": 7.0,
                           "hw": 5.0, "color": "#333333"}}
 ARROW_HEADS = ("filled", "open", "none")
@@ -955,8 +965,9 @@ def ann_segments(t):
     return [(x, k) for x, k in out if x]
 
 
-def _rich_text(ax, tr, x, y, text, size, color, bold):
-    """逐段画文字（同一字体），上下标手动排版；水平居中于 x，大写字母高度的中点在 y。"""
+def _rich_text(ax, tr, x, y, text, size, color, bold, ha="center", anchor="mid", x_off=0.0, draw=True):
+    """逐段画文字（同一字体），上下标手动排版。ha：center 居中于 x / left 从 x 开始（再右移 x_off pt）；
+    anchor：mid 大写字母高度的中点在 y / baseline 基线在 y。返回总宽度（pt）；draw=False 只量宽度。"""
     from matplotlib.transforms import offset_copy
     fig = ax.figure
     r = fig.canvas.get_renderer()
@@ -966,11 +977,23 @@ def _rich_text(ax, tr, x, y, text, size, color, bold):
         t = ax.text(x, y, seg.replace("$", r"\$"), transform=tr, fontsize=size * (SUP_SCALE if kind else 1.0),
                     color=color, fontweight="bold" if bold else "normal", ha="left", va="baseline", zorder=6, clip_on=False)
         arts.append((t, kind, t.get_window_extent(r).width / k))
-    dx = -sum(w for _, _, w in arts) / 2.0
+    W = sum(w for _, _, w in arts)
+    dx = x_off - (W / 2.0 if ha == "center" else 0.0)
+    base = -BASE_DROP * size if anchor == "mid" else 0.0
     for t, kind, w in arts:
-        dy = -BASE_DROP * size + (SUP_RISE * size if kind == 1 else -SUB_DROP * size if kind == -1 else 0.0)
+        if not draw:
+            t.remove()
+            continue
+        dy = base + (SUP_RISE * size if kind == 1 else -SUB_DROP * size if kind == -1 else 0.0)
         t.set_transform(offset_copy(tr, fig=fig, x=dx, y=dy, units="points"))
         dx += w
+    return W
+
+
+def _caret(t):
+    """pretty_label 的数学文本写法 → 标注写法：Co$^{2+}$ → Co^{2+}，$_{3/2}$ → _{3/2}。"""
+    t = re.sub(r"\$\^\{([^{}]*)\}\$", r"^{\1}", str(t))
+    return re.sub(r"\$_\{([^{}]*)\}\$", r"_{\1}", t).replace("$", "")
 
 
 def _arrow(ax, tr, a):
@@ -1050,13 +1073,13 @@ def stack_data(i, a):
             yy, base = y - bg, np.zeros_like(bg)
         f = lambda v: _f((np.asarray(v, float) - off) / sc)
         fitted = bool(t.peaks)
-        items.append({"i": k, "sample": t.sample or "", "name": t.name, "x": _f(x), "y": f(yy),
+        items.append({"i": k, "sample": t.sample or "", "name": t.name, "key": t.sample or t.name, "x": _f(x), "y": f(yy),
                       "bg": f(base) if o["mode"] != "bgsub" else None,
                       "env": f(base + env) if fitted else None,
                       "comps": [f(base + c) for c in comps] if fitted and o["comps"] else [],
                       "colors": core.peak_colors(t.peaks), "roles": [p.get("role", "main") for p in t.peaks],
                       "states": _states(t) if fitted else []})
-    return {"element": el, "mode": o["mode"], "items": items,
+    return {"element": el, "mode": o["mode"], "items": items, "label_dy": ST.stack_labels.get(el, {}),
             "all": [{"i": k, "sample": ST.specs[k].sample or "", "name": ST.specs[k].name} for k in allk]}
 
 
@@ -1112,22 +1135,34 @@ def export_stack(i, a, out=None, annots=True):
     top = (n - 1) * step + 1.25 * span
     ax.set_ylim(ax.get_ylim()[0], max(ax.get_ylim()[1], top))
     fig.tight_layout()
-    # 标签：放在高 BE 一侧，按实际文字宽度找出这一段曲线的最高点，放在其上方，避免压住峰
-    r = fig.canvas.get_renderer()
+    # 样品名：与框内左上角的图名左对齐（离左框 6 pt）；默认放在这段曲线最高点之上，可在导出预览里上下拖动（stack_labels）
+    from matplotlib.transforms import blended_transform_factory
+    trl = blended_transform_factory(ax.transAxes, ax.transData)
+    k = fig.dpi / 72.0
+    fs = float(o["font"]) * 0.8
+    over = ST.stack_labels.get(d["element"], {})
+    lab_geo = []
     for j, sh, x, yy in (labels if o["names"] else []):
-        t = ax.text(xmax - 0.02 * (xmax - xmin), sh, pretty_label(_stack_label(items[j], o["states"])),
-                    ha="left", va="bottom", fontsize=float(o["font"]) * 0.8)
-        bb = t.get_window_extent(r).transformed(ax.transData.inverted())
-        lo_x, hi_x = sorted((bb.x0, bb.x1))
+        txt = _caret(pretty_label(_stack_label(items[j], o["states"])))
+        W = _rich_text(ax, trl, 0, sh, txt, fs, "black", False, ha="left", anchor="baseline", x_off=6, draw=False)
+        x0px = ax.transAxes.transform((0, 0))[0] + 6 * k
+        inv = ax.transData.inverted()
+        lo_x, hi_x = sorted((inv.transform((x0px, 0))[0], inv.transform((x0px + W * k, 0))[0]))
         m = (x >= lo_x) & (x <= hi_x)
         ymax = float(np.max(yy[m])) if m.any() else 0.0
-        t.set_y(sh + max(ymax, 0.0) + 0.05 * span)
+        auto = max(ymax, 0.0) / span + 0.06
+        key = items[j]["key"]
+        dy = float(over.get(key, auto))
+        if annots:
+            _rich_text(ax, trl, 0, sh + dy * span, txt, fs, "black", False, ha="left", anchor="baseline", x_off=6)
+        lab_geo.append({"key": key, "text": txt, "y": sh + dy * span, "sh": sh, "span": span, "size": fs, "auto": auto,
+                        "moved": key in over})
     if annots:
         draw_annots(ax, ST.stack_annots.get(d["element"], []))
     fmt = o["fmt"] if o["fmt"] != "tif" else "tiff"
     if out is not None:
         fig.savefig(out, dpi=float(o["dpi"]), format=fmt)
-        return _geo(fig, ax)
+        return dict(_geo(fig, ax), ylim=[float(v) for v in ax.get_ylim()], labels=lab_geo)
     s0 = ST.S(i)
     p = os.path.join(ST.out_dir(s0), conv.safe_name("stack_%s_%d-samples" % (d["element"], n)) + "." + o["fmt"])
     fig.savefig(p, dpi=float(o["dpi"]), format=fmt)

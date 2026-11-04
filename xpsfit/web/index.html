@@ -761,7 +761,8 @@ function drawStack(){
     if($("stk_fit").checked&&it.env)T.push({x:it.x,y:add(it.env),mode:"lines",line:{color:"#C96442",width:1.6},showlegend:false,hoverinfo:"skip"});
     // 标签：高 BE 一侧，放在该段曲线最高点之上
     const x0=xmax-0.45*(xmax-xmin);let ym=0;it.x.forEach((x,k)=>{if(x>=x0){ym=Math.max(ym,it.y[k],it.env?it.env[k]:-Infinity)}});
-    if($("stk_names").checked)ann.push({x:xmax-0.01*(xmax-xmin),y:sh+ym+0.05*span,xanchor:"left",yanchor:"bottom",showarrow:false,text:esc(stackLabel(it)),font:{size:12,color:"#3d3c38"}})});
+    const ldy=(d.label_dy||{})[it.key];   // 在导出预览里拖过的位置
+    if($("stk_names").checked)ann.push({x:xmax-0.01*(xmax-xmin),y:ldy!=null?sh+ldy*span:sh+ym+0.05*span,xanchor:"left",yanchor:"bottom",showarrow:false,text:esc(stackLabel(it)),font:{size:12,color:"#3d3c38"}})});
   const L={margin:{l:64,r:18,t:34,b:46},paper_bgcolor:"#fff",plot_bgcolor:"#fff",font:{family:getComputedStyle(document.body).fontFamily,size:12,color:"#3d3c38"},
     title:{text:d.element+" · "+n+" "+TR("个样品"),font:{size:13},x:0.01,y:0.985,yanchor:"top"},annotations:ann,showlegend:false,hovermode:"closest",dragmode:"zoom",
     xaxis:{range:[xmax,xmin],title:{text:"Binding Energy (eV)"},showgrid:false,zeroline:false,linecolor:"#D9D5C8",ticks:"outside",tickcolor:"#D9D5C8"},
@@ -1103,7 +1104,7 @@ function yLabelAuto(){const y=$("e_ylabel");if(!$("e_ynumbers").checked&&y.value
 let prevT,prevN=0;
 // 导出：先出预览（与导出的图相同），可在预览上加线、文字、箭头，改峰颜色，确认后导出
 function openExport(ctx){if(!S.v){toast("请先打开数据");return}
-  ctx=ctx==="stack"&&S.stack?"stack":"spec";Object.assign(S.ex,{ctx,sel:null,geo:null});S.annOpen.clear();
+  ctx=ctx==="stack"&&S.stack?"stack":"spec";Object.assign(S.ex,{ctx,sel:null,geo:null,labSel:null});S.annOpen.clear();
   $("exo_spec").hidden=ctx!=="spec";$("exo_stack").hidden=ctx!=="stack";$("ex_peaklines").hidden=ctx!=="spec";
   $("exm_t").textContent=ctx==="stack"?TR("导出堆叠对比图")+" · "+S.v.element:TR("导出拟合图");
   if(ctx==="spec"){
@@ -1148,8 +1149,8 @@ async function loadRef(){
 /* ---------- 标注：在“导出”对话框的预览图上添加、拖动，导出时画进图里（单谱图与堆叠对比图各一套，随项目保存） ---------- */
 // x 为 BE；y 为坐标轴高度 %（0 = 坐标轴底部）；字号、线宽、段长 / 间隔、箭头大小都是导出图里的 pt。
 // 预览上叠加的 SVG 以 pt 为单位（viewBox = 整张图的 pt 尺寸），与导出图 1:1。
-const ANN_DEF={text:{type:"text",text:"",x:0,y:90,size:24,color:"#333333",bold:false},
-  vline:{type:"vline",x:0,len:85,width:1.5,dash:10,gap:5,color:"#666666"},
+const ANN_DEF={text:{type:"text",text:"",x:0,y:90,size:8,color:"#333333",bold:false},
+  vline:{type:"vline",x:0,len:85,width:0.7,dash:3,gap:2,color:"#666666"},
   arrow:{type:"arrow",x0:0,y0:80,x1:0,y1:60,width:1.5,head:"filled",size:7,hw:5,color:"#333333"}};
 // 上下标排版，与导出（server._rich_text）相同：字号 65%，上标抬高 0.34、下标降低 0.14 倍字号；锚点在大写字母高度中点
 const SUP_SCALE=0.65,SUP_RISE=0.34,SUB_DROP=0.14,BASE_DROP=0.36;
@@ -1162,7 +1163,7 @@ function annHtml(t){return esc(t).replace(/\^\{([^{}]*)\}/g,"<sup>$1</sup>").rep
 function annRange(){const g=S.ex.geo;if(g)return g.xlim;const W=S.v.window||[Math.min(...S.v.be),Math.max(...S.v.be)];return [W[1],W[0]]}
 function exMode(m){S.ex.mode=m;document.querySelectorAll("#ex_modes button").forEach(b=>b.classList.toggle("on",b.dataset.am===m));
   $("exsvg").classList.toggle("add",m!=="select");
-  $("exhint").textContent=TR({select:"拖线身左右移动、拖线的上端拉长；拖箭头的头 / 尾改变指向、拖中间整体移动；文字直接拖",
+  $("exhint").textContent=TR({select:S.ex.ctx==="stack"?"样品名可上下拖动（双击恢复自动位置）；拖线身左右移动、拖线的上端拉长；拖箭头的头 / 尾、文字直接拖":"拖线身左右移动、拖线的上端拉长；拖箭头的头 / 尾改变指向、拖中间整体移动；文字直接拖",
     vline:"在预览图上点击加线，可连续添加；Esc 结束",text:"在预览图上点击加文字，可连续添加；Esc 结束",arrow:"在预览图上按住从箭尾拖到箭头，可连续添加；Esc 结束"}[m])}
 document.querySelectorAll("#ex_modes button").forEach(b=>b.onclick=()=>exMode(S.ex.mode===b.dataset.am?"select":b.dataset.am));
 function annAdd(t,props){const a=Object.assign({},ANN_DEF[t],props||{});annItems().push(a);const k=annItems().length-1;S.ex.sel=k;
@@ -1205,7 +1206,9 @@ function renderAnn(){const box=$("annlist");box.innerHTML="";if(!S.v)return;
 /* 预览图上的 SVG 叠加层 */
 function exG(){const g=S.ex.geo,st=$("exstage");if(!g||st.hidden||!st.clientWidth)return null;const[x0,y0,x1,y1]=g.ax,[l,r]=g.xlim;
   const AX0=x0*g.w,AX1=x1*g.w,AT=(1-y1)*g.h,AB=(1-y0)*g.h;
-  return {AX0,AX1,AT,AB,hp:g.w/st.clientWidth,X:x=>AX0+(x-l)/(r-l)*(AX1-AX0),Y:y=>AB-y/100*(AB-AT),x:X=>l+(X-AX0)/(AX1-AX0)*(r-l),y:Y=>(AB-Y)/(AB-AT)*100}}
+  const[y0d,y1d]=g.ylim||[0,1];
+  return {AX0,AX1,AT,AB,hp:g.w/st.clientWidth,X:x=>AX0+(x-l)/(r-l)*(AX1-AX0),Y:y=>AB-y/100*(AB-AT),x:X=>l+(X-AX0)/(AX1-AX0)*(r-l),y:Y=>(AB-Y)/(AB-AT)*100,
+    Yd:v=>AB-(v-y0d)/(y1d-y0d)*(AB-AT),yd:Y=>y0d+(AB-Y)/(AB-AT)*(y1d-y0d)}}
 function annSegs(t){const out=[];let last=0,m;const re=/(\^|_)\{([^{}]*)\}/g;
   while((m=re.exec(t))){if(m.index>last)out.push([t.slice(last,m.index),0]);out.push([m[2],m[1]==="^"?1:-1]);last=re.lastIndex}
   if(last<t.length)out.push([t.slice(last),0]);return out.filter(s=>s[0])}
@@ -1227,7 +1230,12 @@ function drawOverlay(){const svg=$("exsvg"),G=exG();if(!G){svg.innerHTML="";retu
       out.push(`<g data-k="${k}" class="ai${sel}">${body}<line class="hit" data-part="body" x1="${f(tx)}" y1="${f(ty)}" x2="${f(hx)}" y2="${f(hy)}" stroke-width="${f(10*hp)}" style="cursor:move"/>`+
         `${hd("tail",tx,ty,"crosshair")}${hd("head",hx,hy,"crosshair")}</g>`)}
     else if(a.text){out.push(`<g data-k="${k}" class="ai${sel}"><text x="${f(G.X(a.x))}" y="${f(G.Y(a.y)+BASE_DROP*a.size)}" font-size="${a.size}" fill="${a.color}" font-weight="${a.bold?700:400}" text-anchor="middle" font-family="${ANN_FONT}" style="white-space:pre;cursor:move" data-part="text">${annSvgText(a.text,a.size)}</text></g>`)}});
+  if(S.ex.ctx==="stack")(S.ex.geo.labels||[]).forEach((L,j)=>{
+    out.push(`<g class="lab${S.ex.labSel===L.key?" sel":""}" data-lab="${j}"><text x="${f(G.AX0+6)}" y="${f(G.Yd(L.y))}" font-size="${L.size}" fill="#000" font-family="${ANN_FONT}" style="white-space:pre;cursor:ns-resize">${annSvgText(L.text,L.size)}</text></g>`)});
   svg.innerHTML=out.join("");
+  svg.querySelectorAll("g.lab").forEach(gr=>{const t=gr.querySelector("text"),b=t.getBBox(),NS="http://www.w3.org/2000/svg",r=document.createElementNS(NS,"rect");
+    Object.entries({x:b.x-2*hp,y:b.y-2*hp,width:b.width+4*hp,height:b.height+4*hp,class:gr.classList.contains("sel")?"selbox":"hb",style:"cursor:ns-resize","stroke-width":hp}).forEach(([k,v])=>r.setAttribute(k,v));
+    gr.insertBefore(r,t)});
   svg.querySelectorAll("g.ai").forEach(gr=>{const t=gr.querySelector("text"),NS="http://www.w3.org/2000/svg";
     if(t){const b=t.getBBox(),r=document.createElementNS(NS,"rect");Object.entries({x:b.x,y:b.y,width:b.width,height:b.height,class:"hb","data-part":"text",style:"cursor:move"}).forEach(([k,v])=>r.setAttribute(k,v));gr.insertBefore(r,t)}
     if(gr.classList.contains("sel")){const b=gr.getBBox(),p=3*hp,r=document.createElementNS(NS,"rect");
@@ -1235,6 +1243,13 @@ function drawOverlay(){const svg=$("exsvg"),G=exG();if(!G){svg.innerHTML="";retu
 function exPt(e){const m=$("exsvg").getScreenCTM();return m?new DOMPoint(e.clientX,e.clientY).matrixTransform(m.inverse()):null}
 let exDrag=null;
 $("exsvg").addEventListener("pointerdown",e=>{if(e.button!==0)return;const G=exG(),p=exPt(e);if(!G||!p)return;
+  const lg=e.target.closest("g.lab");
+  if(lg){const L=S.ex.geo.labels[+lg.dataset.lab],now=Date.now();
+    if(S.ex.lastLab===L.key&&now-S.ex.lastLabT<400){S.ex.lastLab=null;L.y=L.sh+L.auto*L.span;L.moved=false;labSave(L,null);drawOverlay();e.preventDefault();return}   // 双击：恢复自动位置
+    S.ex.lastLab=L.key;S.ex.lastLabT=now;
+    S.ex.labSel=L.key;S.ex.sel=null;exDrag={lab:L,p0:p,cx:e.clientX,cy:e.clientY,oy:L.y};
+    renderAnn();drawOverlay();$("exsvg").setPointerCapture(e.pointerId);e.preventDefault();return}
+  S.ex.labSel=null;
   const el=e.target.closest("[data-part]"),gr=e.target.closest("g.ai");
   if(el&&gr){const k=+gr.dataset.k;S.ex.sel=k;exDrag={k,part:el.dataset.part,p0:p,cx:e.clientX,cy:e.clientY,orig:Object.assign({},annItems()[k])};renderAnn();drawOverlay()}
   else{const x=+G.x(p.x).toFixed(2),y=+G.y(p.y).toFixed(1),inX=p.x>=G.AX0&&p.x<=G.AX1;
@@ -1243,8 +1258,10 @@ $("exsvg").addEventListener("pointerdown",e=>{if(e.button!==0)return;const G=exG
     else if(S.ex.mode==="arrow"){const a=annAdd("arrow",{x0:x,y0:y,x1:x,y1:y});exDrag={k:annItems().indexOf(a),part:"new",p0:p,cx:e.clientX,cy:e.clientY,orig:Object.assign({},a)}}
     else{if(S.ex.sel!==null){S.ex.sel=null;renderAnn();drawOverlay()}return}}
   if(exDrag)$("exsvg").setPointerCapture(e.pointerId);e.preventDefault()});
-$("exsvg").addEventListener("pointermove",e=>{if(!exDrag)return;const G=exG(),p=exPt(e),a=annItems()[exDrag.k];if(!G||!p||!a)return;
+$("exsvg").addEventListener("pointermove",e=>{if(!exDrag)return;const G=exG(),p=exPt(e);if(!G||!p)return;
   if(Math.hypot(e.clientX-exDrag.cx,e.clientY-exDrag.cy)>2)exDrag.moved=true;if(!exDrag.moved)return;
+  if(exDrag.lab){const g=S.ex.geo,yl=g.ylim;exDrag.lab.y=Math.min(Math.max(exDrag.oy+G.yd(p.y)-G.yd(exDrag.p0.y),yl[0]),yl[1]);drawOverlayRaf();return}   // 只能上下移动
+  const a=annItems()[exDrag.k];if(!a)return;
   const o=exDrag.orig,x=+G.x(p.x).toFixed(2),y=+Math.max(-15,Math.min(115,G.y(p.y))).toFixed(1),dx=G.x(p.x)-G.x(exDrag.p0.x),dy=G.y(p.y)-G.y(exDrag.p0.y);
   if(a.type==="vline"){if(exDrag.part==="top")a.len=+Math.max(2,Math.min(100,y)).toFixed(1);else a.x=+(o.x+dx).toFixed(2)}
   else if(a.type==="text"){a.x=+(o.x+dx).toFixed(2);a.y=+Math.max(-15,Math.min(115,o.y+dy)).toFixed(1)}
@@ -1252,10 +1269,15 @@ $("exsvg").addEventListener("pointermove",e=>{if(!exDrag)return;const G=exG(),p=
   else if(exDrag.part==="tail"){a.x0=x;a.y0=y}
   else{a.x0=+(o.x0+dx).toFixed(2);a.x1=+(o.x1+dx).toFixed(2);a.y0=+(o.y0+dy).toFixed(1);a.y1=+(o.y1+dy).toFixed(1)}
   drawOverlayRaf()});
-function exEnd(){if(!exDrag)return;const a=annItems()[exDrag.k],G=exG();
+async function labSave(L,dy){const r=await call("set_stack_label",{i:S.cur,key:L.key,dy});
+  if(S.stackData){S.stackData.label_dy=r.label_dy;drawStack()}}
+function exEnd(){if(!exDrag)return;
+  if(exDrag.lab){const L=exDrag.lab,moved=exDrag.moved;exDrag=null;if(moved){L.moved=true;labSave(L,(L.y-L.sh)/L.span)}drawOverlay();return}
+  const a=annItems()[exDrag.k],G=exG();
   if(a&&G&&exDrag.part==="new"&&!exDrag.moved){a.x0=+G.x(exDrag.p0.x-45*G.hp).toFixed(2);a.y0=+G.y(exDrag.p0.y-45*G.hp).toFixed(1)}  // 只点了一下：从左上方指向这里
   const ch=exDrag.moved||exDrag.part==="new";exDrag=null;if(ch)annSave(true);renderAnn();drawOverlay()}
-$("exsvg").addEventListener("pointerup",exEnd);$("exsvg").addEventListener("pointercancel",exEnd);
+$("exsvg").addEventListener("pointerup",exEnd);
+$("exsvg").addEventListener("pointercancel",exEnd);
 document.addEventListener("keydown",e=>{if(!$("exm").classList.contains("open")||S.ex.sel===null||!["Delete","Backspace"].includes(e.key))return;
   if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;e.preventDefault();annDel(S.ex.sel)});
 /* 峰颜色（同组同色）：在导出对话框里直接改，预览随之更新；堆叠对比时所有样品的同名峰一起改 */

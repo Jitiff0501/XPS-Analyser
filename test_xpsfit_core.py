@@ -402,18 +402,18 @@ class Api(unittest.TestCase):
             back = server.ST.load_path(pj)
             self.assertEqual(back[0].annots[1]["len"], 90.0)
             self.assertEqual(server.ST.stack_annots["Al2p"][0]["text"], "(a)")
-            # 默认值与单位：字号 24 pt 不加粗；线 1.5 pt、段长 10、间隔 5；箭头 1.5 pt 实心三角。导出图里就是 pt
+            # 默认值与单位：字号 8 pt 不加粗；线 0.7 pt、段长 3、间隔 2；箭头 1.5 pt 实心三角。导出图里就是 pt
             d = server.clean_annots([{"type": "text", "text": "x"}, {"type": "vline", "x": 73}, {"type": "arrow"}])
-            self.assertEqual((d[0]["size"], d[0]["bold"]), (24.0, False))
-            self.assertEqual((d[1]["width"], d[1]["dash"], d[1]["gap"]), (1.5, 10.0, 5.0))
+            self.assertEqual((d[0]["size"], d[0]["bold"]), (8.0, False))
+            self.assertEqual((d[1]["width"], d[1]["dash"], d[1]["gap"]), (0.7, 3.0, 2.0))
             self.assertEqual((d[2]["width"], d[2]["head"], d[2]["size"], d[2]["hw"]), (1.5, "filled", 7.0, 5.0))
             self.assertEqual(server.ann_segments("Co^{2+} 2p_{3/2}"), [("Co", 0), ("2+", 1), (" 2p", 0), ("3/2", -1)])
             from matplotlib.figure import Figure
             from matplotlib.backends.backend_agg import FigureCanvasAgg
             fig = Figure(); FigureCanvasAgg(fig); ax = fig.add_subplot(111)
             server.draw_annots(ax, d)
-            self.assertEqual(ax.texts[0].get_fontsize(), 24.0)
-            self.assertEqual(ax.lines[0].get_linewidth(), 1.5)
+            self.assertEqual(ax.texts[0].get_fontsize(), 8.0)
+            self.assertEqual(ax.lines[0].get_linewidth(), 0.7)
             # 导出预览：不画标注（页面叠加），返回坐标轴位置与 x 范围，供页面把标注放到正确的位置
             r = server.api("preview_figure", {"i": 0, "opts": {"xmin": 70, "xmax": 80}, "px": 600})
             g = r["geo"]
@@ -421,7 +421,17 @@ class Api(unittest.TestCase):
             self.assertTrue(0 < g["ax"][0] < g["ax"][2] < 1 and 0 < g["ax"][1] < g["ax"][3] < 1, g)
             self.assertEqual([round(v) for v in g["xlim"]], [80, 70])     # 高 BE 在左
             self.assertGreater(len(r["png"]), 1000)
-            self.assertGreater(len(server.api("preview_stack", {"i": 0, "mode": "bgsub", "px": 600})["png"]), 1000)
+            ps = server.api("preview_stack", {"i": 0, "mode": "bgsub", "px": 600})
+            self.assertGreater(len(ps["png"]), 1000)
+            # 堆叠图样品名：预览返回每个标签的位置（页面上下拖动）；拖过的位置用于导出并随项目保存
+            labs = ps["geo"]["labels"]
+            self.assertEqual([l["key"] for l in labs], [server.ST.specs[0].sample, "B"])
+            self.assertFalse(labs[0]["moved"])
+            server.api("set_stack_label", {"i": 0, "key": "B", "dy": 0.5})
+            labs2 = server.api("preview_stack", {"i": 0, "mode": "bgsub", "px": 600})["geo"]["labels"]
+            self.assertAlmostEqual(labs2[1]["y"], labs2[1]["sh"] + 0.5 * labs2[1]["span"])
+            self.assertTrue(labs2[1]["moved"])
+            self.assertEqual(server.api("stack", {"i": 0})["label_dy"], {"B": 0.5})
             self.assertFalse(server.FIG_DEFAULTS["legend"])                  # 导出图默认不带图例
             # 堆叠对比里改颜色：所有样品的同名峰组一起改
             server.api("set_color", {"i": 0, "j": 0, "color": "#445566", "all": True})
