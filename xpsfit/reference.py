@@ -6,7 +6,7 @@ NIST 记录的荷电参考各不相同（污染碳、导体、内标等），因
 不是通用的拟合常数。
 
 生成方式：
-  - 程序内“导入 NIST 数据”（zip 或 nist_xps_all_records.csv）→ 保存到 %USERPROFILE%/XPSFitStudio/reference/<元素>.json
+  - 程序内“导入 NIST 数据”（zip 或 nist_xps_all_records.csv）→ 保存到 ~/XPSAnalyser/reference/（旧版本为 ~/XPSFitStudio/）<元素>.json
   - 命令行：python -m xpsfit.reference NIST_XPS_Cu.zip  → 写入 xpsfit/reference/<元素>.json（随程序发布）
 """
 import csv

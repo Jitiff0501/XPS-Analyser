@@ -1,4 +1,6 @@
-# XPS Fit Studio
+<p align="center"><img src="assets/icon.png" width="160" alt="XPS Analyser"></p>
+
+<h1 align="center">XPS Analyser</h1>
 
 XPS 峰拟合桌面程序，用来替代 XPSPEAK 4.1。读入 Thermo Avantage 的 `.VGD`（也支持导出的 Excel / CSV、XPSPEAK txt），一键拟合（按元素使用文献约束），自动判断检出限和拟合是否可靠，定量，并导出带标注的论文图。界面中文 / English 可切换。
 
@@ -10,13 +12,13 @@ Releases → **latest**（每次更新自动构建）：
 
 | 文件 | 说明 |
 |---|---|
-| [XPSFitStudio.exe](../../releases/download/latest/XPSFitStudio.exe) | Windows，双击运行，无需安装 Python |
-| [XPSFitStudio-macOS-arm64.zip](../../releases/download/latest/XPSFitStudio-macOS-arm64.zip) | macOS（Apple 芯片 M1–M4）：解压得到 `XPS Fit Studio.app`，拖进“应用程序” |
+| [XPSAnalyser.exe](../../releases/download/latest/XPSAnalyser.exe) | Windows，双击运行，无需安装 Python |
+| [XPSAnalyser-macOS-arm64.zip](../../releases/download/latest/XPSAnalyser-macOS-arm64.zip) | macOS（Apple 芯片 M1–M4）：解压得到 `XPS Analyser.app`，拖进“应用程序” |
 | [Avantage2XPSPEAK.exe](../../releases/download/latest/Avantage2XPSPEAK.exe) | 小工具：把 Avantage `.VGD` / 导出表格转成 XPSPEAK 4.1 的两列 txt |
 
-**macOS 首次打开**：程序没有苹果开发者签名，第一次请在“应用程序”里 **右键 → 打开 → 打开**；若提示“已损坏”，在终端运行一次 `xattr -cr "/Applications/XPS Fit Studio.app"`。
+**macOS 首次打开**：程序没有苹果开发者签名，第一次请在“应用程序”里 **右键 → 打开 → 打开**；若提示“已损坏”，在终端运行一次 `xattr -cr "/Applications/XPS Analyser.app"`。
 
-用户模板、灵敏度因子、导入的 NIST 数据保存在 `~/XPSFitStudio/`（Windows：`%USERPROFILE%\XPSFitStudio\`）。
+用户模板、灵敏度因子、导入的 NIST 数据保存在 `~/XPSAnalyser/`（Windows：`%USERPROFILE%\XPSAnalyser\`；以前用过旧版本的，继续使用原来的 `XPSFitStudio` 文件夹）。
 
 ## 主要功能
 

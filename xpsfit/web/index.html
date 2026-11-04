@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>XPS Fit Studio</title>
+<title>XPS Analyser</title>
+<link rel="icon" type="image/png" href="icon.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%224%22 fill=%22%23C96442%22/%3E%3Cpath d=%22M2 12C5 12 5.5 4 8 4S11 12 14 12%22 stroke=%22white%22 stroke-width=%221.8%22 fill=%22none%22/%3E%3C/svg%3E">
 <script src="plotly.min.js"></script>
 <style>
@@ -28,7 +29,7 @@ input,select{font:inherit;color:var(--ink)}
 /* ---------- top bar ---------- */
 header{display:flex;align-items:center;gap:10px;padding:0 18px;border-bottom:1px solid var(--line);background:var(--bg)}
 .brand{display:flex;align-items:center;gap:10px;margin-right:auto}
-.mark{width:26px;height:26px;border-radius:7px;background:var(--accent);display:grid;place-items:center}
+.mark{width:30px;height:30px;border-radius:7px;display:block}
 .brand h1{font:500 19px/1 var(--serif);letter-spacing:-.01em;margin:0}
 .brand small{color:var(--ink3);font-size:12px;margin-left:4px}
 .btn{border:1px solid var(--line2);background:var(--panel);border-radius:var(--r-s);padding:6px 12px;display:inline-flex;align-items:center;gap:6px;transition:background .12s,border-color .12s}
@@ -286,8 +287,8 @@ input[type=checkbox]{accent-color:var(--accent)}
 <div class="app">
 <header>
   <div class="brand">
-    <div class="mark"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 13 C4 13 5 3 8 3 C11 3 12 13 15 13" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>
-    <h1>XPS Fit Studio</h1><small>v0.1</small>
+    <img class="mark" src="icon.png" alt="">
+    <h1>XPS Analyser</h1><small>v0.1</small>
   </div>
   <button class="btn primary" onclick="openFolder()">＋ 打开文件夹</button>
   <button class="btn" onclick="openFiles()">打开文件</button>

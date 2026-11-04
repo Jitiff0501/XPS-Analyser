@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""XPS Fit Studio 后端：本地 HTTP 服务 + JSON API；界面在 web/index.html。
+"""XPS Analyser 后端：本地 HTTP 服务 + JSON API；界面在 web/index.html。
 运行：python -m xpsfit.server   （有 pywebview 时开桌面窗口，否则用浏览器打开）"""
 import base64
 import copy
@@ -30,13 +30,17 @@ from xpsfit import identify  # noqa: E402
 from xpsfit import i18n  # noqa: E402
 import avantage_to_xpspeak as conv  # noqa: E402
 
-APP = "XPS Fit Studio"
+APP = "XPS Analyser"
 REF_C1S = 284.8
 WINDOW = None   # pywebview 窗口（有的话）
 
 
 def user_dir():
-    d = os.path.join(os.path.expanduser("~"), "XPSFitStudio")
+    """用户数据（模板、灵敏度因子、导入的 NIST 数据、设置）：~/XPSAnalyser；旧版本的 ~/XPSFitStudio 已存在时继续使用它。"""
+    home = os.path.expanduser("~")
+    d, old = os.path.join(home, "XPSAnalyser"), os.path.join(home, "XPSFitStudio")
+    if not os.path.isdir(d) and os.path.isdir(old):
+        return old
     os.makedirs(d, exist_ok=True)
     return d
 
@@ -1293,7 +1297,7 @@ class Handler(BaseHTTPRequestHandler):
         if not f.startswith(os.path.normpath(WEB)) or not os.path.isfile(f):
             return self._send(404, b"not found", "text/plain")
         ctype = {"html": "text/html; charset=utf-8", "js": "application/javascript", "css": "text/css",
-                 "svg": "image/svg+xml"}.get(f.rsplit(".", 1)[-1], "application/octet-stream")
+                 "svg": "image/svg+xml", "png": "image/png"}.get(f.rsplit(".", 1)[-1], "application/octet-stream")
         with open(f, "rb") as fh:
             self._send(200, fh.read(), ctype)
 
@@ -1324,7 +1328,7 @@ def smoke(out):
     srv, url = serve()
     page = urllib.request.urlopen(url).read()
     js = urllib.request.urlopen(url + "plotly.min.js").read()
-    assert b"XPS Fit Studio" in page and len(js) > 1000000
+    assert b"XPS Analyser" in page and len(js) > 1000000
     lines = ["page ok", "templates %d" % len(ST.templates), "sf %d" % len(ST.sf),
              "reference %s" % ",".join(reference.available())]
     assert "Cu" in reference.available(), "bundled NIST reference missing"

@@ -1,6 +1,6 @@
-# XPS Fit Studio 自动拟合 SOP
+# XPS Analyser 自动拟合 SOP
 
-> 版本：XPS Fit Studio v0.1（2026-11）　适用：Thermo Avantage 采集的单色 Al Kα 数据（`.VGD` 或导出表格）
+> 版本：XPS Analyser v0.1（2026-11）　适用：Thermo Avantage 采集的单色 Al Kα 数据（`.VGD` 或导出表格）
 > 本 SOP 说明“⚡ 一键拟合”每一步做什么、依据是什么、什么时候需要人工复核，以及经过验证的准确度。
 
 ---
