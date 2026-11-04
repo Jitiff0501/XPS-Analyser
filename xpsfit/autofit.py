@@ -262,7 +262,11 @@ PHASE_LABEL = {"FeO": "FeO（Fe₁₋ₓO）", "Fe3O4": "Fe₃O₄", "Fe2O3": "F
 
 
 def interpret(s):
-    """按拟合结果给出化合物解读（目前用于 Fe2p：FeO / Fe3O4 / Fe2O3·FeOOH）。返回文字或 None。"""
+    """按拟合结果给出化合物解读（Fe2p：FeO / Fe3O4 / Fe2O3·FeOOH；Al/Co/Cr：氧化态比例不唯一时的范围）。返回文字或 None。"""
+    alt = getattr(s, "oxide_alt", None)
+    if alt and s.element != "Fe2p" and s.peaks:
+        return ("氧化态比例无法由谱唯一确定：仅金属模型（金属拖尾放宽）%s（ΔBIC %+.0f），报告范围 0–%.0f%%；样品已知为金属态时选“仅金属”"
+                % ("同样好" if alt["dbic"] > -10 else "更好", alt["dbic"], 100 * alt["range"][1]))
     if s.element != "Fe2p" or not s.peaks:
         return None
     d = fe_phases(s)
@@ -300,45 +304,86 @@ def _signal(s, lo, hi):
 
 
 # ------------------------------------------------------------------ 按元素的起始模型（文献约束）
-def recipe(s, log):
+OXIDE_MODES = {"auto": "自动判断", "both": "金属态 + 氧化态", "metal": "仅金属态（不加氧化峰）", "oxide": "仅氧化态（不加金属峰）"}
+OXIDE_ELEMENTS = ("Al2p", "Co2p", "Cr2p", "Cu2p", "Fe2p")      # 有金属态 / 氧化态模型的轨道
+
+
+def _kind(peaks, k):
+    for p in peaks:
+        p["state_kind"] = k
+    return peaks
+
+
+def recipe(s, log, oxide="auto"):
+    """按元素的起始模型。oxide：auto（金属态、氧化态都作为候选，由 BIC 判断）/ both / metal / oxide。"""
     el = s.element
-    if el == "Al2p":
-        log("Al2p：金属 Al⁰ 用不对称双峰（Δ0.44 锁定）；氧化物 Al³⁺ 双峰 FWHM ≤ 2.0 eV（Thermo）")
-        return _D("Al0", 72.6, None, None, 0.8, shape="Asym", lo=71.8, hi=73.0, wmin=0.6, wmax=1.6, orb="Al2p") + \
-            _D("Al3+", 74.6, None, None, 1.6, lo=73.8, hi=75.6, wmax=2.0, orb="Al2p")
-    if el == "Co2p":
-        log("Co2p：Co⁰ 不对称双峰 Δ14.9–15.1；Co²⁺ 双峰 Δ15.2–15.7 + 卫星 ~786 / ~802 eV")
-        return (_D("Co0", 778.2, None, None, 1.0, shape="Asym", lo=777.9, hi=778.5, orb="Co2p")
-                + _D("Co2+", 780.6, None, None, 2.6, lo=779.9, hi=781.5, orb="Co2p")
-                + [_SAT("Co2+ sat. 2p3/2", "Co2+ 2p3/2", 786.0, 5.0, 783.5, 788.5, wmax=6.0, ratio=(0.3, 0.9)),
-                   _SAT("Co2+ sat. 2p1/2", "Co2+ 2p1/2", 802.3, 5.0, 800.0, 804.5, wmax=6.0, ratio=(0.3, 0.9))])
-    if el == "Cr2p":
-        log("Cr2p：Cr⁰ 不对称双峰 Δ9.2–9.4；Cr³⁺ 双峰 Δ9.6–9.9（多重分裂以宽峰近似）")
-        return (_D("Cr0", 574.2, None, None, 1.2, shape="Asym", lo=573.6, hi=574.7, orb="Cr2p")
-                + _D("Cr3+", 576.4, None, None, 2.6, lo=575.6, hi=577.3, orb="Cr2p"))
+    want_m, want_o = oxide in ("auto", "both", "metal"), oxide in ("auto", "both", "oxide")
+    if el in ("Al2p", "Co2p", "Cr2p"):
+        if el == "Al2p":
+            log("Al2p：金属 Al⁰ 用不对称双峰（Δ0.44 锁定）；氧化物 Al³⁺ 双峰 FWHM ≤ 2.0 eV（Thermo）")
+            m = _D("Al0", 72.6, None, None, 0.8, shape="Asym", lo=71.8, hi=73.0, wmin=0.6, wmax=1.6, orb="Al2p")
+            o = _D("Al3+", 74.6, None, None, 1.6, lo=73.8, hi=75.6, wmax=2.0, orb="Al2p")
+        elif el == "Co2p":
+            log("Co2p：Co⁰ 不对称双峰；Co²⁺ 双峰 + 卫星 ~786 / ~802 eV；双峰关系按文献范围（Co⁰ Δ14.9–15.1，Co²⁺ Δ15.1–16.0）")
+            m = _D("Co0", 778.2, None, None, 1.0, shape="Asym", lo=777.9, hi=778.5, orb="Co2p")
+            if oxide == "metal":              # 只有金属时，金属自身的 +3 / +5 eV 损失结构必须在模型里
+                m = m + co_metal_loss()
+                log("Co2p（仅金属）：加入金属 Co 的固有损失峰（+2.5–3.6 与 +4.5–5.8 eV，2p3/2 与 2p1/2 各一组，计入 Co⁰）")
+            o = (_D("Co2+", 780.6, None, None, 2.6, lo=779.9, hi=781.5, orb="Co2p")
+                 + [_SAT("Co2+ sat. 2p3/2", "Co2+ 2p3/2", 786.0, 5.0, 783.5, 788.5, wmax=6.0, ratio=(0.3, 0.9)),
+                    _SAT("Co2+ sat. 2p1/2", "Co2+ 2p1/2", 802.3, 5.0, 800.0, 804.5, wmax=6.0, ratio=(0.3, 0.9))])
+        else:
+            log("Cr2p：Cr⁰ 不对称双峰；Cr³⁺ 双峰（多重分裂以宽峰近似）；双峰关系按文献范围（Cr⁰ Δ9.2–9.4，Cr³⁺ Δ9.5–9.9）")
+            m = _D("Cr0", 574.2, None, None, 1.2, shape="Asym", lo=573.6, hi=574.7, orb="Cr2p")
+            o = _D("Cr3+", 576.4, None, None, 2.6, lo=575.6, hi=577.3, orb="Cr2p")
+        _kind(m, "metal"); _kind(o, "oxide")
+        if oxide == "metal":                  # 没有氧化态要保护：金属线形的拖尾放宽（真实金属峰常有较长的拖尾）
+            for p in m:
+                if p.get("shape") == "Asym" and not p.get("pair"):
+                    p["tail"]["max"], p["tau"]["max"] = 0.8, 3.5
+            log("%s（仅金属）：金属拖尾放宽到 T ≤ 0.8、τ ≤ 3.5 eV（没有氧化态需要保护）" % el)
+        if oxide == "auto":                   # 两组都作为候选：拟合后与去掉该组的模型比较 BIC
+            for p in m:
+                p["optional"] = "金属态"
+            for p in o:
+                p["optional"] = "氧化态"
+        return (m if want_m else []) + (o if want_o else [])
     if el == "Cu2p":
-        m = _D("Cu0/Cu+", 932.6, None, None, 1.2, shape="Asym", lo=932.3, hi=932.9, orb="Cu2p")
         f = _signal(s, 940.0, 946.0)
+        if oxide == "oxide":                  # 仅氧化：Cu⁺（Cu2O，对称、窄）+ Cu²⁺
+            m = _kind(_D("Cu+", 932.5, None, None, 1.2, lo=932.2, hi=932.9, orb="Cu2p"), "oxide")
+        else:
+            m = _kind(_D("Cu0/Cu+", 932.6, None, None, 1.2, shape="Asym", lo=932.3, hi=932.9, orb="Cu2p"), "metal")
+        cu2 = _kind(_D("Cu2+", 933.8, None, None, 2.5, lo=933.4, hi=934.4, wmax=3.5, orb="Cu2p")
+                    + [_SAT("Cu2+ sat.", "Cu2+ 2p3/2", 942.5, 4.5, 940.0, 945.5, wmax=7.0, ratio=(0.4, 0.75))], "oxide")
+        if oxide in ("both", "oxide"):
+            log("Cu2p：按选择加入 Cu²⁺ 及其卫星峰（940–946 eV 卫星信号 %.1f%%）" % (100 * f))
+            return m + cu2
+        if oxide == "metal":
+            log("Cu2p：按选择不加 Cu²⁺，只用 Cu⁰/Cu⁺（Cu⁰ 与 Cu₂O 的 2p3/2 不可分）")
+            return m
         if f > 0.02:
-            cu2 = _D("Cu2+", 933.8, None, None, 2.5, lo=933.4, hi=934.4, wmax=3.5, orb="Cu2p") + [_SAT("Cu2+ sat.", "Cu2+ 2p3/2", 942.5, 4.5, 940.0, 945.5, wmax=7.0, ratio=(0.4, 0.75))]
             for p in cu2:
                 p["optional"] = "Cu2+"
             log("Cu2p：940–946 eV 有卫星信号（%.1f%%）→ Cu²⁺ 及其卫星峰作为候选，拟合后用 BIC 判断是否保留" % (100 * f))
-            m += cu2
-        else:
-            log("Cu2p：940–946 eV 无卫星信号（%.1f%%）→ 不加 Cu²⁺，只用 Cu⁰/Cu⁺" % (100 * f))
+            return m + cu2
+        log("Cu2p：940–946 eV 无卫星信号（%.1f%%）→ 不加 Cu²⁺，只用 Cu⁰/Cu⁺" % (100 * f))
         return m
     if el == "Fe2p":
         f0 = _signal(s, 705.8, 707.6)
         fox = _signal(s, 708.6, 713.0)
-        metal = f0 > 0.03
-        if fox < 0.03:
-            log("Fe2p：708.6–713 eV 几乎没有氧化态信号（%.1f%%）→ 只用金属 Fe⁰（不对称双峰 Δ12.95–13.3）" % (100 * fox))
-            return fe_model(metal=True, phases=())
+        metal = {"auto": f0 > 0.03, "both": True, "metal": True, "oxide": False}[oxide]
+        if oxide == "metal" or (oxide == "auto" and fox < 0.03):
+            log("Fe2p：%s → 只用金属 Fe⁰（不对称双峰 Δ13.0–13.25）" % (
+                "按选择不加氧化物" if oxide == "metal" else "708.6–713 eV 几乎没有氧化态信号（%.1f%%）" % (100 * fox)))
+            return _kind(fe_model(metal=True, phases=()), "metal")
         log("Fe2p：%s氧化物按物相建模——FeO ~709.6（卫星 +6 eV）、Fe₃O₄ ~710.5（几乎无卫星）、Fe₂O₃/FeOOH ~711.0"
             "（卫星 +8 eV）；2p3/2 多重分裂包络用两条关联峰近似，2p1/2 用一个宽峰"
-            % ("Fe⁰ 不对称双峰 Δ12.95–13.3；" if metal else "705.8–707.6 eV 无明显金属峰，不加 Fe⁰；"))
-        return fe_model(metal=metal)
+            % ("Fe⁰ 不对称双峰 Δ12.95–13.3；" if metal else ("按选择不加 Fe⁰；" if oxide == "oxide" else "705.8–707.6 eV 无明显金属峰，不加 Fe⁰；")))
+        pk = fe_model(metal=metal)
+        for p in pk:
+            p["state_kind"] = "oxide" if p.get("fe_phase") else "metal"
+        return pk
     if el == "O1s":
         log("O1s：晶格 O / 缺陷·羟基 / C–O·吸附水 三组分")
         return [_P("O lattice (M-O)", 530.2, 1.3, lo=529.4, hi=531.0), _P("O defect / M-OH", 531.5, 1.6, lo=530.9, hi=532.2),
@@ -532,6 +577,19 @@ def _pinned(peaks):
     return n
 
 
+def co_metal_loss(with_half=True):
+    """金属 Co 的固有能量损失结构（主峰高 BE 侧 ~+3 与 ~+5 eV），位置随 Co⁰ 主峰移动。
+    with_half：2p1/2 处也加一组——只在“仅金属”时使用；与 Co²⁺ 同时存在时会吃掉 Co²⁺ 2p1/2 的面积（模拟验证）。"""
+    out = []
+    for tag, d, rng in (("+3eV", 3.0, (2.5, 3.6)), ("+5eV", 5.0, (4.5, 5.8))):
+        a = _SATR("Co0 loss %s 2p3/2" % tag, "Co0 2p3/2", 778.2, d, 2.5 if tag == "+3eV" else 3.0, rng, (0.03, 0.3),
+                  wmin=1.0, wmax=4.0 if tag == "+3eV" else 5.0)
+        b = _P("Co0 loss %s 2p1/2" % tag, 778.2 + 15.0 + d, a["fwhm"]["value"], 0, role="satellite", wmin=1.0, wmax=a["fwhm"]["max"])
+        b["link"] = {"ref": a["name"], "dE": 15.0, "dE_fit": True, "dE_min": 14.8, "dE_max": 15.3, "area_ratio": 0.5, "fwhm_ratio": 1.0}
+        out += [a, b] if with_half else [a]
+    return _kind(out, "metal")
+
+
 def co_alternative(s, r, log):
     """Co2p：金属 Co 在 +3~+5 eV 有固有损失结构，与 Co²⁺ 卫星区重叠，无法由谱唯一确定。
     同时拟合模型 B（加入 Co⁰ 损失峰，计入 Co⁰），报告 Co²⁺ 比例的范围，默认保留 BIC 更好的模型。"""
@@ -542,8 +600,9 @@ def co_alternative(s, r, log):
         st = core.chemical_states(t); tot = sum(a for _, a in st) or 1
         return sum(a for n, a in st if n.startswith("Co2+")) / tot
     A = _c.deepcopy(s.peaks); bA = bic(s, r); fA = frac(A)
-    loss = [_SAT("Co0 loss +3eV", "Co0 2p3/2", 781.2, 2.5, 780.6, 782.2, wmax=4.0, ratio=(0.03, 0.3)),
-            _SAT("Co0 loss +5eV", "Co0 2p3/2", 783.3, 3.0, 782.6, 784.3, wmax=5.0, ratio=(0.03, 0.3))]
+    loss = co_metal_loss(with_half=False)
+    for p in loss:                            # 位置跟随当前的 Co⁰ 主峰
+        p["center"]["value"] = next(q["center"]["value"] for q in s.peaks if q["name"] == "Co0 2p3/2") + (p["link"].get("dE") or 0)
     s.peaks = s.peaks + loss
     rB = staged_fit(s); bB = bic(s, rB); fB = frac(s.peaks)
     lo_, hi_ = sorted((fA, fB))
@@ -612,20 +671,26 @@ def test_known_states(s, b0, r, log):
     return b0, r
 
 
-def prior_overlaps(s, sample_elements, log):
+def prior_overlaps(s, sample_elements, log, excl=(), excl_name="", shift=None):
     """同一样品其他元素的谱线若落在窗口内，预先加入为重叠峰（不计入定量）。
     与本元素主峰相距 <1 eV 的（如 Al2p 窗口里的 Cr3s 与 Al³⁺）无法区分 → 不加，只提示。"""
     x, y, bg, _, _ = s.compute()
     lo, hi = float(x.min()) + 0.5, float(x.max()) - 0.5
     mains = [p["center"]["value"] for p in s.peaks if p.get("role", "main") == "main"]
+    d = getattr(s, "model_shift", 0.0) if shift is None else shift      # 谱未校正时，其他元素的谱线同样偏移
     own = re.match(r"[A-Z][a-z]?", s.element or "")
     own = own.group(0) if own else ""
     for el in sample_elements:
         if el == own:
             continue
-        for lvl, bes in CORE_BE.get(el, {}).items():
+        for lvl, bes0 in CORE_BE.get(el, {}).items():
+            bes = [b + d for b in bes0]
             inside = [b for b in bes if lo <= b <= hi]
             if not inside or lvl.endswith(("2p", "3d", "4f")) and len(bes) > 1 and not all(lo <= b <= hi for b in bes[:1]):
+                continue
+            if excl and all(any(a_ <= b <= b_ for a_, b_ in excl) for b in inside):
+                log("%s（%s eV）落在被排除的%s位置上 → 不加入（否则它会代替被排除的化学态）" % (
+                    lvl, "、".join("%.1f" % b for b in inside), excl_name))
                 continue
             if all(any(abs(b - m) < 1.0 for m in mains) for b in inside):
                 log("⚠ %s（%s eV）与本谱主峰几乎重合，无法拟合区分，可能使比例偏高；请结合该元素含量判断" % (
@@ -646,9 +711,9 @@ def prior_overlaps(s, sample_elements, log):
             log("预置重叠峰：样品含 %s，%s（%s eV）落在窗口内 → 预先加入为重叠峰（不计入定量）" % (
                 el, lvl, "、".join("%.1f" % b for b in inside)))
         for ke in AUGER_KE.get(el, []):
-            b = s.hv - ke
+            b = s.hv - ke + d
             if lo <= b <= hi:
-                if any(abs(b - m) < 1.0 for m in mains):
+                if any(abs(b - m) < 1.0 for m in mains) or any(a_ <= b <= b_ for a_, b_ in excl):
                     continue
                 p = _P("overlap: %s 俄歇 (KE≈%d)" % (el, ke), b, 5.0, role="unknown", lo=b - 2.0, hi=b + 2.0, wmax=8.0)
                 p["prior"] = True
@@ -683,10 +748,14 @@ def bic(s, r):
 
 
 # ------------------------------------------------------------------ 一键拟合
-def run(s, sample_elements=(), ref=None, max_add=4):
+def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
+    s_in = copy.deepcopy(s) if _alt else None
     s.relax_level, s.relax_hist, s.relax_last = 0, [], None
+    s.oxide_alt = None
     report = []
     log = report.append
+    oxide = oxide if oxide in OXIDE_MODES else "auto"
+    s.model_shift = 0.0                       # 未校正谱的整体偏移（以金属峰为参照检测到时）
     if s.window:
         s.bg["lo"], s.bg["hi"] = s.window[0] + s.shift, s.window[1] + s.shift
     s.bg.pop("ylo", None); s.bg.pop("yhi", None)
@@ -703,7 +772,9 @@ def run(s, sample_elements=(), ref=None, max_add=4):
     except Exception:
         pass
     noise = choose_background(s, log)
-    peaks = recipe(s, log)
+    if oxide != "auto":
+        log("氧化态：%s%s" % (OXIDE_MODES[oxide], "" if s.element in OXIDE_ELEMENTS else "（此轨道没有金属 / 氧化态模型，该选项不适用）"))
+    peaks = recipe(s, log, oxide if s.element in OXIDE_ELEMENTS else "auto")
     if peaks is None:
         peaks = generic_model(s, log, ref)
     else:
@@ -724,6 +795,7 @@ def run(s, sample_elements=(), ref=None, max_add=4):
                     best = (float(x[j]) - c0, float(sig[j]), float(x[j]), p["name"])
         if best and 0.15 < abs(best[0]) <= 1.0:
             d = best[0]
+            s.model_shift = d
             for p in peaks:
                 for f in ("value", "min", "max"):
                     if p["center"][f] is not None:
@@ -737,7 +809,10 @@ def run(s, sample_elements=(), ref=None, max_add=4):
     core.apply_template(s, peaks)
     for p, q in zip(s.peaks, peaks):        # 保留模型自己的峰位范围（apply_template 只在没有范围时加 ±1 eV）
         p["center"]["min"], p["center"]["max"] = q["center"]["min"], q["center"]["max"]
-    prior_overlaps(s, sample_elements, log)
+    restricted = oxide in ("metal", "oxide") and s.element in OXIDE_ELEMENTS
+    metal_only = restricted and oxide == "metal"
+    excl = _excluded_regions(s, oxide) if restricted else []
+    prior_overlaps(s, sample_elements, log, excl, "氧化态" if metal_only else "金属态")
     r = staged_fit(s)
     b0 = bic(s, r)
     log("初次拟合：约化 χ² %.3g（先固定金属拖尾定位各组分，再放开拖尾）" % r["rchi2"])
@@ -758,7 +833,8 @@ def run(s, sample_elements=(), ref=None, max_add=4):
         else:
             s.peaks, s.bg = keep, keep_bg
             r = s.do_fit()
-            pinned = _pinned([p for p in s.peaks if p.get("optional") == tag])
+            # 金属态 / 氧化态整组的候选只看 BIC（宽的氧化物峰常卡 FWHM 上限，不代表它在填补背景）
+            pinned = 0 if tag in ("金属态", "氧化态") else _pinned([p for p in s.peaks if p.get("optional") == tag])
             if pinned >= 2:
                 s.peaks = [p for p in s.peaks if p.get("optional") != tag]
                 r = staged_fit(s); b0 = bic(s, r)
@@ -770,7 +846,8 @@ def run(s, sample_elements=(), ref=None, max_add=4):
                 log("候选 %s：保留后拟合明显更好（BIC），参数都在合理范围内 → 保留" % tag)
     if s.element == "Fe2p" and any(p.get("fe_phase") for p in s.peaks):
         b0, r = fe_select(s, log)
-    b0, r = test_known_states(s, b0, r, log)
+    if not restricted:
+        b0, r = test_known_states(s, b0, r, log)
     # 预置的重叠峰若拟合后面积很小（<1%），去掉
     tot = sum(p["area"]["value"] for p in s.peaks) or 1.0
     small = [p for p in s.peaks if p.get("prior") and p["area"]["value"] / tot < 0.01]
@@ -788,6 +865,11 @@ def run(s, sample_elements=(), ref=None, max_add=4):
         c, w, frac = bumps[0]
         tried.add(round(c, 0))
         kind, name, refname, why = classify(c, w, s, sample_elements, ref, log)
+        if restricted and kind != "overlap" and any(lo <= c <= hi for lo, hi in excl):
+            # 只用选定的化学态时，落在被排除化学态（含 1/2 分量与卫星）位置上的残差峰不补——否则会以卫星 / 未知峰的名字把它“补回来”
+            log("残差峰 %.2f eV（占 %.1f%%）：可能属于被排除的%s；按选择不加入（只加入其他元素的重叠峰）"
+                % (c, 100 * frac, "氧化态" if metal_only else "金属态"))
+            continue
         trial, trial_bg = copy.deepcopy(s.peaks), copy.deepcopy(s.bg)
         wv = min(max(w, 1.0), 8.0 if kind == "satellite" else 3.0)
         if kind == "satellite":
@@ -817,8 +899,12 @@ def run(s, sample_elements=(), ref=None, max_add=4):
             s.peaks, s.bg = trial, trial_bg
             r = s.do_fit()
             log("残差峰 %.2f eV（占 %.1f%%）：加入后拟合没有显著改善（BIC），不保留" % (c, 100 * frac))
-    if s.element == "Co2p" and any(p["name"].startswith("Co2+") for p in s.peaks):
+    if s.element == "Co2p" and any(p["name"].startswith("Co2+") for p in s.peaks) and any(p["name"] == "Co0 2p3/2" for p in s.peaks):
         r = co_alternative(s, r, log)
+    if restricted and _alt:
+        _check_mode(s, s_in, sample_elements, ref, bic(s, r), oxide, log)
+    if oxide == "auto" and _alt and s.element in ("Al2p", "Co2p", "Cr2p"):
+        _metal_alternative(s, s_in, sample_elements, ref, bic(s, r), log)
     r_ms = multistart(s, 6)                   # 最后用多起点避开局部最优
     if r_ms["rchi2"] < r["rchi2"] * 0.999:
         log("多起点拟合：约化 χ² %.3g → %.3g" % (r["rchi2"], r_ms["rchi2"]))
@@ -831,6 +917,69 @@ def run(s, sample_elements=(), ref=None, max_add=4):
         log("⚠ " + w_)
     log("完成：约化 χ² %.3g，残差 RMS / 峰高 %.1f%%" % (r["rchi2"], 100 * q["rel_rms"]))
     return report
+
+
+def _shifted(peaks, d):
+    for p in peaks:
+        for f in ("value", "min", "max"):
+            if d and p["center"][f] is not None:
+                p["center"][f] += d
+    return peaks
+
+
+def _excluded_regions(s, oxide):
+    """被排除的那组化学态（含 1/2 分量与卫星）在谱上占据的能量区间。"""
+    t = copy.deepcopy(s)
+    pk = _shifted(recipe(t, lambda *_: None, "both"), getattr(s, "model_shift", 0.0))
+    kind = "oxide" if oxide == "metal" else "metal"
+    out = []
+    for p, v in zip(pk, core.resolve(pk)):
+        if p.get("state_kind") == kind:
+            half = max(1.2, 0.6 * v["fwhm"] + 0.5) + (1.5 if p.get("shape") == "Asym" else 0.0)
+            out.append((v["center"] - half, v["center"] + half))
+    return out
+
+
+def _metal_alternative(s, s_in, sample_elements, ref, b_auto, log):
+    """自动模式下同时含金属态与氧化态时：再拟合“仅金属（长拖尾）”模型。两者同样好时，氧化态比例无法由谱唯一确定。"""
+    kinds = {p.get("state_kind") for p in s.peaks}
+    if not {"metal", "oxide"} <= kinds:
+        return
+    t = copy.deepcopy(s_in)
+    try:
+        run(t, sample_elements, ref, oxide="metal", _alt=False)
+        b_m = bic(t, t.last_fit)
+    except Exception:
+        return
+    fr = _fractions(s)
+    f_ox = sum(v for k, v in fr.items() if any(p.get("state_kind") == "oxide" and core.state_name(p["name"]) == k for p in s.peaks))
+    if b_m <= b_auto + 10:
+        s.oxide_alt = {"range": (0.0, f_ox), "dbic": b_m - b_auto}
+        log("对比：仅金属模型（金属拖尾放宽）%s（ΔBIC %+.0f）→ 氧化态比例无法由谱唯一确定，范围 0–%.0f%%；"
+            "若样品已知为金属态（如溅射清洁后），请选“仅金属”" % ("与“金属 + 氧化”同样好" if b_m > b_auto - 10 else "比“金属 + 氧化”更好",
+                                                       b_m - b_auto, 100 * f_ox))
+    else:
+        log("对比：仅金属模型（金属拖尾放宽）明显更差（ΔBIC %+.0f）→ 数据支持存在氧化态" % (b_m - b_auto))
+
+
+def _check_mode(s, s_in, sample_elements, ref, b_sel, oxide, log):
+    """只用金属态 / 只用氧化态时，与完整的“自动判断”拟合比较：数据明显支持被排除的化学态时提醒。"""
+    t = copy.deepcopy(s_in)
+    try:
+        run(t, sample_elements, ref, oxide="auto", _alt=False)
+        b_auto = bic(t, t.last_fit)
+    except Exception:
+        return
+    other = "氧化态" if oxide == "metal" else "金属态"
+    kind = "oxide" if oxide == "metal" else "metal"
+    fr = _fractions(t)
+    names = [k for k in fr if any(p.get("state_kind") == kind and core.state_name(p["name"]) == k for p in t.peaks)]
+    share = "、".join("%s %.0f%%" % (k, 100 * fr[k]) for k in names)
+    if names and b_auto < b_sel - 10:
+        log("⚠ 数据显示存在%s：自动判断（含%s）的 BIC 低 %.0f（%s）。按选择未加入；若无充分理由，建议改用“自动判断”"
+            % (other, other, b_sel - b_auto, share))
+    else:
+        log("对比：自动判断%s，BIC 不比当前更好（ΔBIC %+.0f），与选择一致" % ("也不含%s" % other if not names else "加入%s" % other, b_auto - b_sel))
 
 
 # ------------------------------------------------------------------ 逐步放宽约束

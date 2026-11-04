@@ -334,6 +334,22 @@ class Core(unittest.TestCase):
         self.assertEqual(len(st["ladder"]), len(autofit.RELAX_LEVELS))
 
 
+    def test_oxide_modes(self):
+        from xpsfit import autofit
+        x, y, _ = synth(4)                     # Al⁰ + Al2O3（氧化物约 75%）
+        names = {}
+        for mode in ("auto", "both", "metal", "oxide"):
+            s = core.Spectrum("Al2p Scan", x, y)
+            rep = autofit.run(s, ["Al", "O"], oxide=mode)
+            names[mode] = {core.state_name(n) for n, _ in core.chemical_states(s)}
+            if mode == "metal":                # 数据明显含氧化态：选“仅金属”时应提醒
+                self.assertTrue(any(l.startswith("⚠ 数据显示存在氧化态") for l in rep), rep)
+        self.assertEqual(names["metal"], {"Al0 2p"})
+        self.assertEqual(names["oxide"], {"Al3+ 2p"})
+        self.assertEqual(names["both"], {"Al0 2p", "Al3+ 2p"})
+        self.assertEqual(names["auto"], {"Al0 2p", "Al3+ 2p"})
+
+
 class Api(unittest.TestCase):
     """不开窗口，直接调用后端 API 走一遍完整流程。"""
     def test_workflow(self):

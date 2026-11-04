@@ -7,6 +7,20 @@ import re
 
 # ------------------------------------------------------------------ 整句 / 词组
 PHRASES = {
+    "一键拟合时使用的化学态（Al2p、Co2p、Cr2p、Cu2p、Fe2p）": "Chemical states used by the one-click fit (Al2p, Co2p, Cr2p, Cu2p, Fe2p)",
+    "金属态、氧化态都先放进模型，由 BIC 判断是否需要；比例不唯一时给出范围": "Metal and oxide both start in the model; BIC decides whether each is needed; a range is given when the fraction is not unique",
+    "金属+氧化": "Metal+oxide", "金属态与氧化态都保留": "Keep both metal and oxide states", "仅金属": "Metal only", "仅氧化": "Oxide only",
+    "只用金属态（不加氧化峰）；数据明显显示氧化时会提醒": "Metal states only (no oxide peaks); warns if the data clearly show oxide",
+    "只用氧化态（不加金属峰），适合完全氧化的样品；数据明显显示金属时会提醒": "Oxide states only (no metal peaks), for fully oxidized samples; warns if the data clearly show metal",
+    "同样好": "as well", "更好": "better",
+    "自动判断": "Auto", "金属态 + 氧化态": "metal + oxide", "仅金属态（不加氧化峰）": "metal only (no oxide peaks)",
+    "仅氧化态（不加金属峰）": "oxide only (no metal peaks)", "氧化态": "oxide states", "金属态": "metal states",
+    "按选择不加氧化物": "no oxide, as chosen", "按选择不加 Fe⁰；": "no Fe⁰, as chosen; ",
+    "Cu2p：按选择不加 Cu²⁺，只用 Cu⁰/Cu⁺（Cu⁰ 与 Cu₂O 的 2p3/2 不可分）": "Cu2p: no Cu²⁺ as chosen; Cu⁰/Cu⁺ only (Cu⁰ and Cu₂O 2p3/2 cannot be separated)",
+    "Co2p：Co⁰ 不对称双峰；Co²⁺ 双峰 + 卫星 ~786 / ~802 eV；双峰关系按文献范围（Co⁰ Δ14.9–15.1，Co²⁺ Δ15.1–16.0）":
+        "Co2p: Co⁰ asymmetric doublet; Co²⁺ doublet + satellites ~786 / ~802 eV; doublet relations within literature ranges (Co⁰ Δ14.9–15.1, Co²⁺ Δ15.1–16.0)",
+    "Cr2p：Cr⁰ 不对称双峰；Cr³⁺ 双峰（多重分裂以宽峰近似）；双峰关系按文献范围（Cr⁰ Δ9.2–9.4，Cr³⁺ Δ9.5–9.9）":
+        "Cr2p: Cr⁰ asymmetric doublet; Cr³⁺ doublet (multiplets approximated by a broad peak); doublet relations within literature ranges (Cr⁰ Δ9.2–9.4, Cr³⁺ Δ9.5–9.9)",
     "（风险：低）": " (risk: low)", "（风险：中）": " (risk: medium)", "（风险：高）": " (risk: high)", "（风险：最高）": " (risk: highest)",
     "逐步放宽约束": "Relax constraints step by step", "放宽一级 ▸": "Relax one level ▸", "撤销": "Undo", "自动": "Auto",
     "按风险从低到高，放开下一级约束并重新拟合": "Release the next constraint (lowest risk first) and refit",
@@ -181,6 +195,31 @@ PHRASES = {
 
 # ------------------------------------------------------------------ 含变量的句子：中文 printf 模板 → 英文（{0}{1}… 为各变量，变量本身也会递归翻译）
 TEMPLATES = [
+    ("⚠ 数据显示存在%s：自动判断（含%s）的 BIC 低 %.0f（%s）。按选择未加入；若无充分理由，建议改用“自动判断”",
+     "⚠ The data indicate {0}: the automatic fit (with {1}) has a BIC lower by {2} ({3}). Not added as chosen; unless you have good reason, use “Auto”"),
+    ("对比：自动判断%s，BIC 不比当前更好（ΔBIC %s），与选择一致", "Check: the automatic fit {0} and its BIC is not better (ΔBIC {1}), consistent with the choice"),
+    ("也不含%s", "also has no {0}"), ("加入%s", "adds {0}"),
+    ("%s（仅金属）：金属拖尾放宽到 T ≤ 0.8、τ ≤ 3.5 eV（没有氧化态需要保护）", "{0} (metal only): metal tail widened to T ≤ 0.8, τ ≤ 3.5 eV (no oxide state to protect)"),
+    ("Co2p（仅金属）：加入金属 Co 的固有损失峰（+2.5–3.6 与 +4.5–5.8 eV，2p3/2 与 2p1/2 各一组，计入 Co⁰）",
+     "Co2p (metal only): intrinsic loss features of metallic Co added (+2.5–3.6 and +4.5–5.8 eV, for 2p3/2 and 2p1/2; counted as Co⁰)"),
+    ("对比：仅金属模型（金属拖尾放宽）%s（ΔBIC %s）→ 氧化态比例无法由谱唯一确定，范围 0–%.0f%%；若样品已知为金属态（如溅射清洁后），请选“仅金属”",
+     "Check: a metal-only model (longer metal tail) fits {0} (ΔBIC {1}) → the oxide fraction is not uniquely determined, range 0–{2}%; if the sample is known to be metallic (e.g. sputter-cleaned), choose “Metal only”"),
+    ("与“金属 + 氧化”同样好", "as well as “metal + oxide”"), ("比“金属 + 氧化”更好", "better than “metal + oxide”"),
+    ("对比：仅金属模型（金属拖尾放宽）明显更差（ΔBIC %s）→ 数据支持存在氧化态", "Check: a metal-only model (longer metal tail) is clearly worse (ΔBIC {0}) → the data support an oxide state"),
+    ("氧化态比例无法由谱唯一确定：仅金属模型（金属拖尾放宽）%s（ΔBIC %s），报告范围 0–%.0f%%；样品已知为金属态时选“仅金属”",
+     "The oxide fraction is not uniquely determined: a metal-only model (longer metal tail) fits {0} (ΔBIC {1}); reported range 0–{2}%; choose “Metal only” if the sample is known to be metallic"),
+    ("%s（%s eV）落在被排除的%s位置上 → 不加入（否则它会代替被排除的化学态）",
+     "{0} ({1} eV) lies at the position of the excluded {2} → not added (it would stand in for the excluded state)"),
+    ("氧化态：%s%s", "Oxidation states: {0}{1}"),
+    ("（此轨道没有金属 / 氧化态模型，该选项不适用）", " (no metal/oxide model for this orbital; option not applicable)"),
+    ("残差峰 %.2f eV（占 %.1f%%）：可能属于被排除的%s；按选择不加入（只加入其他元素的重叠峰）",
+     "Residual peak {0} eV ({1}%): may belong to the excluded {2}; not added as chosen (only overlaps from other elements are added)"),
+    ("⚠ 数据显示存在%s：加入后 BIC 低 %.0f（%s）。按选择未加入；若无充分理由，建议改用“自动判断”",
+     "⚠ The data indicate {0}: adding it lowers BIC by {1} ({2}). Not added as chosen; unless you have good reason, use “Auto”"),
+    ("对比：加入%s不能显著改善拟合（ΔBIC %s），与选择一致", "Check: adding {0} does not improve the fit significantly (ΔBIC {1}), consistent with the choice"),
+    ("Cu2p：按选择加入 Cu²⁺ 及其卫星峰（940–946 eV 卫星信号 %.1f%%）", "Cu2p: Cu²⁺ and its satellite added as chosen (satellite signal at 940–946 eV: {0}%)"),
+    ("Fe2p：%s → 只用金属 Fe⁰（不对称双峰 Δ13.0–13.25）", "Fe2p: {0} → metallic Fe⁰ only (asymmetric doublet Δ13.0–13.25)"),
+    ("708.6–713 eV 几乎没有氧化态信号（%.1f%%）", "almost no oxide signal at 708.6–713 eV ({0}%)"),
     ("%d 个峰的 Lorentzian 比例（L%%）改为在 0–60%% 内拟合（双峰副峰跟随）", "Lorentzian fraction (L%) of {0} peaks now fitted within 0–60% (doublet partners follow)"),
     ("背景 %s → 主动 Shirley（台阶 + 线性斜坡，斜坡随峰拟合，仍不高于数据）", "Background {0} → active Shirley (step + linear slope fitted with the peaks, still never above the data)"),
     ("%d 个峰的 FWHM 范围放宽为原来的 0.7–1.4 倍（双峰的 FWHM 倍率仍按文献范围）", "FWHM range of {0} peaks widened to 0.7–1.4× (doublet FWHM ratios stay within the literature range)"),

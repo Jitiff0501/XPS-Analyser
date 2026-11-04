@@ -167,6 +167,9 @@ details.sec>summary .sub{font-weight:400;color:var(--ink3);font-size:12px;overfl
 #cpop{position:fixed;z-index:60;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;box-shadow:var(--shadow);width:200px}
 #cpop .t{font-size:12px;color:var(--ink3);margin-bottom:6px}
 .ptab .sw{cursor:pointer}
+.oxrow{display:flex;align-items:center;gap:8px}
+.oxrow .oxl{font-size:12.5px;color:var(--ink2);white-space:nowrap}
+.oxrow .seg{flex:1;display:flex}.oxrow .seg button{flex:1;padding:5px 4px;font-size:12px}
 .relax{border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:6px}
 .relax-h{display:flex;align-items:baseline;gap:8px;font-weight:600;font-size:13px}
 .rx-steps{display:flex;gap:3px}
@@ -318,6 +321,13 @@ input[type=checkbox]{accent-color:var(--accent)}
   <aside class="right" id="right">
     <section class="hero">
       <div class="hero-h"><span class="hero-t">拟合</span><span class="sub" id="fitsum"></span></div>
+      <div class="oxrow"><span class="oxl" title="一键拟合时使用的化学态（Al2p、Co2p、Cr2p、Cu2p、Fe2p）">氧化态</span>
+        <div class="seg" id="oxseg">
+          <button data-o="auto" class="on" title="金属态、氧化态都先放进模型，由 BIC 判断是否需要；比例不唯一时给出范围">自动</button>
+          <button data-o="both" title="金属态与氧化态都保留">金属+氧化</button>
+          <button data-o="metal" title="只用金属态（不加氧化峰）；数据明显显示氧化时会提醒">仅金属</button>
+          <button data-o="oxide" title="只用氧化态（不加金属峰），适合完全氧化的样品；数据明显显示金属时会提醒">仅氧化</button>
+        </div></div>
       <button class="btn primary fitbtn" onclick="autoFit(false)" title="自动选背景、按元素建模、检查残差并区分重叠峰/卫星峰">⚡ 一键拟合</button>
       <button class="btn wide" onclick="autoFit(true)">⚡ 一键拟合本样品全部谱</button>
       <div id="summary" class="summary"><div class="note" style="margin:0">暂无拟合结果</div></div>
@@ -963,7 +973,7 @@ async function saveEq(){const m=[...$("eq_list").querySelectorAll("input:checked
 async function autoFit(all,again){
   if(S.cur===null){toast("请先打开数据");return}
   S.lastAll=!!all;toast(all?"正在一键拟合本样品全部谱…":"正在一键拟合…");
-  const v=await act("autofit",{all:!!all,extra:$("ar_extra").value});if(!v)return;S.sel=null;renderPeaks();
+  const v=await act("autofit",{all:!!all,extra:$("ar_extra").value,oxide:S.oxide||"auto"});if(!v)return;S.sel=null;renderPeaks();
   const b=$("ar_body");b.innerHTML="";
   (v.report||[]).forEach(r=>{const h=document.createElement("h5");h.textContent=`${r.sample} · ${r.spectrum}　`+TR(`（样品元素：${r.elements.join("、")}）`);b.append(h);
     const ol=document.createElement("ol");r.steps.forEach(t=>{const li=document.createElement("li");li.textContent=t;
@@ -1041,6 +1051,11 @@ let REF=null,REFALL=false;const MARKS={};   // 每个轨道勾选显示的化合
 function marks(){const o=REF&&REF.orbital||"";return MARKS[o]||(MARKS[o]=new Set())}
 async function loadRef(){
   if(S.cur===null)return;REF=await call("reference",{i:S.cur});renderRef();draw()}
+/* ---------- 氧化态选择（一键拟合） ---------- */
+S.oxide=(()=>{try{return localStorage.getItem("xpsfit_oxide")||"auto"}catch(e){return "auto"}})();
+function setOxide(o){S.oxide=o;document.querySelectorAll("#oxseg button").forEach(b=>b.classList.toggle("on",b.dataset.o===o));
+  try{localStorage.setItem("xpsfit_oxide",o)}catch(e){}}
+document.querySelectorAll("#oxseg button").forEach(b=>b.onclick=()=>setOxide(b.dataset.o));setOxide(S.oxide);
 /* ---------- 逐步放宽约束 ---------- */
 function renderRelax(v){
   const box=$("relax"),R=v.relax;box.hidden=!R||!v.peaks.length||v.kind==="survey";if(box.hidden)return;

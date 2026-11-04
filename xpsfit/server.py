@@ -375,7 +375,7 @@ def api(method, a):
                 continue
             els = sample_elements(t, a.get("extra"))
             try:
-                rep_ = autofit.run(t, els, reference.for_orbital(t.element, user_dir()))
+                rep_ = autofit.run(t, els, reference.for_orbital(t.element, user_dir()), oxide=a.get("oxide", "auto"))
                 _post_fit(t)
             except Exception as e:
                 rep_ = ["出错：%s" % e]
