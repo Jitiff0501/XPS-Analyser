@@ -19,6 +19,18 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from xpsfit import core, autofit, identify  # noqa: E402
 
 HV = 1486.68
+# v1.1：更接近真实数据的模拟——真实峰位在 NIST 文献分布（四分位范围）内随机，峰宽 ±15% 随机，整体能量偏移 ±0.2 eV
+# （未校正或校正误差）。环境变量 XPS_BENCH_REALISTIC=1 或命令行 --realistic 打开。
+REALISTIC = os.environ.get("XPS_BENCH_REALISTIC") == "1" or "--realistic" in sys.argv
+
+
+def P(default, rng, lo, hi):
+    """真实峰位：REALISTIC 时在 [lo, hi]（NIST 四分位范围）内均匀抽取，否则用固定值。"""
+    return float(rng.uniform(lo, hi)) if REALISTIC else default
+
+
+def Wj(w, rng):
+    return float(w * rng.uniform(0.85, 1.15)) if REALISTIC else w
 
 
 def shirley_true(x, signal, k):
@@ -43,6 +55,11 @@ def true_frac(peaks, prefix, exclude=("CrLMM", "Cu3p")):
 
 def make(x, peaks, rng, base, slope, k_step, counts):
     """返回 (y, 真实背景, 真实信号)。counts 控制信噪比（主峰高度约为 counts）。"""
+    if REALISTIC:                                   # 整体能量偏移（荷电 / 校正误差）
+        off = rng.uniform(-0.2, 0.2)
+        for p in peaks:
+            if not (p.get("link") or {}).get("ref"):
+                p["center"]["value"] += off
     _, sig = core.model(x, peaks)
     scale = counts / max(float(sig.max()), 1e-9)
     sig = sig * scale
@@ -70,11 +87,13 @@ def case_co(rng):
     """Co⁰ 不对称 + Co²⁺ + 卫星；Shirley 台阶；Co²⁺ 比例随机。"""
     x = np.arange(770, 810.01, 0.1)
     f2 = rng.uniform(0.1, 0.7)
-    co0 = W(core.doublet("Co0", 778.2 + rng.normal(0, 0.05), 14.99, 0.5, 1.05, 1 - f2, 20, shape="Asym"), 1.05, 1.3)
+    c0, c2 = P(778.2 + rng.normal(0, 0.05), rng, 778.02, 778.32), P(780.5 + rng.normal(0, 0.1), rng, 780.2, 780.6)
+    w0 = Wj(1.05, rng)
+    co0 = W(core.doublet("Co0", c0, 14.99, 0.5, w0, 1 - f2, 20, shape="Asym"), w0, w0 * 1.24)
     co0[0]["tail"]["value"], co0[0]["tau"]["value"] = rng.uniform(0.2, 0.45), rng.uniform(1.0, 2.5)
-    co2 = core.doublet("Co2+", 780.5 + rng.normal(0, 0.1), 15.5, 0.5, 2.6, f2 * 0.62, 30)
-    sat = W([core.new_peak("Co2+ s1", 786.3, 5.5, f2 * 0.38 * 0.72, 0, role="satellite"),
-             core.new_peak("Co2+ s2", 802.6, 5.5, f2 * 0.38 * 0.28, 0, role="satellite")], 5.5, 5.5)
+    co2 = core.doublet("Co2+", c2, 15.5, 0.5, Wj(2.6, rng), f2 * 0.62, 30)
+    sat = W([core.new_peak("Co2+ s1", c2 + 5.8, 5.5, f2 * 0.38 * 0.72, 0, role="satellite"),
+             core.new_peak("Co2+ s2", c2 + 22.1, 5.5, f2 * 0.38 * 0.28, 0, role="satellite")], 5.5, 5.5)
     f2 = true_frac(co0 + co2 + sat, "Co2+")
     y, bg, sig, _ = make(x, co0 + co2 + sat, rng, rng.uniform(5e4, 1e5), rng.uniform(-30, 30), rng.uniform(0.05, 0.2), rng.uniform(5e4, 1.5e5))
     s = core.Spectrum("Co2p Scan", x, y)
@@ -85,13 +104,15 @@ def case_cu(rng, cr_overlap, cu2):
     """Cu⁰/Cu⁺（不对称）± Cu²⁺(含卫星)；可选 Cr LMM 俄歇重叠；本底可能反向（低 BE 侧更高）。"""
     x = np.arange(925, 965.01, 0.1)
     f2 = rng.uniform(0.2, 0.5) if cu2 else 0.0
-    cu = W(core.doublet("Cu0", 932.6, 19.8, 0.5, 1.15, 1 - f2, 25, shape="Asym"), 1.15, 1.45)
+    w0 = Wj(1.15, rng)
+    cu = W(core.doublet("Cu0", P(932.6, rng, 932.5, 932.7), 19.8, 0.5, w0, 1 - f2, 25, shape="Asym"), w0, w0 * 1.26)
     cu[0]["tail"]["value"], cu[0]["tau"]["value"] = 0.2, 1.2
     pk = cu
     if cu2:
         # CuO：2p3/2 卫星 / 主峰 ≈ 0.55（Biesinger）；主峰双峰面积 = 1.5×(3/2)
         m32 = f2 / (1.5 + 0.55)
-        pk += W(core.doublet("Cu2+", 934.0, 19.9, 0.5, 2.8, m32, 30), 2.8, 2.8) + W([core.new_peak("Cu2+ sat", 942.5, 5.0, 0.55 * m32, 0, role="satellite")], 5.0)
+        c2, w2 = P(934.0, rng, 933.45, 934.3), Wj(2.8, rng)
+        pk += W(core.doublet("Cu2+", c2, 19.9, 0.5, w2, m32, 30), w2, w2) + W([core.new_peak("Cu2+ sat", c2 + 8.5, 5.0, 0.55 * m32, 0, role="satellite")], 5.0)
         f2 = true_frac(pk, "Cu2+")
     if cr_overlap:
         pk = pk + W([core.new_peak("CrLMM", HV - 529 + rng.normal(0, 0.4), 6.0, 0.35, 0, role="unknown")], 6.0)
@@ -106,9 +127,10 @@ def case_cu(rng, cr_overlap, cu2):
 def case_al(rng, cu_overlap):
     x = np.arange(65, 85.01, 0.1)
     f3 = rng.uniform(0.3, 0.9)
-    al0 = W(core.doublet("Al0", 72.6, 0.44, 0.5, 0.75, 1 - f3, 20, shape="Asym"), 0.75, 0.75)
+    w0 = Wj(0.75, rng)
+    al0 = W(core.doublet("Al0", P(72.6, rng, 72.55, 73.0), 0.44, 0.5, w0, 1 - f3, 20, shape="Asym"), w0, w0)
     al0[0]["tail"]["value"], al0[0]["tau"]["value"] = 0.15, 1.0
-    al3 = core.doublet("Al3+", 74.7, 0.44, 0.5, 1.7, f3, 30)
+    al3 = core.doublet("Al3+", P(74.7, rng, 74.1, 75.8), 0.44, 0.5, Wj(1.7, rng), f3, 30)     # Al(OH)3 … 金属上的 Al2O3
     pk = al0 + al3
     f3 = true_frac(pk, "Al3+")
     if cu_overlap:
@@ -123,11 +145,11 @@ def case_cr(rng, cr6):
     x = np.arange(568, 594.01, 0.1)
     f3 = rng.uniform(0.1, 0.6)
     f6 = 0.08 if cr6 else 0.0
-    cr0 = core.doublet("Cr0", 574.2, 9.3, 0.5, 1.25, 1 - f3 - f6, 25, shape="Asym")
+    cr0 = core.doublet("Cr0", P(574.2, rng, 573.95, 574.3), 9.3, 0.5, Wj(1.25, rng), 1 - f3 - f6, 25, shape="Asym")
     cr0[0]["tail"]["value"], cr0[0]["tau"]["value"] = 0.35, 1.5
-    pk = cr0 + core.doublet("Cr3+", 576.5, 9.75, 0.5, 2.6, f3, 30)
+    pk = cr0 + core.doublet("Cr3+", P(576.5, rng, 576.3, 577.3), 9.75, 0.5, Wj(2.6, rng), f3, 30)    # Cr2O3 … Cr(OH)3
     if cr6:
-        pk += core.doublet("Cr6+", 579.8, 9.6, 0.5, 1.8, f6, 30)
+        pk += core.doublet("Cr6+", P(579.8, rng, 578.9, 579.8), 9.6, 0.5, Wj(1.8, rng), f6, 30)
     f3 = true_frac(pk, "Cr3+")
     y, bg, sig, _ = make(x, pk, rng, 2.5e4, rng.uniform(-20, 40), rng.uniform(0.05, 0.25), rng.uniform(3e4, 6e4))
     s = core.Spectrum("Cr2p Scan", x, y)
@@ -138,8 +160,9 @@ def case_cr(rng, cr6):
 def case_o(rng):
     x = np.arange(525, 545.01, 0.1)
     fr = rng.dirichlet([4, 3, 1.5])
-    pk = [core.new_peak("O lattice", 530.2, 1.3, fr[0], 30), core.new_peak("O defect", 531.6, 1.6, fr[1], 30),
-          core.new_peak("C-O", 532.9, 1.8, fr[2], 30)]
+    pk = [core.new_peak("O lattice", P(530.2, rng, 529.8, 530.5), Wj(1.3, rng), fr[0], 30),
+          core.new_peak("O defect", P(531.6, rng, 531.2, 531.8), Wj(1.6, rng), fr[1], 30),
+          core.new_peak("C-O", P(532.9, rng, 532.5, 533.2), Wj(1.8, rng), fr[2], 30)]
     y, bg, sig, _ = make(x, pk, rng, 1e4, rng.uniform(-10, 10), rng.uniform(0.02, 0.1), rng.uniform(1.5e4, 8e4))
     s = core.Spectrum("O1s Scan", x, y)
     return s, bg, ["O", "Co", "Cr"], {"frac": ("O lattice", fr[0]), "expect": set()}
@@ -149,10 +172,11 @@ def case_c(rng, carbide):
     x = np.arange(279, 298.01, 0.1)
     fc = rng.uniform(0.3, 0.6) if carbide else 0.0
     rest = rng.dirichlet([5, 2, 1]) * (1 - fc)
-    pk = [core.new_peak("C-C", 284.8, 1.3, rest[0], 30), core.new_peak("C-O", 286.3, 1.3, rest[1], 30),
-          core.new_peak("O-C=O", 288.7, 1.3, rest[2], 30)]
+    pk = [core.new_peak("C-C", P(284.8, rng, 284.6, 285.0), Wj(1.3, rng), rest[0], 30),
+          core.new_peak("C-O", P(286.3, rng, 286.0, 286.6), Wj(1.3, rng), rest[1], 30),
+          core.new_peak("O-C=O", P(288.7, rng, 288.4, 289.0), Wj(1.3, rng), rest[2], 30)]
     if carbide:
-        pk.append(W([core.new_peak("carbide", 283.0, 0.9, fc, 30)], 0.9)[0])
+        pk.append(W([core.new_peak("carbide", P(283.0, rng, 282.7, 283.3), 0.9, fc, 30)], Wj(0.9, rng))[0])
     fc = true_frac(pk, "carbide")
     y, bg, sig, _ = make(x, pk, rng, 1.3e4, rng.uniform(-10, 10), rng.uniform(0.0, 0.08), rng.uniform(2e3, 6e3))
     s = core.Spectrum("C1s Scan", x, y)

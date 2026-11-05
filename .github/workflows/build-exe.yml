@@ -94,17 +94,37 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs: [windows, macos]
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: out
           merge-multiple: true
-      - name: Publish to Releases (latest)
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
+      - name: Keep v1.0 (the build published before versioned releases)
+        run: |
+          if ! gh release view v1.0 >/dev/null 2>&1 && gh release view latest >/dev/null 2>&1; then
+            mkdir -p v10 && gh release download latest -D v10
+            sha=$(gh api "repos/$GH_REPO/git/ref/tags/latest" --jq .object.sha)
+            gh release create v1.0 v10/* --target "$sha" --latest=false --title "XPS Analyser v1.0" \
+              --notes "XPS Analyser v1.0（版本号启用前发布的版本，原样保留）。更新内容见 CHANGELOG.md。"
+          fi
+      - name: Publish versioned release
         run: |
           ls -la out
+          V=$(sed -n 's/^__version__ = "\(.*\)"/\1/p' xpsfit/__init__.py)
+          awk -v v="## v$V" '$0 ~ "^## v" {p = index($0, v) == 1} p' CHANGELOG.md > notes.md
+          printf '\n---\nWindows：XPSAnalyser.exe（拟合程序）、Avantage2XPSPEAK.exe（转换器），双击运行。\nmacOS：XPSAnalyser-macOS-arm64.zip（Apple 芯片 M1–M4），解压后把 XPS Analyser 拖到“应用程序”；首次打开：右键 → 打开（未签名程序）。\n' >> notes.md
+          if gh release view "v$V" >/dev/null 2>&1; then
+            gh release upload "v$V" out/* --clobber
+            gh release edit "v$V" --notes-file notes.md --latest
+          else
+            gh release create "v$V" out/* --target "$GITHUB_SHA" --title "XPS Analyser v$V" --notes-file notes.md --latest
+          fi
+      - name: Rolling "latest" build (keeps old download links working)
+        run: |
           gh release delete latest --yes --cleanup-tag || true
-          gh release create latest out/* --title "XPS Analyser (Windows / macOS)" --target "$GITHUB_SHA" --notes "Windows：XPSAnalyser.exe（拟合程序）、Avantage2XPSPEAK.exe（转换器），双击运行。
-          macOS：XPSAnalyser-macOS-arm64.zip（Apple 芯片 M1–M4），解压后把 XPS Analyser 拖到“应用程序”。首次打开：右键 → 打开（未签名程序）。"
+          gh release create latest out/* --target "$GITHUB_SHA" --prerelease --title "XPS Analyser（最新构建 / latest build）" \
+            --notes "每次更新自动构建的最新版本；正式版本见 v1.0、v1.1 ……（Releases 列表）。"

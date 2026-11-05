@@ -1,0 +1,661 @@
+{
+ "element": "Ni",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 694,
+ "orbitals": {
+  "Ni2p": {
+   "line": "2p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 17.3,
+    "n": 76,
+    "min": 15.4,
+    "max": 18.4
+   },
+   "states": [
+    {
+     "formula": "Ni",
+     "kind": "metal",
+     "name": "nickel",
+     "median": 852.76,
+     "q1": 852.5,
+     "q3": 852.8,
+     "min": 852.0,
+     "max": 853.8,
+     "n": 43,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26452",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26453",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26454"
+     ]
+    },
+    {
+     "formula": "Al3Ni",
+     "kind": "other",
+     "name": "aluminum nickel imc",
+     "median": 852.8,
+     "q1": 852.72,
+     "q3": 853.27,
+     "min": 852.65,
+     "max": 853.75,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25664",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25685",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25690"
+     ]
+    },
+    {
+     "formula": "CoNi",
+     "kind": "other",
+     "name": "cobalt nickel",
+     "median": 852.95,
+     "q1": 852.84,
+     "q3": 853.02,
+     "min": 852.72,
+     "max": 853.09,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27252",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27242",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27244"
+     ]
+    },
+    {
+     "formula": "CeNi2",
+     "kind": "other",
+     "name": "cerium nickel imc",
+     "median": 853.0,
+     "q1": 852.9,
+     "q3": 853.0,
+     "min": 852.6,
+     "max": 853.0,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26495",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26476",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26467"
+     ]
+    },
+    {
+     "formula": "Ni3Th7",
+     "kind": "other",
+     "name": "nickel thorium imc",
+     "median": 853.0,
+     "q1": 852.9,
+     "q3": 853.08,
+     "min": 852.8,
+     "max": 853.15,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26497",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26494",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26447"
+     ]
+    },
+    {
+     "formula": "Ni2Si",
+     "kind": "other",
+     "name": "nickel silicide",
+     "median": 853.0,
+     "q1": 853.0,
+     "q3": 853.0,
+     "min": 853.0,
+     "max": 853.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26992",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27018",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27023"
+     ]
+    },
+    {
+     "formula": "Ni2Ta",
+     "kind": "other",
+     "name": "nickel tantalum imc",
+     "median": 853.2,
+     "q1": 852.98,
+     "q3": 853.25,
+     "min": 852.75,
+     "max": 853.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26444",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26469",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26481"
+     ]
+    },
+    {
+     "formula": "NiO",
+     "kind": "oxide",
+     "name": "nickel(II) oxide",
+     "median": 854.4,
+     "q1": 853.9,
+     "q3": 854.78,
+     "min": 853.4,
+     "max": 857.2,
+     "n": 28,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26913",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26924",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26863"
+     ]
+    },
+    {
+     "formula": "[NiCl2(P(C4H9)3)2]",
+     "kind": "other",
+     "name": "dichlorobis(tributylphosphine)nickel",
+     "median": 854.7,
+     "q1": 854.7,
+     "q3": 854.9,
+     "min": 854.7,
+     "max": 855.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25417",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25447",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26176"
+     ]
+    },
+    {
+     "formula": "[NiCl2((C6H5)3P)2]",
+     "kind": "other",
+     "name": "dichlorobis(triphenylphosphine)nickel",
+     "median": 854.8,
+     "q1": 854.55,
+     "q3": 855.5,
+     "min": 854.4,
+     "max": 857.0,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26180",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26184",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26185"
+     ]
+    },
+    {
+     "formula": "[Ni(CH3CNOCNOCH3)2]",
+     "kind": "other",
+     "name": "bis((2,3-butanedione dioximato)-N,N')nickel",
+     "median": 855.0,
+     "q1": 854.95,
+     "q3": 855.15,
+     "min": 854.9,
+     "max": 855.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26037",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26039",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26033"
+     ]
+    },
+    {
+     "formula": "Ni(OH)2",
+     "kind": "hydroxide",
+     "name": "nickel(II) hydroxide",
+     "median": 855.84,
+     "q1": 855.6,
+     "q3": 856.0,
+     "min": 855.0,
+     "max": 856.6,
+     "n": 14,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69845",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113228",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113250"
+     ]
+    },
+    {
+     "formula": "Ni2O3",
+     "kind": "oxide",
+     "name": "nickel(III) trioxide",
+     "median": 856.0,
+     "q1": 855.9,
+     "q3": 856.0,
+     "min": 855.8,
+     "max": 856.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26627",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2097",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26644"
+     ]
+    },
+    {
+     "formula": "Al2NiO4",
+     "kind": "other",
+     "name": "aluminum(III) nickelate(II)",
+     "median": 856.2,
+     "q1": 856.05,
+     "q3": 856.8,
+     "min": 855.9,
+     "max": 857.0,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26620",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26622",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26628"
+     ]
+    },
+    {
+     "formula": "NiCl2",
+     "kind": "other",
+     "name": "nickel(II) chloride",
+     "median": 856.65,
+     "q1": 856.53,
+     "q3": 856.7,
+     "min": 856.3,
+     "max": 856.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25764",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25766",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25790"
+     ]
+    },
+    {
+     "formula": "NiSO4",
+     "kind": "other",
+     "name": "nickel(II) sulfate",
+     "median": 856.8,
+     "q1": 856.8,
+     "q3": 857.15,
+     "min": 855.2,
+     "max": 857.3,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26700",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26705",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26707"
+     ]
+    }
+   ],
+   "satellites": [
+    {
+     "formula": "Li1.55NiPS3",
+     "median": 856.9,
+     "min": 854.6,
+     "max": 859.2,
+     "n": 2
+    },
+    {
+     "formula": "Ni",
+     "median": 858.25,
+     "min": 854.9,
+     "max": 859.4,
+     "n": 12
+    },
+    {
+     "formula": "In9Ni13",
+     "median": 858.3,
+     "min": 858.3,
+     "max": 858.3,
+     "n": 1
+    },
+    {
+     "formula": "InNi3",
+     "median": 858.3,
+     "min": 858.3,
+     "max": 858.3,
+     "n": 1
+    },
+    {
+     "formula": "Ga2Ni3",
+     "median": 858.3,
+     "min": 858.3,
+     "max": 858.3,
+     "n": 1
+    },
+    {
+     "formula": "GaNi3",
+     "median": 858.6,
+     "min": 858.6,
+     "max": 858.6,
+     "n": 1
+    },
+    {
+     "formula": "NiO",
+     "median": 858.66,
+     "min": 855.2,
+     "max": 864.1,
+     "n": 14
+    },
+    {
+     "formula": "InNi",
+     "median": 858.7,
+     "min": 858.7,
+     "max": 858.7,
+     "n": 1
+    },
+    {
+     "formula": "GaNi",
+     "median": 858.7,
+     "min": 858.7,
+     "max": 858.7,
+     "n": 1
+    },
+    {
+     "formula": "Ni/Cu",
+     "median": 858.95,
+     "min": 858.7,
+     "max": 859.2,
+     "n": 2
+    },
+    {
+     "formula": "Li0.37NiPS3",
+     "median": 859.2,
+     "min": 855.9,
+     "max": 863.8,
+     "n": 3
+    },
+    {
+     "formula": "NiPS3",
+     "median": 859.3,
+     "min": 856.5,
+     "max": 864.2,
+     "n": 3
+    },
+    {
+     "formula": "Ni89P11",
+     "median": 859.35,
+     "min": 859.2,
+     "max": 859.5,
+     "n": 2
+    },
+    {
+     "formula": "In3Ni2",
+     "median": 859.7,
+     "min": 859.7,
+     "max": 859.7,
+     "n": 1
+    },
+    {
+     "formula": "Ni79P21",
+     "median": 859.9,
+     "min": 859.7,
+     "max": 860.1,
+     "n": 2
+    },
+    {
+     "formula": "Ni2O3.2H2O",
+     "median": 860.72,
+     "min": 860.4,
+     "max": 861.05,
+     "n": 2
+    },
+    {
+     "formula": "Ni/Al2O3",
+     "median": 861.0,
+     "min": 861.0,
+     "max": 861.0,
+     "n": 1
+    },
+    {
+     "formula": "Ni(OH)2",
+     "median": 861.1,
+     "min": 860.7,
+     "max": 861.7,
+     "n": 5
+    },
+    {
+     "formula": "(Ni(OH)2)3.2H2O",
+     "median": 861.1,
+     "min": 861.1,
+     "max": 861.1,
+     "n": 1
+    },
+    {
+     "formula": "NiOOH",
+     "median": 861.18,
+     "min": 860.97,
+     "max": 861.4,
+     "n": 2
+    },
+    {
+     "formula": "KNiIO6",
+     "median": 861.4,
+     "min": 861.4,
+     "max": 861.4,
+     "n": 1
+    },
+    {
+     "formula": "Ni2O3.H2O",
+     "median": 861.5,
+     "min": 861.5,
+     "max": 861.5,
+     "n": 1
+    },
+    {
+     "formula": "(Ni(OH)2)0.75(H2O)0.16(NiCO3)0.09",
+     "median": 861.6,
+     "min": 861.6,
+     "max": 861.6,
+     "n": 1
+    },
+    {
+     "formula": "NiO/Ca0.166Ni0.833",
+     "median": 861.8,
+     "min": 861.8,
+     "max": 861.8,
+     "n": 1
+    },
+    {
+     "formula": "Ni2O3/Ca0.166Ni0.833",
+     "median": 863.0,
+     "min": 863.0,
+     "max": 863.0,
+     "n": 1
+    },
+    {
+     "formula": "Ni(OH)2/Ca0.166Ni0.833",
+     "median": 863.0,
+     "min": 863.0,
+     "max": 863.0,
+     "n": 1
+    }
+   ],
+   "n_records": 353
+  },
+  "Ni2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "Ni",
+     "kind": "metal",
+     "name": "nickel",
+     "median": 1008.4,
+     "q1": 1008.25,
+     "q3": 1008.56,
+     "min": 1007.5,
+     "max": 1008.8,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111403",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111404",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111405"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 10
+  },
+  "Ni3p": {
+   "line": "3p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 1.6,
+    "n": 11,
+    "min": 1.1,
+    "max": 2.0
+   },
+   "states": [
+    {
+     "formula": "Ni",
+     "kind": "metal",
+     "name": "nickel",
+     "median": 65.92,
+     "q1": 65.7,
+     "q3": 66.12,
+     "min": 65.66,
+     "max": 67.6,
+     "n": 12,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111389",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111393",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111418"
+     ]
+    },
+    {
+     "formula": "Al3Ni",
+     "kind": "other",
+     "name": "aluminum nickel imc",
+     "median": 67.0,
+     "q1": 66.65,
+     "q3": 67.15,
+     "min": 66.3,
+     "max": 67.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29752",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29755",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29774"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 23
+  },
+  "Ni3s": {
+   "line": "3s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "Ni",
+     "kind": "metal",
+     "name": "nickel",
+     "median": 110.59,
+     "q1": 110.45,
+     "q3": 110.7,
+     "min": 110.39,
+     "max": 1008.2,
+     "n": 14,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/394",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111397",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111399"
+     ]
+    },
+    {
+     "formula": "NiO",
+     "kind": "oxide",
+     "name": "nickel(II) oxide",
+     "median": 111.94,
+     "q1": 111.75,
+     "q3": 112.48,
+     "min": 111.6,
+     "max": 113.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113246",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30316",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30319"
+     ]
+    },
+    {
+     "formula": "Ni(OH)2",
+     "kind": "hydroxide",
+     "name": "nickel(II) hydroxide",
+     "median": 112.7,
+     "q1": 112.45,
+     "q3": 112.77,
+     "min": 112.2,
+     "max": 112.84,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113253",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111250",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30241"
+     ]
+    }
+   ],
+   "satellites": [
+    {
+     "formula": "Ni",
+     "median": 116.22,
+     "min": 115.83,
+     "max": 116.78,
+     "n": 6
+    },
+    {
+     "formula": "(Ni(OH)2)0.75(H2O)0.16(NiCO3)0.09",
+     "median": 117.2,
+     "min": 117.2,
+     "max": 117.2,
+     "n": 1
+    },
+    {
+     "formula": "Ni2O3.2H2O",
+     "median": 117.6,
+     "min": 117.6,
+     "max": 117.6,
+     "n": 1
+    },
+    {
+     "formula": "NiO",
+     "median": 118.13,
+     "min": 118.07,
+     "max": 118.2,
+     "n": 2
+    },
+    {
+     "formula": "(Ni(OH)2)3.2H2O",
+     "median": 118.2,
+     "min": 118.2,
+     "max": 118.2,
+     "n": 1
+    },
+    {
+     "formula": "Ni(OH)2",
+     "median": 118.25,
+     "min": 118.0,
+     "max": 118.5,
+     "n": 2
+    },
+    {
+     "formula": "NiOOH",
+     "median": 118.25,
+     "min": 118.0,
+     "max": 118.5,
+     "n": 2
+    }
+   ],
+   "n_records": 47
+  }
+ },
+ "auger": {
+  "line": "L3VV",
+  "rows": [
+   {
+    "formula": "Ni",
+    "ke": 846.15,
+    "n": 6,
+    "alpha": 1698.91,
+    "alpha_line": "2p3/2"
+   },
+   {
+    "formula": "NiO",
+    "ke": 847.25,
+    "n": 4,
+    "alpha": 1701.65,
+    "alpha_line": "2p3/2"
+   }
+  ]
+ }
+}

@@ -198,7 +198,22 @@ class Core(unittest.TestCase):
         self.assertAlmostEqual(st["CuO"]["median"], 933.8, places=2)
         a = {x["formula"]: x for x in r["auger"]["rows"]}
         self.assertAlmostEqual(a["Cu2O"]["alpha"], 1849.2, places=1)    # 修正俄歇参数
-        self.assertIsNone(reference.for_orbital("Co2p"))                # 未导入的元素
+        self.assertIsNone(reference.for_orbital("W4f"))                 # 未收录的元素
+
+    def test_reference_nist_v11(self):
+        """v1.1 随程序发布 23 种元素的 NIST 数据；小分裂轨道计入未分辨记录；金属上的氧化膜按 * 标记的组分归类；Fe2p 用文献整理的数据。"""
+        from xpsfit import reference
+        self.assertGreaterEqual(len(reference.available()), 23)
+        al = {x["formula"]: x for x in reference.for_orbital("Al2p")["states"]}
+        self.assertIn("Al2O3", al)                                      # 来自 Al2O3/Al 记录（xps_formula 标 Al*2O3）
+        self.assertEqual(al["Al"]["kind"], "metal")
+        self.assertGreater(al["Al"]["n"], 40)                           # 含未分辨的 2p 记录
+        ti = {x["formula"]: x for x in reference.for_orbital("Ti2p")["states"]}
+        self.assertEqual(ti["TiO2"]["kind"], "oxide")
+        self.assertAlmostEqual(ti["TiO2"]["median"], 458.6, places=1)
+        fe = reference.for_orbital("Fe2p")
+        self.assertTrue(fe["curated"])                                  # 文献整理的 Fe2p 覆盖 NIST
+        self.assertFalse(reference.for_orbital("Fe3p")["curated"])
 
     def test_autofit_classifies_overlap_and_satellite(self):
         from xpsfit import autofit
@@ -438,6 +453,51 @@ class Api(unittest.TestCase):
             self.assertEqual([t.peaks[0].get("color") for t in server.ST.specs], ["#445566", "#445566"])
         finally:
             server.user_dir = old
+
+
+class NistModel(unittest.TestCase):
+    """v1.1：没有内置模型的轨道按 NIST 数据库建模。"""
+
+    def test_ti2p_metal_and_oxide(self):
+        from xpsfit import autofit
+        rng = np.random.default_rng(4)
+        x = np.arange(450, 470.01, 0.1)
+        pk = core.doublet("Ti", 454.0, 6.1, 0.5, 1.0, 0.4, 25, shape="Asym") + core.doublet("TiO2", 458.6, 5.7, 0.5, 1.3, 0.6, 30)
+        pk[3]["link"]["fwhm_ratio"] = 1.6
+        _, sig = core.model(x, pk)
+        y = rng.poisson(2e4 + 3e4 * sig / sig.max()).astype(float)
+        s = core.Spectrum("Ti2p Scan", x, y)
+        rep = autofit.run(s, ["Ti", "O"])
+        self.assertTrue(any("按 NIST 数据库" in t for t in rep), rep)
+        kept = {core.state_name(p["name"]) for p in s.peaks if not p.get("pair") and p.get("role", "main") == "main"}
+        self.assertIn("Ti0 2p", kept)
+        self.assertIn("TiO2 2p", kept)
+        st = dict(core.chemical_states(s))
+        tot = sum(st.values())
+        self.assertAlmostEqual(st["Ti0 2p"] / tot, 0.4, delta=0.06)
+        self.assertTrue(autofit.oxide_capable(s))
+
+    def test_plausible_states(self):
+        """残差峰只用与样品元素相符的 NIST 化学态命名：样品没有 F 时不会出现 AlF3（v1.1 回归测试）。"""
+        from xpsfit import autofit, reference
+        s = core.Spectrum("Al2p Scan", np.arange(65, 85.01, 0.1), np.ones(201))
+        ref = reference.for_orbital("Al2p")
+        f = lambda els: {t["formula"] for t in autofit.plausible_states(ref, s, els)}
+        self.assertNotIn("AlF3", f(["Al", "Co", "Cr", "Cu", "C", "O"]))
+        self.assertIn("Al2O3", f(["Al", "Co", "Cr", "Cu", "C", "O"]))
+        self.assertIn("AlF3", f(["Al", "F", "O"]))
+        self.assertEqual({t["kind"] for t in autofit.plausible_states(ref, s, [])} - {"metal", "oxide", "hydroxide"}, set())
+
+    def test_compound_next_to_metal(self):
+        """与单质相差 < 0.8 eV 的化合物（MoN 228.4 与 Mo 228.0）：样品没有 N 时不作为候选，有 N 时与单质合并写明。"""
+        from xpsfit import autofit
+        s = core.Spectrum("Mo3d Scan", np.arange(224, 240.01, 0.1), np.ones(321))
+        s._sample_elements = ["Mo", "O"]
+        names = [c["name"] for c in autofit.nist_candidates(s)]
+        self.assertIn("Mo0", names)
+        self.assertFalse(any("MoN" in n for n in names), names)
+        s._sample_elements = ["Mo", "N", "O"]
+        self.assertIn("Mo0/MoN", [c["name"] for c in autofit.nist_candidates(s)])
 
 
 class Assessment(unittest.TestCase):

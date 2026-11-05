@@ -1,0 +1,626 @@
+{
+ "element": "Cr",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 604,
+ "orbitals": {
+  "Cr2p": {
+   "line": "2p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 9.6,
+    "n": 142,
+    "min": 8.7,
+    "max": 11.6
+   },
+   "states": [
+    {
+     "formula": "Cr",
+     "kind": "metal",
+     "name": "chromium",
+     "median": 574.2,
+     "q1": 573.95,
+     "q3": 574.3,
+     "min": 573.8,
+     "max": 574.7,
+     "n": 19,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25798",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25803",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25804"
+     ]
+    },
+    {
+     "formula": "[Cr(C5H5)2]",
+     "kind": "other",
+     "name": "bis(cyclopentadienyl)chromium",
+     "median": 574.8,
+     "q1": 574.8,
+     "q3": 574.8,
+     "min": 574.8,
+     "max": 574.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25956",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25958",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25987"
+     ]
+    },
+    {
+     "formula": "[Cr(CO)5NH3]",
+     "kind": "other",
+     "name": "ammine(pentacarbonyl)chromium",
+     "median": 575.5,
+     "q1": 575.2,
+     "q3": 575.5,
+     "min": 574.9,
+     "max": 575.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25480",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25483",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25508"
+     ]
+    },
+    {
+     "formula": "CrN",
+     "kind": "nitride",
+     "name": "chromium nitride",
+     "median": 575.75,
+     "q1": 575.68,
+     "q3": 575.8,
+     "min": 575.6,
+     "max": 575.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26423",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26425",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26431"
+     ]
+    },
+    {
+     "formula": "[Cr(CO)6]",
+     "kind": "other",
+     "name": "hexacarbonylchromium",
+     "median": 576.3,
+     "q1": 576.3,
+     "q3": 577.0,
+     "min": 574.9,
+     "max": 577.6,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25706",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25707",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25709"
+     ]
+    },
+    {
+     "formula": "Cr2O3",
+     "kind": "oxide",
+     "name": "Chromium(III) oxide",
+     "median": 576.6,
+     "q1": 576.3,
+     "q3": 576.8,
+     "min": 575.9,
+     "max": 580.1,
+     "n": 41,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26571",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26574",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26575"
+     ]
+    },
+    {
+     "formula": "NaCrO2",
+     "kind": "other",
+     "name": "sodium chromium(III) dioxide",
+     "median": 577.0,
+     "q1": 577.0,
+     "q3": 577.1,
+     "min": 577.0,
+     "max": 577.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26507",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26509",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26519"
+     ]
+    },
+    {
+     "formula": "Cr(OH)3",
+     "kind": "hydroxide",
+     "name": "chromium(III) hydroxide",
+     "median": 577.1,
+     "q1": 577.1,
+     "q3": 577.35,
+     "min": 577.0,
+     "max": 577.4,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26219",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26242",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26259"
+     ]
+    },
+    {
+     "formula": "CrCl3.6H2O",
+     "kind": "other",
+     "name": "Chromium(III) chloride hexahydrate",
+     "median": 577.5,
+     "q1": 577.5,
+     "q3": 577.5,
+     "min": 577.5,
+     "max": 577.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110700",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66407",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/95634"
+     ]
+    },
+    {
+     "formula": "CrCl3",
+     "kind": "other",
+     "name": "Chromium(III) chloride, anhydrous",
+     "median": 577.7,
+     "q1": 577.55,
+     "q3": 577.75,
+     "min": 577.4,
+     "max": 577.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110655",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25776",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25796"
+     ]
+    },
+    {
+     "formula": "[Cr(CH3C(O)CHC(O)CH3)3]",
+     "kind": "other",
+     "name": "tris(2,4-pentanedionato-O,O')chromium",
+     "median": 577.7,
+     "q1": 576.88,
+     "q3": 577.8,
+     "min": 576.05,
+     "max": 577.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26083",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26085",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26089"
+     ]
+    },
+    {
+     "formula": "CrPO4",
+     "kind": "other",
+     "name": "chromium(III) phosphate",
+     "median": 577.78,
+     "q1": 577.78,
+     "q3": 578.04,
+     "min": 577.78,
+     "max": 578.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93750",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/56070",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110701"
+     ]
+    },
+    {
+     "formula": "H2V11.5Cr0.5O31.nH2O",
+     "kind": "other",
+     "name": "hydrogen polychromovanadate (H2V11.5Cr0.5O31.nH2O)",
+     "median": 578.0,
+     "q1": 577.45,
+     "q3": 578.45,
+     "min": 576.9,
+     "max": 578.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90968",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90970",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90749"
+     ]
+    },
+    {
+     "formula": "CrO3",
+     "kind": "oxide",
+     "name": "Chromium(VI) oxide",
+     "median": 579.35,
+     "q1": 578.8,
+     "q3": 579.73,
+     "min": 578.3,
+     "max": 580.1,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/94151",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110661",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67534"
+     ]
+    },
+    {
+     "formula": "Na2Cr2O7",
+     "kind": "other",
+     "name": "sodium dichromate(VI)",
+     "median": 579.4,
+     "q1": 579.4,
+     "q3": 579.6,
+     "min": 579.4,
+     "max": 579.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26823",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26819",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26815"
+     ]
+    },
+    {
+     "formula": "K2Cr2O7",
+     "kind": "other",
+     "name": "potassium dichromate(VI)",
+     "median": 579.7,
+     "q1": 579.45,
+     "q3": 579.88,
+     "min": 579.4,
+     "max": 580.1,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26816",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26832",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26838"
+     ]
+    },
+    {
+     "formula": "CrF3",
+     "kind": "other",
+     "name": "chromium(III) trifluoride",
+     "median": 579.8,
+     "q1": 579.35,
+     "q3": 580.1,
+     "min": 579.1,
+     "max": 580.3,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110657",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25924",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25926"
+     ]
+    },
+    {
+     "formula": "Na2CrO4",
+     "kind": "other",
+     "name": "Sodium chromate",
+     "median": 579.8,
+     "q1": 579.8,
+     "q3": 580.15,
+     "min": 579.8,
+     "max": 580.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90768",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26714",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26718"
+     ]
+    }
+   ],
+   "satellites": [
+    {
+     "formula": "O2/Cr",
+     "median": 577.2,
+     "min": 577.2,
+     "max": 577.2,
+     "n": 1
+    },
+    {
+     "formula": "Cr2O3",
+     "median": 587.1,
+     "min": 587.1,
+     "max": 587.4,
+     "n": 3
+    },
+    {
+     "formula": "CrF3",
+     "median": 591.9,
+     "min": 591.8,
+     "max": 592.0,
+     "n": 4
+    }
+   ],
+   "n_records": 342
+  },
+  "Cr2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 3
+  },
+  "Cr3p": {
+   "line": "3p",
+   "l": "p",
+   "ratio": 0.5,
+   "split": null,
+   "states": [
+    {
+     "formula": "Cr",
+     "kind": "metal",
+     "name": "chromium",
+     "median": 42.35,
+     "q1": 42.18,
+     "q3": 42.58,
+     "min": 41.9,
+     "max": 43.0,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/397",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/1947",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29537"
+     ]
+    },
+    {
+     "formula": "Cr2O3",
+     "kind": "oxide",
+     "name": "Chromium(III) oxide",
+     "median": 43.85,
+     "q1": 43.7,
+     "q3": 44.0,
+     "min": 43.3,
+     "max": 44.2,
+     "n": 10,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29623",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29625",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29626"
+     ]
+    },
+    {
+     "formula": "[Cr(CO)6]",
+     "kind": "other",
+     "name": "hexacarbonylchromium",
+     "median": 45.5,
+     "q1": 45.5,
+     "q3": 45.55,
+     "min": 45.5,
+     "max": 45.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29534",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29535",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29536"
+     ]
+    },
+    {
+     "formula": "K2Cr2O7",
+     "kind": "other",
+     "name": "potassium dichromate(VI)",
+     "median": 48.05,
+     "q1": 47.55,
+     "q3": 48.55,
+     "min": 47.4,
+     "max": 48.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29653",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29654",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29656"
+     ]
+    },
+    {
+     "formula": "CrO3",
+     "kind": "oxide",
+     "name": "Chromium(VI) oxide",
+     "median": 48.4,
+     "q1": 48.2,
+     "q3": 48.4,
+     "min": 48.0,
+     "max": 48.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29631",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29621",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29622"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 94
+  },
+  "Cr3s": {
+   "line": "3s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "Cr",
+     "kind": "metal",
+     "name": "chromium",
+     "median": 74.4,
+     "q1": 74.38,
+     "q3": 74.4,
+     "min": 74.3,
+     "max": 74.4,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/396",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30201",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30212"
+     ]
+    },
+    {
+     "formula": "Cr2O3",
+     "kind": "oxide",
+     "name": "Chromium(III) oxide",
+     "median": 75.3,
+     "q1": 75.25,
+     "q3": 75.35,
+     "min": 75.1,
+     "max": 78.9,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/48791",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30280",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30281"
+     ]
+    }
+   ],
+   "satellites": [
+    {
+     "formula": "Zn0.45Cd0.55Cr2Se4",
+     "median": 77.6,
+     "min": 77.6,
+     "max": 77.6,
+     "n": 1
+    },
+    {
+     "formula": "Cr2Se3",
+     "median": 77.7,
+     "min": 77.7,
+     "max": 77.7,
+     "n": 1
+    },
+    {
+     "formula": "Zn0.60Cd0.40Cr2Se4",
+     "median": 77.7,
+     "min": 77.7,
+     "max": 77.7,
+     "n": 1
+    },
+    {
+     "formula": "CdCr2Se4",
+     "median": 77.8,
+     "min": 77.8,
+     "max": 77.8,
+     "n": 1
+    },
+    {
+     "formula": "Zn0.40Cd0.60Cr2S4",
+     "median": 77.9,
+     "min": 77.9,
+     "max": 77.9,
+     "n": 1
+    },
+    {
+     "formula": "Zn0.60Cd0.40Cr2S4",
+     "median": 77.9,
+     "min": 77.9,
+     "max": 77.9,
+     "n": 1
+    },
+    {
+     "formula": "ZnCr2Se4",
+     "median": 78.0,
+     "min": 78.0,
+     "max": 78.0,
+     "n": 1
+    },
+    {
+     "formula": "Cr2S3",
+     "median": 78.1,
+     "min": 78.1,
+     "max": 78.1,
+     "n": 1
+    },
+    {
+     "formula": "CdCr2S4",
+     "median": 78.2,
+     "min": 78.2,
+     "max": 78.2,
+     "n": 1
+    },
+    {
+     "formula": "ZnCr2S4",
+     "median": 78.3,
+     "min": 78.3,
+     "max": 78.3,
+     "n": 1
+    },
+    {
+     "formula": "MnCr2O4",
+     "median": 78.9,
+     "min": 78.9,
+     "max": 78.9,
+     "n": 1
+    },
+    {
+     "formula": "Fe1.0Cr2.0O4",
+     "median": 79.0,
+     "min": 79.0,
+     "max": 79.0,
+     "n": 1
+    },
+    {
+     "formula": "CoFeCrO4",
+     "median": 79.0,
+     "min": 79.0,
+     "max": 79.0,
+     "n": 1
+    },
+    {
+     "formula": "Cr2O3",
+     "median": 79.2,
+     "min": 79.2,
+     "max": 79.2,
+     "n": 1
+    },
+    {
+     "formula": "ZnCr2O4",
+     "median": 79.2,
+     "min": 79.2,
+     "max": 79.2,
+     "n": 1
+    },
+    {
+     "formula": "Mn0.75Fe0.25Cr2O4",
+     "median": 79.2,
+     "min": 79.2,
+     "max": 79.2,
+     "n": 1
+    },
+    {
+     "formula": "MnFeCrO4",
+     "median": 79.3,
+     "min": 79.3,
+     "max": 79.3,
+     "n": 1
+    },
+    {
+     "formula": "Mn0.25Fe0.75Cr2O4",
+     "median": 79.3,
+     "min": 79.3,
+     "max": 79.3,
+     "n": 1
+    },
+    {
+     "formula": "MnFe0.5Cr1.5O4",
+     "median": 79.7,
+     "min": 79.7,
+     "max": 79.7,
+     "n": 1
+    }
+   ],
+   "n_records": 62
+  }
+ },
+ "auger": {
+  "line": "L3M23V",
+  "rows": [
+   {
+    "formula": "CrF3",
+    "ke": 525.5,
+    "n": 4,
+    "alpha": 1105.3,
+    "alpha_line": "2p3/2"
+   },
+   {
+    "formula": "Cr2O3",
+    "ke": 528.9,
+    "n": 3,
+    "alpha": 1105.5,
+    "alpha_line": "2p3/2"
+   }
+  ]
+ }
+}

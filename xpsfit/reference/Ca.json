@@ -1,0 +1,284 @@
+{
+ "element": "Ca",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 212,
+ "orbitals": {
+  "Ca2p": {
+   "line": "2p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 3.5,
+    "n": 15,
+    "min": 3.3,
+    "max": 3.7
+   },
+   "states": [
+    {
+     "formula": "Bi2Sr2CaCu2Ox",
+     "kind": "other",
+     "name": "",
+     "median": 345.3,
+     "q1": 345.15,
+     "q3": 345.85,
+     "min": 345.0,
+     "max": 346.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91877",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91878",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/365"
+     ]
+    },
+    {
+     "formula": "Bi2Sr2CaCu2O8+x",
+     "kind": "other",
+     "name": "",
+     "median": 345.4,
+     "q1": 344.87,
+     "q3": 346.17,
+     "min": 344.8,
+     "max": 347.0,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68155",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68156",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/94112"
+     ]
+    },
+    {
+     "formula": "Ca",
+     "kind": "metal",
+     "name": "",
+     "median": 345.9,
+     "q1": 345.4,
+     "q3": 346.24,
+     "min": 344.9,
+     "max": 346.57,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/R-7",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25702",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67648"
+     ]
+    },
+    {
+     "formula": "Bi1.99Sr2.00Ca2Cu3Ox",
+     "kind": "other",
+     "name": "",
+     "median": 345.9,
+     "q1": 345.4,
+     "q3": 346.4,
+     "min": 344.9,
+     "max": 346.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69347",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69348",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69351"
+     ]
+    },
+    {
+     "formula": "Bi2.00Sr2.00Ca2Cu3Ox",
+     "kind": "other",
+     "name": "",
+     "median": 345.9,
+     "q1": 345.4,
+     "q3": 346.4,
+     "min": 344.9,
+     "max": 346.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69333",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69334",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69337"
+     ]
+    },
+    {
+     "formula": "Bi2.01Sr2.00Ca2Cu3Ox",
+     "kind": "other",
+     "name": "",
+     "median": 345.9,
+     "q1": 345.65,
+     "q3": 346.95,
+     "min": 344.9,
+     "max": 348.5,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69327",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69328",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69361"
+     ]
+    },
+    {
+     "formula": "CaO",
+     "kind": "oxide",
+     "name": "",
+     "median": 346.65,
+     "q1": 346.1,
+     "q3": 346.9,
+     "min": 346.1,
+     "max": 347.3,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26826",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26828",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26830"
+     ]
+    },
+    {
+     "formula": "CaCO3",
+     "kind": "other",
+     "name": "",
+     "median": 347.0,
+     "q1": 346.8,
+     "q3": 347.33,
+     "min": 346.7,
+     "max": 347.7,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25721",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25726",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25732"
+     ]
+    },
+    {
+     "formula": "Ca5OH(PO4)3",
+     "kind": "other",
+     "name": "",
+     "median": 347.0,
+     "q1": 347.0,
+     "q3": 347.1,
+     "min": 347.0,
+     "max": 347.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92079",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66475",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68460"
+     ]
+    },
+    {
+     "formula": "CaHPO4",
+     "kind": "other",
+     "name": "",
+     "median": 347.5,
+     "q1": 347.43,
+     "q3": 347.52,
+     "min": 347.2,
+     "max": 347.6,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26362",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113213",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67218"
+     ]
+    },
+    {
+     "formula": "CaF2",
+     "kind": "other",
+     "name": "",
+     "median": 348.1,
+     "q1": 347.9,
+     "q3": 348.3,
+     "min": 347.8,
+     "max": 349.2,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114324",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25874",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25875"
+     ]
+    },
+    {
+     "formula": "CaCl2",
+     "kind": "other",
+     "name": "",
+     "median": 348.25,
+     "q1": 348.1,
+     "q3": 348.4,
+     "min": 347.8,
+     "max": 348.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25696",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25699",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25700"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 125
+  },
+  "Ca2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 12
+  },
+  "Ca3p": {
+   "line": "3p",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 0.4,
+    "n": 1,
+    "min": 0.4,
+    "max": 0.4
+   },
+   "states": [
+    {
+     "formula": "CaO",
+     "kind": "oxide",
+     "name": "",
+     "median": 24.4,
+     "q1": 24.4,
+     "q3": 25.4,
+     "min": 24.4,
+     "max": 26.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29663",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67665",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114407"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 18
+  },
+  "Ca3s": {
+   "line": "3s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "CaO",
+     "kind": "oxide",
+     "name": "",
+     "median": 43.2,
+     "q1": 43.1,
+     "q3": 44.2,
+     "min": 43.0,
+     "max": 45.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67666",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30307",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114408"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 18
+  }
+ },
+ "auger": {
+  "line": "L2M23M23(1D)",
+  "rows": []
+ }
+}

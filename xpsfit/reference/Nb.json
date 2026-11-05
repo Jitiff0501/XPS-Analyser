@@ -1,0 +1,224 @@
+{
+ "element": "Nb",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 225,
+ "orbitals": {
+  "Nb2p": {
+   "line": "2p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 93.8,
+    "n": 1,
+    "min": 93.8,
+    "max": 93.8
+   },
+   "states": [],
+   "satellites": [],
+   "n_records": 1
+  },
+  "Nb2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 1
+  },
+  "Nb3d": {
+   "line": "3d5/2",
+   "l": "d",
+   "ratio": 0.6666666666666666,
+   "split": {
+    "median": 2.8,
+    "n": 37,
+    "min": 2.4,
+    "max": 2.9
+   },
+   "states": [
+    {
+     "formula": "Nb",
+     "kind": "metal",
+     "name": "niobium",
+     "median": 202.3,
+     "q1": 202.2,
+     "q3": 202.4,
+     "min": 201.5,
+     "max": 202.6,
+     "n": 21,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44149",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27944",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5250"
+     ]
+    },
+    {
+     "formula": "NbN",
+     "kind": "nitride",
+     "name": "Niobium nitride",
+     "median": 203.5,
+     "q1": 203.5,
+     "q3": 203.5,
+     "min": 203.1,
+     "max": 203.8,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28817",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69292",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27929"
+     ]
+    },
+    {
+     "formula": "NbO",
+     "kind": "oxide",
+     "name": "niobium(II) oxide",
+     "median": 203.7,
+     "q1": 203.25,
+     "q3": 204.2,
+     "min": 202.8,
+     "max": 204.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29103",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29104",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29117"
+     ]
+    },
+    {
+     "formula": "NbO2",
+     "kind": "oxide",
+     "name": "niobium(IV) dioxide",
+     "median": 205.9,
+     "q1": 205.57,
+     "q3": 206.47,
+     "min": 205.2,
+     "max": 207.6,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28881",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28883",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28884"
+     ]
+    },
+    {
+     "formula": "Nb2O5",
+     "kind": "oxide",
+     "name": "niobium(V) pentoxide",
+     "median": 207.25,
+     "q1": 207.07,
+     "q3": 207.56,
+     "min": 206.6,
+     "max": 208.2,
+     "n": 24,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29052",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29055",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29064"
+     ]
+    },
+    {
+     "formula": "NbOx",
+     "kind": "oxide",
+     "name": "oxygen/cerium/niobium",
+     "median": 207.4,
+     "q1": 207.4,
+     "q3": 207.4,
+     "min": 207.4,
+     "max": 207.7,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/4789",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/4786",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/4782"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 144
+  },
+  "Nb3p": {
+   "line": "3p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 15.6,
+    "n": 5,
+    "min": 15.4,
+    "max": 16.0
+   },
+   "states": [
+    {
+     "formula": "Nb",
+     "kind": "metal",
+     "name": "niobium",
+     "median": 360.6,
+     "q1": 360.55,
+     "q3": 360.63,
+     "min": 360.4,
+     "max": 360.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29955",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29957",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29961"
+     ]
+    },
+    {
+     "formula": "Nb2O5",
+     "kind": "oxide",
+     "name": "niobium(V) pentoxide",
+     "median": 365.7,
+     "q1": 365.65,
+     "q3": 366.1,
+     "min": 365.6,
+     "max": 366.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30032",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30033",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30043"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 22
+  },
+  "Nb3s": {
+   "line": "3s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 4
+  },
+  "Nb4p": {
+   "line": "4p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 1.8,
+    "n": 1,
+    "min": 1.8,
+    "max": 1.8
+   },
+   "states": [],
+   "satellites": [],
+   "n_records": 8
+  },
+  "Nb4s": {
+   "line": "4s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 4
+  }
+ },
+ "auger": {
+  "line": "M5N23V",
+  "rows": []
+ }
+}

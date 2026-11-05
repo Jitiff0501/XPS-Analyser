@@ -1,0 +1,293 @@
+{
+ "element": "Mn",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 285,
+ "orbitals": {
+  "Mn2p": {
+   "line": "2p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 11.6,
+    "n": 43,
+    "min": 10.2,
+    "max": 12.5
+   },
+   "states": [
+    {
+     "formula": "Mn",
+     "kind": "metal",
+     "name": "manganese",
+     "median": 639.0,
+     "q1": 638.8,
+     "q3": 639.85,
+     "min": 638.5,
+     "max": 641.0,
+     "n": 15,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/R-12",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93633",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93621"
+     ]
+    },
+    {
+     "formula": "MnS",
+     "kind": "other",
+     "name": "manganese sulfide",
+     "median": 640.9,
+     "q1": 640.8,
+     "q3": 641.65,
+     "min": 640.3,
+     "max": 641.9,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26988",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27008",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27009"
+     ]
+    },
+    {
+     "formula": "MnO",
+     "kind": "oxide",
+     "name": "manganese(II) oxide",
+     "median": 641.3,
+     "q1": 640.7,
+     "q3": 641.5,
+     "min": 640.4,
+     "max": 642.5,
+     "n": 9,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26845",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26847",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26848"
+     ]
+    },
+    {
+     "formula": "Mn3O4",
+     "kind": "oxide",
+     "name": "Manganese(II,III) oxide",
+     "median": 641.4,
+     "q1": 641.2,
+     "q3": 641.5,
+     "min": 641.1,
+     "max": 641.9,
+     "n": 9,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26687",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26688",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26689"
+     ]
+    },
+    {
+     "formula": "Mn2O3",
+     "kind": "oxide",
+     "name": "manganese(III) oxide",
+     "median": 641.6,
+     "q1": 641.55,
+     "q3": 641.7,
+     "min": 641.2,
+     "max": 642.8,
+     "n": 11,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/48916",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26630",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26633"
+     ]
+    },
+    {
+     "formula": "MnO2",
+     "kind": "oxide",
+     "name": "manganese(IV) dioxide",
+     "median": 642.3,
+     "q1": 642.2,
+     "q3": 642.6,
+     "min": 641.1,
+     "max": 643.4,
+     "n": 14,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26501",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26502",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26503"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 130
+  },
+  "Mn2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 1
+  },
+  "Mn3p": {
+   "line": "3p",
+   "l": "p",
+   "ratio": 0.5,
+   "split": null,
+   "states": [
+    {
+     "formula": "Mn",
+     "kind": "metal",
+     "name": "manganese",
+     "median": 47.4,
+     "q1": 47.35,
+     "q3": 47.9,
+     "min": 47.2,
+     "max": 49.4,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29593",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29594",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111926"
+     ]
+    },
+    {
+     "formula": "MnO2",
+     "kind": "oxide",
+     "name": "manganese(IV) dioxide",
+     "median": 49.5,
+     "q1": 48.9,
+     "q3": 49.85,
+     "min": 48.3,
+     "max": 50.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29602",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29609",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/48906"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 34
+  },
+  "Mn3s": {
+   "line": "3s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "((C3H5)2C6H2OHCHN)4Mn2O2",
+     "kind": "other",
+     "name": "di-mu-oxo-bis[N(1),N(3)'-propylenebis(2-hydroxybenzylideneam",
+     "median": 89.01,
+     "q1": 85.83,
+     "q3": 90.76,
+     "min": 84.66,
+     "max": 92.13,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110331",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110332",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110333"
+     ]
+    },
+    {
+     "formula": "((C2H2)2C6H2OHCHN)2MnO",
+     "kind": "other",
+     "name": "oxo-N,N'-ethylenebis(2-hydroxybenzylideneaminato)manganese(I",
+     "median": 89.22,
+     "q1": 86.55,
+     "q3": 90.48,
+     "min": 83.88,
+     "max": 91.75,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110328",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110329",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110330"
+     ]
+    }
+   ],
+   "satellites": [
+    {
+     "formula": "MnO2",
+     "median": 88.5,
+     "min": 88.5,
+     "max": 88.5,
+     "n": 1
+    },
+    {
+     "formula": "MnCr2O4",
+     "median": 88.9,
+     "min": 88.9,
+     "max": 88.9,
+     "n": 1
+    },
+    {
+     "formula": "MnFe1.5Cr0.5O4",
+     "median": 89.0,
+     "min": 89.0,
+     "max": 89.0,
+     "n": 1
+    },
+    {
+     "formula": "MnFeCrO4",
+     "median": 89.1,
+     "min": 89.1,
+     "max": 89.1,
+     "n": 1
+    },
+    {
+     "formula": "MnFe2O4",
+     "median": 89.1,
+     "min": 89.1,
+     "max": 89.1,
+     "n": 1
+    },
+    {
+     "formula": "Mn2O3",
+     "median": 89.3,
+     "min": 89.3,
+     "max": 89.3,
+     "n": 1
+    },
+    {
+     "formula": "Mn3O4",
+     "median": 89.3,
+     "min": 89.3,
+     "max": 89.3,
+     "n": 1
+    },
+    {
+     "formula": "Mn0.75Fe0.25Cr2O4",
+     "median": 89.3,
+     "min": 89.3,
+     "max": 89.3,
+     "n": 1
+    },
+    {
+     "formula": "MnFe0.5Cr1.5O4",
+     "median": 89.6,
+     "min": 89.6,
+     "max": 89.6,
+     "n": 1
+    },
+    {
+     "formula": "K2MnO4",
+     "median": 91.15,
+     "min": 88.9,
+     "max": 93.4,
+     "n": 2
+    },
+    {
+     "formula": "KMnO4",
+     "median": 93.4,
+     "min": 93.4,
+     "max": 93.4,
+     "n": 1
+    }
+   ],
+   "n_records": 65
+  }
+ },
+ "auger": {
+  "line": "L3M23V",
+  "rows": []
+ }
+}

@@ -16,6 +16,7 @@
    "states": [
     {
      "formula": "Cu2Se",
+     "kind": "other",
      "name": "copper(I) selenide",
      "median": 931.9,
      "q1": 931.9,
@@ -31,6 +32,7 @@
     },
     {
      "formula": "CuInSe2",
+     "kind": "other",
      "name": "copper indium selenide",
      "median": 931.9,
      "q1": 931.85,
@@ -46,6 +48,7 @@
     },
     {
      "formula": "CuS",
+     "kind": "other",
      "name": "copper sulfide",
      "median": 932.2,
      "q1": 932.1,
@@ -61,6 +64,7 @@
     },
     {
      "formula": "CuFeS2",
+     "kind": "other",
      "name": "copper iron disulfide (chalcopyrite)",
      "median": 932.2,
      "q1": 932.1,
@@ -76,6 +80,7 @@
     },
     {
      "formula": "CuCl",
+     "kind": "other",
      "name": "copper(I) chloride",
      "median": 932.4,
      "q1": 932.25,
@@ -91,6 +96,7 @@
     },
     {
      "formula": "CuInS2",
+     "kind": "other",
      "name": "copper indium disulfide (roquesite)",
      "median": 932.4,
      "q1": 932.38,
@@ -106,6 +112,7 @@
     },
     {
      "formula": "Cu2O",
+     "kind": "oxide",
      "name": "copper(I) oxide",
      "median": 932.45,
      "q1": 932.3,
@@ -121,6 +128,7 @@
     },
     {
      "formula": "Cu2S",
+     "kind": "other",
      "name": "copper(I) sulfide",
      "median": 932.5,
      "q1": 932.4,
@@ -136,13 +144,14 @@
     },
     {
      "formula": "Cu",
+     "kind": "metal",
      "name": "copper",
      "median": 932.61,
-     "q1": 932.55,
+     "q1": 932.5,
      "q3": 932.7,
      "min": 932.2,
-     "max": 933.1,
-     "n": 29,
+     "max": 934.1,
+     "n": 41,
      "refs": [
       "https://srdata.nist.gov/xps/XPSSummaryPage/25744",
       "https://srdata.nist.gov/xps/XPSSummaryPage/25745",
@@ -151,6 +160,7 @@
     },
     {
      "formula": "CuO",
+     "kind": "oxide",
      "name": "copper(II) oxide",
      "median": 933.8,
      "q1": 933.45,
@@ -166,6 +176,7 @@
     },
     {
      "formula": "YBa2Cu3O7",
+     "kind": "other",
      "name": "ytrrium dibarium tricopper heptaoxide",
      "median": 934.15,
      "q1": 933.63,
@@ -181,6 +192,7 @@
     },
     {
      "formula": "CuBr2",
+     "kind": "other",
      "name": "copper(II) dibromide",
      "median": 934.5,
      "q1": 933.98,
@@ -196,6 +208,7 @@
     },
     {
      "formula": "Cu(OH)2",
+     "kind": "hydroxide",
      "name": "copper(II) hydroxide",
      "median": 934.55,
      "q1": 933.97,
@@ -211,6 +224,7 @@
     },
     {
      "formula": "CuCl2",
+     "kind": "other",
      "name": "copper(II) chloride",
      "median": 934.95,
      "q1": 934.3,
@@ -226,6 +240,7 @@
     },
     {
      "formula": "CuSO4",
+     "kind": "other",
      "name": "copper(II) sulfate",
      "median": 935.2,
      "q1": 934.9,
@@ -241,6 +256,7 @@
     },
     {
      "formula": "CuF2",
+     "kind": "other",
      "name": "copper(II) difluoride",
      "median": 936.3,
      "q1": 936.02,
@@ -274,6 +290,7 @@
    "states": [
     {
      "formula": "Cu",
+     "kind": "metal",
      "name": "copper",
      "median": 1096.7,
      "q1": 1096.55,
@@ -304,6 +321,7 @@
    "states": [
     {
      "formula": "Cu",
+     "kind": "metal",
      "name": "copper",
      "median": 75.1,
      "q1": 74.97,
@@ -319,6 +337,7 @@
     },
     {
      "formula": "Cu2O",
+     "kind": "oxide",
      "name": "copper(I) oxide",
      "median": 75.15,
      "q1": 75.07,
@@ -344,6 +363,7 @@
    "states": [
     {
      "formula": "Cu2O",
+     "kind": "oxide",
      "name": "copper(I) oxide",
      "median": 122.4,
      "q1": 122.3,
@@ -359,6 +379,7 @@
     },
     {
      "formula": "Cu",
+     "kind": "metal",
      "name": "copper",
      "median": 122.46,
      "q1": 122.43,
@@ -374,6 +395,7 @@
     },
     {
      "formula": "CuO",
+     "kind": "oxide",
      "name": "copper(II) oxide",
      "median": 123.9,
      "q1": 123.5,

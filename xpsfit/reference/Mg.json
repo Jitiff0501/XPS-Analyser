@@ -1,0 +1,139 @@
+{
+ "element": "Mg",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 162,
+ "orbitals": {
+  "Mg1s": {
+   "line": "1s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "Mg",
+     "kind": "metal",
+     "name": "",
+     "median": 1303.2,
+     "q1": 1303.15,
+     "q3": 1303.43,
+     "min": 1303.0,
+     "max": 1303.8,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21789",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21798",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21808"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 24
+  },
+  "Mg2p": {
+   "line": "2p3/2（含未分辨的 2p）",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 0.28,
+    "n": 1,
+    "min": 0.28,
+    "max": 0.28
+   },
+   "states": [
+    {
+     "formula": "Mg",
+     "kind": "metal",
+     "name": "",
+     "median": 49.65,
+     "q1": 49.55,
+     "q3": 49.78,
+     "min": 49.3,
+     "max": 49.95,
+     "n": 12,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/R-3",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43584",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2179"
+     ]
+    },
+    {
+     "formula": "MgO",
+     "kind": "oxide",
+     "name": "",
+     "median": 50.8,
+     "q1": 50.52,
+     "q3": 50.9,
+     "min": 50.25,
+     "max": 51.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43585",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25027",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25047"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 77
+  },
+  "Mg2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "MgO",
+     "kind": "oxide",
+     "name": "",
+     "median": 88.1,
+     "q1": 88.0,
+     "q3": 88.1,
+     "min": 87.9,
+     "max": 88.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27460",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27465",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111078"
+     ]
+    },
+    {
+     "formula": "Mg",
+     "kind": "metal",
+     "name": "",
+     "median": 88.6,
+     "q1": 88.55,
+     "q3": 88.6,
+     "min": 88.5,
+     "max": 89.0,
+     "n": 9,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27362",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27363",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27364"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 29
+  }
+ },
+ "auger": {
+  "line": "KL23L23(1D)",
+  "rows": [
+   {
+    "formula": "MgF2",
+    "ke": 1178.15,
+    "n": 3
+   },
+   {
+    "formula": "Mg",
+    "ke": 1185.5,
+    "n": 11,
+    "alpha": 1235.15,
+    "alpha_line": "2p3/2（含未分辨的 2p）"
+   }
+  ]
+ }
+}

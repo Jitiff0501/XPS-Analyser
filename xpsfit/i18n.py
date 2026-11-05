@@ -34,6 +34,8 @@ PHRASES = {
     "在图上点击放置文字": "Click on the plot to place the text", "在图上点击放置虚线": "Click on the plot to place the line",
     "样品名": "Sample names",
     "一键拟合时使用的化学态（Al2p、Co2p、Cr2p、Cu2p、Fe2p）": "Chemical states used by the one-click fit (Al2p, Co2p, Cr2p, Cu2p, Fe2p)",
+    "一键拟合时使用的化学态（Al2p、Co2p、Cr2p、Cu2p、Fe2p 及按 NIST 数据库建模的 Ti2p、Zr3d、Nb3d、Ta4f、Hf4f、Mo3d、Ni2p、Mn2p、Si2p 等）":
+        "Chemical states used by the one-click fit (Al2p, Co2p, Cr2p, Cu2p, Fe2p, and orbitals modelled from the NIST database such as Ti2p, Zr3d, Nb3d, Ta4f, Hf4f, Mo3d, Ni2p, Mn2p, Si2p)",
     "金属态、氧化态都先放进模型，由 BIC 判断是否需要；比例不唯一时给出范围": "Metal and oxide both start in the model; BIC decides whether each is needed; a range is given when the fraction is not unique",
     "金属+氧化": "Metal+oxide", "金属态与氧化态都保留": "Keep both metal and oxide states", "仅金属": "Metal only", "仅氧化": "Oxide only",
     "只用金属态（不加氧化峰）；数据明显显示氧化时会提醒": "Metal states only (no oxide peaks); warns if the data clearly show oxide",
@@ -45,8 +47,8 @@ PHRASES = {
     "Cu2p：按选择不加 Cu²⁺，只用 Cu⁰/Cu⁺（Cu⁰ 与 Cu₂O 的 2p3/2 不可分）": "Cu2p: no Cu²⁺ as chosen; Cu⁰/Cu⁺ only (Cu⁰ and Cu₂O 2p3/2 cannot be separated)",
     "Co2p：Co⁰ 不对称双峰；Co²⁺ 双峰 + 卫星 ~786 / ~802 eV；双峰关系按文献范围（Co⁰ Δ14.9–15.1，Co²⁺ Δ15.1–16.0）":
         "Co2p: Co⁰ asymmetric doublet; Co²⁺ doublet + satellites ~786 / ~802 eV; doublet relations within literature ranges (Co⁰ Δ14.9–15.1, Co²⁺ Δ15.1–16.0)",
-    "Cr2p：Cr⁰ 不对称双峰；Cr³⁺ 双峰（多重分裂以宽峰近似）；双峰关系按文献范围（Cr⁰ Δ9.2–9.4，Cr³⁺ Δ9.5–9.9）":
-        "Cr2p: Cr⁰ asymmetric doublet; Cr³⁺ doublet (multiplets approximated by a broad peak); doublet relations within literature ranges (Cr⁰ Δ9.2–9.4, Cr³⁺ Δ9.5–9.9)",
+    "Cr2p：Cr⁰ 不对称双峰；Cr³⁺ 双峰（多重分裂以宽峰近似）；双峰关系按文献范围（Cr⁰ Δ9.2–9.4，Cr³⁺ Δ9.4–9.9）":
+        "Cr2p: Cr⁰ asymmetric doublet; Cr³⁺ doublet (multiplets approximated by a broad peak); doublet relations within literature ranges (Cr⁰ Δ9.2–9.4, Cr³⁺ Δ9.4–9.9)",
     "（风险：低）": " (risk: low)", "（风险：中）": " (risk: medium)", "（风险：高）": " (risk: high)", "（风险：最高）": " (risk: highest)",
     "逐步放宽约束": "Relax constraints step by step", "放宽一级 ▸": "Relax one level ▸", "撤销": "Undo", "自动": "Auto",
     "按风险从低到高，放开下一级约束并重新拟合": "Release the next constraint (lowest risk first) and refit",
@@ -257,6 +259,11 @@ PHRASES = {
 
 # ------------------------------------------------------------------ 含变量的句子：中文 printf 模板 → 英文（{0}{1}… 为各变量，变量本身也会递归翻译）
 TEMPLATES = [
+    ("%s：没有内置模型 → 按 NIST 数据库（SRD 20）建模，候选化学态 %s；拟合后逐个去掉 BIC 改善最多的候选，只保留数据需要的",
+     "{0}: no built-in model → modelled from the NIST database (SRD 20); candidate states {1}; after fitting, the candidate whose removal improves BIC most is dropped repeatedly, keeping only what the data need"),
+    ("%s %.1f eV（n=%d）", "{0} {1} eV (n={2})"),
+    ("保留的化学态：%s", "States kept: {0}"),
+    ("%s（含未分辨的 %s）", "{0} (incl. unresolved {1})"),
     ("已通过的检查与说明（%d）", "Passed checks and notes ({0})"),
     ("未检出（S/N %s < 4）", "Not detected (S/N {0} < 4)"),
     ("未检出：%s 主线区间 %.1f–%.1f eV 内 S/N %.1f < %.0f（检出限）→ 没有可靠的信号，不拟合峰；定量时按检出限给出上限",
@@ -265,8 +272,8 @@ TEMPLATES = [
     ("信号：S/N %.0f（≥ %.0f 已检出，但 < %.0f 定量限：照常拟合，比例的不确定性大）",
      "Signal: S/N {0} (≥ {1} detected, but < {2} quantification limit: fitted as usual, fractions uncertain)"),
     ("堆叠对比 · %s", "Stack compare · {0}"),
-    ("⚠ 样品一致性：%s 的氧化态比例（%.0f%%）明显高于更易氧化的 %s。按热力学，%s 不应先于它们氧化——%s 的“氧化态”可能是金属线形（长拖尾、损失结构、2p1/2 展宽）造成的假象；可用“仅金属”对比",
-     "⚠ Sample consistency: the oxide fraction of {0} ({1}%) is clearly higher than that of the more easily oxidized {2}. Thermodynamically {3} should not oxidize before them — the “oxide” of {4} may be an artefact of the metal line shape (long tail, loss features, 2p1/2 broadening); compare with “Metal only”"),
+    ("⚠ 样品一致性：%s 的氧化态比例（%.0f%%）明显高于更易氧化的 %s。按热力学，%s 不应先于它们氧化——%s 的“氧化态”可能是金属线形（长拖尾、损失结构、1/2 分量展宽）造成的假象；可用“仅金属”对比",
+     "⚠ Sample consistency: the oxide fraction of {0} ({1}%) is clearly higher than that of the more easily oxidized {2}. Thermodynamically {3} should not oxidize before them — the “oxide” of {4} may be an artefact of the metal line shape (long tail, loss features, broadening of the 1/2 component); compare with “Metal only”"),
     ("%s（仅金属）：金属拖尾放宽到 T ≤ 0.8、τ ≤ 8 eV，L%% 在 0–80%% 内拟合（没有氧化态需要保护）",
      "{0} (metal only): metal tail widened to T ≤ 0.8, τ ≤ 8 eV, L% fitted within 0–80% (no oxide state to protect)"),
     ("⚠ 数据显示存在%s：自动判断（含%s）的 BIC 低 %.0f（%s）。按选择未加入，当前比例可能不可靠",

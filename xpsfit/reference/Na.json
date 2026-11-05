@@ -1,0 +1,237 @@
+{
+ "element": "Na",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 281,
+ "orbitals": {
+  "Na1s": {
+   "line": "1s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "Na3PO4",
+     "kind": "other",
+     "name": "sodium phosphate",
+     "median": 1071.1,
+     "q1": 1071.0,
+     "q3": 1071.2,
+     "min": 1070.9,
+     "max": 1071.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22345",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22359",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22396"
+     ]
+    },
+    {
+     "formula": "Na2SO4",
+     "kind": "other",
+     "name": "sodium sulfate",
+     "median": 1071.2,
+     "q1": 1071.2,
+     "q3": 1071.85,
+     "min": 1071.2,
+     "max": 1072.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22373",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22375",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22379"
+     ]
+    },
+    {
+     "formula": "NaF",
+     "kind": "other",
+     "name": "sodium fluoride",
+     "median": 1071.25,
+     "q1": 1071.1,
+     "q3": 1071.65,
+     "min": 1070.8,
+     "max": 1072.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20769",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20771",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20825"
+     ]
+    },
+    {
+     "formula": "Na2SO3",
+     "kind": "other",
+     "name": "sodium sulfite",
+     "median": 1071.4,
+     "q1": 1071.35,
+     "q3": 1072.1,
+     "min": 1071.3,
+     "max": 1072.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22303",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22309",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22315"
+     ]
+    },
+    {
+     "formula": "Na2CO3",
+     "kind": "other",
+     "name": "sodium carbonate",
+     "median": 1071.5,
+     "q1": 1071.5,
+     "q3": 1071.6,
+     "min": 1071.5,
+     "max": 1071.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20602",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20605",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20609"
+     ]
+    },
+    {
+     "formula": "Na",
+     "kind": "metal",
+     "name": "sodium",
+     "median": 1071.58,
+     "q1": 1071.25,
+     "q3": 1071.77,
+     "min": 1070.8,
+     "max": 1071.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21910",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21931",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21949"
+     ]
+    },
+    {
+     "formula": "NaBr",
+     "kind": "other",
+     "name": "sodium bromide",
+     "median": 1071.7,
+     "q1": 1071.55,
+     "q3": 1072.1,
+     "min": 1071.4,
+     "max": 1072.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21866",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21873",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21875"
+     ]
+    },
+    {
+     "formula": "NaCl",
+     "kind": "other",
+     "name": "sodium chloride",
+     "median": 1071.7,
+     "q1": 1071.57,
+     "q3": 1072.35,
+     "min": 1071.2,
+     "max": 1072.8,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21880",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21884",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21888"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 134
+  },
+  "Na2p": {
+   "line": "2p",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 0.14,
+    "n": 1,
+    "min": 0.14,
+    "max": 0.14
+   },
+   "states": [
+    {
+     "formula": "Na",
+     "kind": "metal",
+     "name": "sodium",
+     "median": 30.51,
+     "q1": 30.48,
+     "q3": 30.59,
+     "min": 30.4,
+     "max": 30.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24775",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24776",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24783"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 23
+  },
+  "Na2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "Na2MoO4",
+     "kind": "other",
+     "name": "sodium molybdate",
+     "median": 62.8,
+     "q1": 62.75,
+     "q3": 62.8,
+     "min": 62.6,
+     "max": 62.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/331",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40015",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27436"
+     ]
+    },
+    {
+     "formula": "Na",
+     "kind": "metal",
+     "name": "sodium",
+     "median": 63.64,
+     "q1": 63.53,
+     "q3": 63.71,
+     "min": 63.4,
+     "max": 63.75,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27380",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27384",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27389"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 51
+  }
+ },
+ "auger": {
+  "line": "KL23L23(1D)",
+  "rows": [
+   {
+    "formula": "NaCl",
+    "ke": 990.05,
+    "n": 4,
+    "alpha": 2061.75,
+    "alpha_line": "1s"
+   },
+   {
+    "formula": "Na",
+    "ke": 994.3,
+    "n": 3,
+    "alpha": 2065.88,
+    "alpha_line": "1s"
+   }
+  ]
+ }
+}

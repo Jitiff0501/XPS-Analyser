@@ -1,0 +1,1050 @@
+{
+ "element": "N",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 1823,
+ "orbitals": {
+  "N1s": {
+   "line": "1s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "CrN",
+     "kind": "other",
+     "name": "chromium nitride",
+     "median": 396.65,
+     "q1": 396.55,
+     "q3": 396.72,
+     "min": 396.4,
+     "max": 396.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110654",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21858",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21886"
+     ]
+    },
+    {
+     "formula": "TiN",
+     "kind": "other",
+     "name": "titanium nitride",
+     "median": 397.2,
+     "q1": 397.04,
+     "q3": 397.2,
+     "min": 396.9,
+     "max": 397.8,
+     "n": 10,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111111",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111113",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67151"
+     ]
+    },
+    {
+     "formula": "K4[Fe(CN)6]",
+     "kind": "other",
+     "name": "potassium hexacyanoferrate(II)",
+     "median": 397.8,
+     "q1": 397.8,
+     "q3": 397.9,
+     "min": 397.8,
+     "max": 398.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20516",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20520",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20522"
+     ]
+    },
+    {
+     "formula": "Si3N4",
+     "kind": "other",
+     "name": "silicon(IV) nitride",
+     "median": 397.9,
+     "q1": 397.65,
+     "q3": 398.28,
+     "min": 397.4,
+     "max": 398.6,
+     "n": 15,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5371",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5624",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5626"
+     ]
+    },
+    {
+     "formula": "BN",
+     "kind": "other",
+     "name": "boron nitride",
+     "median": 398.2,
+     "q1": 398.15,
+     "q3": 398.2,
+     "min": 398.0,
+     "max": 399.0,
+     "n": 11,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5373",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/54536",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110755"
+     ]
+    },
+    {
+     "formula": "C44H30N4",
+     "kind": "other",
+     "name": "5,10,15,20-tetraphenylporphine",
+     "median": 398.6,
+     "q1": 397.85,
+     "q3": 399.52,
+     "min": 397.2,
+     "max": 400.1,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5539",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5540",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21091"
+     ]
+    },
+    {
+     "formula": "C36H46N4",
+     "kind": "other",
+     "name": "2,3,7,8,12,13,17,18-octaethylporphyrin",
+     "median": 398.6,
+     "q1": 397.58,
+     "q3": 399.63,
+     "min": 397.5,
+     "max": 399.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5543",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5544",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69958"
+     ]
+    },
+    {
+     "formula": "NH3",
+     "kind": "other",
+     "name": "ammonia",
+     "median": 398.8,
+     "q1": 398.7,
+     "q3": 399.2,
+     "min": 398.6,
+     "max": 399.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21265",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21268",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21304"
+     ]
+    },
+    {
+     "formula": "C3N6H6",
+     "kind": "other",
+     "name": "melamine",
+     "median": 398.85,
+     "q1": 398.4,
+     "q3": 399.28,
+     "min": 398.3,
+     "max": 399.5,
+     "n": 10,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114274",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114275",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114277"
+     ]
+    },
+    {
+     "formula": "C12H8N2",
+     "kind": "other",
+     "name": "phenazine",
+     "median": 398.9,
+     "q1": 398.75,
+     "q3": 398.98,
+     "min": 398.6,
+     "max": 399.0,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5614",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5703",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21635"
+     ]
+    },
+    {
+     "formula": "C44H28ClFeN4",
+     "kind": "other",
+     "name": "iron tetraphenylporphyrin chloride",
+     "median": 398.94,
+     "q1": 398.67,
+     "q3": 399.3,
+     "min": 398.0,
+     "max": 400.3,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111581",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111582",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111583"
+     ]
+    },
+    {
+     "formula": "KCN",
+     "kind": "other",
+     "name": "potassium cyanide",
+     "median": 399.05,
+     "q1": 398.25,
+     "q3": 400.0,
+     "min": 398.1,
+     "max": 400.6,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20492",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20494",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20566"
+     ]
+    },
+    {
+     "formula": "C5H5N",
+     "kind": "other",
+     "name": "pyridine",
+     "median": 399.05,
+     "q1": 398.75,
+     "q3": 399.43,
+     "min": 398.6,
+     "max": 399.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21394",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21470",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21532"
+     ]
+    },
+    {
+     "formula": "(-C6H4-C6H2N2CHC-)n",
+     "kind": "other",
+     "name": "poly(phenylquinoxaline)",
+     "median": 399.1,
+     "q1": 399.1,
+     "q3": 399.15,
+     "min": 399.1,
+     "max": 399.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/55838",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92561",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113939"
+     ]
+    },
+    {
+     "formula": "C48H26N8",
+     "kind": "other",
+     "name": "5,10,15,20-tetrakis(4-cyanophenyl)porphyrin",
+     "median": 399.1,
+     "q1": 398.45,
+     "q3": 399.5,
+     "min": 397.8,
+     "max": 399.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69967",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69968",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69969"
+     ]
+    },
+    {
+     "formula": "(CH3)2NC6H4NO2",
+     "kind": "other",
+     "name": "N,N-dimethyl-4-nitro-benzenamine",
+     "median": 399.3,
+     "q1": 399.2,
+     "q3": 401.95,
+     "min": 399.1,
+     "max": 404.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20776",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20837",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20844"
+     ]
+    },
+    {
+     "formula": "CH3CN",
+     "kind": "other",
+     "name": "acetonitrile",
+     "median": 399.4,
+     "q1": 398.3,
+     "q3": 399.75,
+     "min": 397.2,
+     "max": 400.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21277",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21310",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21312"
+     ]
+    },
+    {
+     "formula": "NH2C6H4NO2",
+     "kind": "other",
+     "name": "3-nitro-benzenamine",
+     "median": 399.5,
+     "q1": 399.3,
+     "q3": 404.8,
+     "min": 399.0,
+     "max": 405.6,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21610",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21612",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21614"
+     ]
+    },
+    {
+     "formula": "Sn((C5H4N)N=N(C5H4N))Br4",
+     "kind": "other",
+     "name": "(2,2'-azobis-pyridil) tin tetrabromide",
+     "median": 399.6,
+     "q1": 399.08,
+     "q3": 400.12,
+     "min": 398.4,
+     "max": 400.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/1930",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/1927",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/1928"
+     ]
+    },
+    {
+     "formula": "[Rh2(CH3COO)4(C5H5N)2]",
+     "kind": "other",
+     "name": "tetrakis(mu-(acetato-O,O'))bis(pyridine)dirhodium",
+     "median": 399.6,
+     "q1": 399.6,
+     "q3": 399.6,
+     "min": 399.6,
+     "max": 399.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20322",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20324",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20375"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C(O)NH2)-)n",
+     "kind": "other",
+     "name": "poly(acrylamide)",
+     "median": 399.6,
+     "q1": 399.6,
+     "q3": 399.72,
+     "min": 399.6,
+     "max": 399.83,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22882",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44241",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/1753"
+     ]
+    },
+    {
+     "formula": "(-C6H5NH-)n",
+     "kind": "other",
+     "name": "poly(aniline)",
+     "median": 399.65,
+     "q1": 398.72,
+     "q3": 401.08,
+     "min": 397.3,
+     "max": 403.0,
+     "n": 18,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66740",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66741",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66742"
+     ]
+    },
+    {
+     "formula": "NH2CSNH2",
+     "kind": "other",
+     "name": "thiourea",
+     "median": 399.7,
+     "q1": 399.45,
+     "q3": 399.8,
+     "min": 399.2,
+     "max": 399.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21440",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21442",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21492"
+     ]
+    },
+    {
+     "formula": "C6H6N4O2",
+     "kind": "other",
+     "name": "3,7-dihydro-7-methyl-1H-purine-2,6-dione",
+     "median": 399.7,
+     "q1": 399.58,
+     "q3": 399.8,
+     "min": 399.5,
+     "max": 399.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21618",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21620",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21714"
+     ]
+    },
+    {
+     "formula": "C44H26N8O8",
+     "kind": "other",
+     "name": "5,10,15,20-tetrakis(4-nitrophenyl)porphyrin",
+     "median": 399.8,
+     "q1": 398.75,
+     "q3": 402.75,
+     "min": 397.7,
+     "max": 405.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69975",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69976",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69977"
+     ]
+    },
+    {
+     "formula": "B33.8N6.6O59.5",
+     "kind": "other",
+     "name": "boron oxide nitride (B33.8N6.6O59.5)",
+     "median": 399.9,
+     "q1": 399.15,
+     "q3": 400.9,
+     "min": 398.4,
+     "max": 401.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110731",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110732",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110733"
+     ]
+    },
+    {
+     "formula": "C12H8N2.HCl",
+     "kind": "other",
+     "name": "1,10-phenanthroline hydrochloride",
+     "median": 400.05,
+     "q1": 399.0,
+     "q3": 401.1,
+     "min": 399.0,
+     "max": 401.1,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5720",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5721",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23747"
+     ]
+    },
+    {
+     "formula": "B35.0N14.8O50.0",
+     "kind": "other",
+     "name": "boron oxide nitride (B35.0N14.8O50.0)",
+     "median": 400.1,
+     "q1": 399.2,
+     "q3": 401.0,
+     "min": 398.3,
+     "max": 401.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110743",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110744",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110745"
+     ]
+    },
+    {
+     "formula": "(C2H5)2NC6H4CHNN(C6H5)2",
+     "kind": "other",
+     "name": "4-diethylaminobenzaldehyde diphenylhydrazone",
+     "median": 400.1,
+     "q1": 399.8,
+     "q3": 400.3,
+     "min": 399.5,
+     "max": 400.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90009",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90010",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90011"
+     ]
+    },
+    {
+     "formula": "[NH4]10[W12O41]",
+     "kind": "other",
+     "name": "decaammonium dodecawolframate(VI)",
+     "median": 400.1,
+     "q1": 398.13,
+     "q3": 401.6,
+     "min": 395.5,
+     "max": 402.6,
+     "n": 10,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23086",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23088",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23090"
+     ]
+    },
+    {
+     "formula": "B35.7N10.1O53.9",
+     "kind": "other",
+     "name": "boron oxide nitride (B35.7N10.1O53.9)",
+     "median": 400.2,
+     "q1": 399.3,
+     "q3": 401.05,
+     "min": 398.4,
+     "max": 401.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110737",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110738",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110739"
+     ]
+    },
+    {
+     "formula": "[Pt(NH3)2]Cl2",
+     "kind": "other",
+     "name": "diammineplatinum dichloride",
+     "median": 400.2,
+     "q1": 400.2,
+     "q3": 400.2,
+     "min": 400.2,
+     "max": 400.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21665",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21668",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21670"
+     ]
+    },
+    {
+     "formula": "C6H4CN2HSH",
+     "kind": "other",
+     "name": "2-mercaptobenzimidazole",
+     "median": 400.4,
+     "q1": 399.9,
+     "q3": 400.4,
+     "min": 399.4,
+     "max": 400.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21631",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21632",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21633"
+     ]
+    },
+    {
+     "formula": "C6H5NHC(S)NHNHSO2C6H5",
+     "kind": "other",
+     "name": "4-phenyl-1-(phenylsulfonyl)-3-thiosemicarbazide",
+     "median": 400.5,
+     "q1": 399.8,
+     "q3": 400.8,
+     "min": 399.1,
+     "max": 401.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5515",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5516",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5517"
+     ]
+    },
+    {
+     "formula": "[Pt(NH3)2(NO2)2]",
+     "kind": "other",
+     "name": "diamminebis(nitrito)platinum (II)",
+     "median": 400.5,
+     "q1": 400.3,
+     "q3": 404.2,
+     "min": 400.3,
+     "max": 404.5,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21677",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21679",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21681"
+     ]
+    },
+    {
+     "formula": "C6H5(C4H2N2S)NHSO2C6H5",
+     "kind": "other",
+     "name": "4-phenyl-1-(phenylsulfonamido)-1H-pyrimidine-2-thione",
+     "median": 400.7,
+     "q1": 399.8,
+     "q3": 401.2,
+     "min": 398.9,
+     "max": 401.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5489",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5490",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5492"
+     ]
+    },
+    {
+     "formula": "C6H5(C4H2N2S)NHC6H5",
+     "kind": "other",
+     "name": "1-anilino-4-phenyl-1H-pyrimidine-2-thione",
+     "median": 400.7,
+     "q1": 399.85,
+     "q3": 401.1,
+     "min": 399.0,
+     "max": 401.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5511",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5512",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5513"
+     ]
+    },
+    {
+     "formula": "(-RNC(O)R'-C(O))n",
+     "kind": "other",
+     "name": "polyimide",
+     "median": 400.7,
+     "q1": 399.8,
+     "q3": 400.7,
+     "min": 398.9,
+     "max": 400.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23640",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23642",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23707"
+     ]
+    },
+    {
+     "formula": "(CH3CH2)2AlN3",
+     "kind": "other",
+     "name": "diethyl aluminum azide",
+     "median": 400.8,
+     "q1": 400.3,
+     "q3": 402.6,
+     "min": 399.8,
+     "max": 404.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/415",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/416",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/417"
+     ]
+    },
+    {
+     "formula": "CxHy(Cl)vNOz",
+     "kind": "other",
+     "name": "chlorine-doped poly(aniline) oxide",
+     "median": 400.9,
+     "q1": 400.2,
+     "q3": 401.72,
+     "min": 399.6,
+     "max": 402.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93907",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93908",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93909"
+     ]
+    },
+    {
+     "formula": "[(C2H5)2AlNNN]3",
+     "kind": "other",
+     "name": "tris(mu-azido)hexaethyltrialuminum",
+     "median": 401.0,
+     "q1": 400.25,
+     "q3": 402.7,
+     "min": 399.5,
+     "max": 404.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41270",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41271",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41272"
+     ]
+    },
+    {
+     "formula": "(NH4)Cl",
+     "kind": "other",
+     "name": "ammonium chloride",
+     "median": 401.5,
+     "q1": 401.18,
+     "q3": 401.77,
+     "min": 400.8,
+     "max": 402.0,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21364",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21370",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21454"
+     ]
+    },
+    {
+     "formula": "NaN3",
+     "kind": "other",
+     "name": "sodium azide",
+     "median": 401.5,
+     "q1": 399.73,
+     "q3": 403.38,
+     "min": 398.5,
+     "max": 404.5,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21896",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21897",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21898"
+     ]
+    },
+    {
+     "formula": "[(CH3)2AlNNN]3",
+     "kind": "other",
+     "name": "tris(mu-azido)hexamethyltrialuminum",
+     "median": 401.6,
+     "q1": 401.3,
+     "q3": 403.55,
+     "min": 401.0,
+     "max": 405.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41266",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41267",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41268"
+     ]
+    },
+    {
+     "formula": "CH2O2C6H3CHC(CN)2",
+     "kind": "other",
+     "name": "1,3-dicyano-2-(3,4-methylenedioxybenzylidene)-propane",
+     "median": 401.7,
+     "q1": 400.45,
+     "q3": 402.7,
+     "min": 399.2,
+     "max": 403.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23299",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23467",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23490"
+     ]
+    },
+    {
+     "formula": "[(CH3)4N]Cl",
+     "kind": "other",
+     "name": "tetramethylammonium chloride",
+     "median": 401.9,
+     "q1": 401.65,
+     "q3": 402.15,
+     "min": 401.5,
+     "max": 402.3,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20915",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20916",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20918"
+     ]
+    },
+    {
+     "formula": "[Rh(NH3)3](NO2)3",
+     "kind": "other",
+     "name": "triamminerhodium(III) trinitrite",
+     "median": 402.25,
+     "q1": 400.3,
+     "q3": 404.2,
+     "min": 400.3,
+     "max": 404.2,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21586",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21593",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21699"
+     ]
+    },
+    {
+     "formula": "NO2C6H3CHC(CN)2",
+     "kind": "other",
+     "name": "1,3-dicyano-2-(3-nitrobenzylidene)-propane",
+     "median": 402.35,
+     "q1": 400.12,
+     "q3": 404.8,
+     "min": 399.2,
+     "max": 405.7,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23303",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23305",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23307"
+     ]
+    },
+    {
+     "formula": "[Rh(NH3)3](NO3)3",
+     "kind": "other",
+     "name": "triamminerhodium(III) trinitrate",
+     "median": 403.7,
+     "q1": 400.3,
+     "q3": 407.1,
+     "min": 400.3,
+     "max": 407.1,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21577",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21579",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21581"
+     ]
+    },
+    {
+     "formula": "NaNO2",
+     "kind": "other",
+     "name": "sodium nitrite",
+     "median": 403.9,
+     "q1": 403.8,
+     "q3": 404.9,
+     "min": 403.3,
+     "max": 405.0,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21864",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21871",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21874"
+     ]
+    },
+    {
+     "formula": "K3[Rh(NO2)6]",
+     "kind": "other",
+     "name": "tripotassium hexanitritorhodate(III)",
+     "median": 404.1,
+     "q1": 404.1,
+     "q3": 404.1,
+     "min": 404.1,
+     "max": 404.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21966",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21967",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21968"
+     ]
+    },
+    {
+     "formula": "NH4NO3",
+     "kind": "other",
+     "name": "ammonium nitrate",
+     "median": 404.3,
+     "q1": 401.9,
+     "q3": 406.23,
+     "min": 400.9,
+     "max": 408.0,
+     "n": 12,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21382",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21396",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21400"
+     ]
+    },
+    {
+     "formula": "(C6H5NN).BF4",
+     "kind": "other",
+     "name": "phenyldiazo tetrafluoroborate (ionic)",
+     "median": 404.75,
+     "q1": 404.35,
+     "q3": 405.15,
+     "min": 403.6,
+     "max": 405.9,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21358",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21360",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21452"
+     ]
+    },
+    {
+     "formula": "Sr(NO3)2",
+     "kind": "other",
+     "name": "strontium nitrate",
+     "median": 407.3,
+     "q1": 407.3,
+     "q3": 407.5,
+     "min": 407.3,
+     "max": 408.1,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111070",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66381",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21876"
+     ]
+    },
+    {
+     "formula": "Ba(NO3)2",
+     "kind": "other",
+     "name": "barium(II) nitrate",
+     "median": 407.3,
+     "q1": 407.3,
+     "q3": 407.4,
+     "min": 407.3,
+     "max": 407.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66393",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21792",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21793"
+     ]
+    },
+    {
+     "formula": "K3[Rh(NO3)6]",
+     "kind": "other",
+     "name": "tripotassium nitratorhodate",
+     "median": 407.3,
+     "q1": 407.3,
+     "q3": 407.3,
+     "min": 407.3,
+     "max": 407.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21923",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21950",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21951"
+     ]
+    },
+    {
+     "formula": "N2O",
+     "kind": "oxide",
+     "name": "dinitrogen oxide on aluminum",
+     "median": 407.4,
+     "q1": 407.3,
+     "q3": 407.4,
+     "min": 407.1,
+     "max": 407.4,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5014",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/4995",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/4999"
+     ]
+    },
+    {
+     "formula": "NaNO3",
+     "kind": "other",
+     "name": "sodium nitrate",
+     "median": 407.4,
+     "q1": 407.33,
+     "q3": 407.85,
+     "min": 407.3,
+     "max": 408.2,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21902",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21904",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21926"
+     ]
+    }
+   ],
+   "satellites": [
+    {
+     "formula": "TiN0.9",
+     "median": 398.67,
+     "min": 398.67,
+     "max": 398.67,
+     "n": 1
+    },
+    {
+     "formula": "LiC12H4N4",
+     "median": 401.27,
+     "min": 401.27,
+     "max": 401.27,
+     "n": 1
+    },
+    {
+     "formula": "(CN)2=C=C6H4=C=(CN)2",
+     "median": 401.8,
+     "min": 401.8,
+     "max": 401.8,
+     "n": 1
+    },
+    {
+     "formula": "Cu(C12H4N4)2",
+     "median": 401.97,
+     "min": 401.97,
+     "max": 401.97,
+     "n": 1
+    },
+    {
+     "formula": "C12H4N4",
+     "median": 402.17,
+     "min": 402.17,
+     "max": 402.17,
+     "n": 1
+    },
+    {
+     "formula": "C12H4N4/Ni",
+     "median": 402.2,
+     "min": 402.2,
+     "max": 402.2,
+     "n": 1
+    },
+    {
+     "formula": "C10H4N2O4/Ag",
+     "median": 406.2,
+     "min": 406.2,
+     "max": 406.2,
+     "n": 1
+    },
+    {
+     "formula": "NH2C6H4NH2",
+     "median": 406.5,
+     "min": 406.5,
+     "max": 406.5,
+     "n": 1
+    },
+    {
+     "formula": "(-OC(O)NHC6H4CH2C6H4NHC(O)OCH2(CF2)2CH2-)n",
+     "median": 406.6,
+     "min": 406.6,
+     "max": 406.6,
+     "n": 1
+    },
+    {
+     "formula": "(-NHC(O)NHC6H4CH2C6H4NHC(O)NHC6F4C6F4-)n",
+     "median": 406.7,
+     "min": 406.7,
+     "max": 406.7,
+     "n": 1
+    },
+    {
+     "formula": "(-NHC(O)NHC6H4CH2C6H4NHC(O)NHC6F4-)n",
+     "median": 406.7,
+     "min": 406.7,
+     "max": 406.7,
+     "n": 1
+    },
+    {
+     "formula": "((-CH2CH(C6H5)-)a(-CH2CH(C3H3N2)-)b)n",
+     "median": 406.8,
+     "min": 406.8,
+     "max": 406.8,
+     "n": 1
+    },
+    {
+     "formula": "((-OC(O)NHC6H4CH2C6H4NHC(O)OCH2(CF2)3CH2-)n",
+     "median": 407.9,
+     "min": 407.9,
+     "max": 407.9,
+     "n": 1
+    }
+   ],
+   "n_records": 1800
+  },
+  "N2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 5
+  }
+ },
+ "auger": {
+  "line": "KVV",
+  "rows": []
+ }
+}

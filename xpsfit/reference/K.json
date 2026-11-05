@@ -1,0 +1,138 @@
+{
+ "element": "K",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 213,
+ "orbitals": {
+  "K2p": {
+   "line": "2p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 2.75,
+    "n": 2,
+    "min": 2.7,
+    "max": 2.8
+   },
+   "states": [
+    {
+     "formula": "KCl",
+     "kind": "other",
+     "name": "",
+     "median": 292.75,
+     "q1": 292.62,
+     "q3": 292.8,
+     "min": 292.4,
+     "max": 292.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25765",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25767",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25769"
+     ]
+    },
+    {
+     "formula": "K2[IrCl6]",
+     "kind": "other",
+     "name": "",
+     "median": 292.8,
+     "q1": 292.8,
+     "q3": 292.85,
+     "min": 292.8,
+     "max": 292.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25841",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25843",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25866"
+     ]
+    },
+    {
+     "formula": "KF",
+     "kind": "other",
+     "name": "",
+     "median": 292.8,
+     "q1": 292.65,
+     "q3": 292.95,
+     "min": 292.5,
+     "max": 293.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25890",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25894",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25898"
+     ]
+    },
+    {
+     "formula": "KBr",
+     "kind": "other",
+     "name": "",
+     "median": 292.95,
+     "q1": 292.9,
+     "q3": 293.02,
+     "min": 292.9,
+     "max": 293.1,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26412",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26415",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26416"
+     ]
+    },
+    {
+     "formula": "K2[OsCl6]",
+     "kind": "other",
+     "name": "",
+     "median": 293.0,
+     "q1": 292.95,
+     "q3": 293.0,
+     "min": 292.9,
+     "max": 293.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25849",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25824",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25867"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 135
+  },
+  "K2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 9
+  },
+  "K3p": {
+   "line": "3p3/2（含未分辨的 3p）",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 0.25,
+    "n": 1,
+    "min": 0.25,
+    "max": 0.25
+   },
+   "states": [],
+   "satellites": [],
+   "n_records": 20
+  },
+  "K3s": {
+   "line": "3s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 4
+  }
+ },
+ "auger": {
+  "line": "L2M23M23(1D)",
+  "rows": []
+ }
+}

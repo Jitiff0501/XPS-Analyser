@@ -338,7 +338,7 @@ def recipe(s, log, oxide="auto"):
                  + [_SAT("Co2+ sat. 2p3/2", "Co2+ 2p3/2", 786.0, 5.0, 783.5, 788.5, wmax=6.0, ratio=(0.3, 0.9)),
                     _SAT("Co2+ sat. 2p1/2", "Co2+ 2p1/2", 802.3, 5.0, 800.0, 804.5, wmax=6.0, ratio=(0.3, 0.9))])
         else:
-            log("Cr2p：Cr⁰ 不对称双峰；Cr³⁺ 双峰（多重分裂以宽峰近似）；双峰关系按文献范围（Cr⁰ Δ9.2–9.4，Cr³⁺ Δ9.5–9.9）")
+            log("Cr2p：Cr⁰ 不对称双峰；Cr³⁺ 双峰（多重分裂以宽峰近似）；双峰关系按文献范围（Cr⁰ Δ9.2–9.4，Cr³⁺ Δ9.4–9.9）")
             m = _D("Cr0", 574.2, None, None, 1.2, shape="Asym", lo=573.6, hi=574.7, orb="Cr2p")
             o = _D("Cr3+", 576.4, None, None, 2.6, lo=575.6, hi=577.3, orb="Cr2p")
         _kind(m, "metal"); _kind(o, "oxide")
@@ -402,7 +402,153 @@ def recipe(s, log, oxide="auto"):
             m.append(_P("M-C carbide", 283.0, 1.1, lo=282.3, hi=283.6))
         return m + [_P("C-C/C-H", 284.8, 1.3, lo=284.3, hi=285.3), _P("C-O", 286.3, 1.4, lo=285.8, hi=287.0),
                     _P("C=O / O-C=O", 288.6, 1.6, lo=287.6, hi=289.6)]
-    return None
+    return nist_model(s, log, oxide)
+
+
+# ------------------------------------------------------------------ 没有内置模型的轨道：按 NIST 数据库建模
+NIST_KINDS = ("metal", "oxide", "hydroxide", "nitride", "carbide", "oxynitride")
+NIST_MIN_N = 3          # 至少几条 NIST 记录的化学态才作为候选
+NIST_MERGE = 0.8        # 中位数相差小于此值（eV）的化学态在常规分辨率下分不开，合并为一个候选
+
+
+def plausible_states(ref, s, sample_elements=None):
+    """参考库里与样品相符的化学态：化学式中的元素都在样品里（本元素、O、H 总是允许）。
+    不知道样品含哪些元素时只用单质 / 氧化物 / 氢氧化物——避免把残差峰叫成 AlF3、磷酸盐等样品里不可能有的化合物。"""
+    if not ref or ref.get("missing"):
+        return []
+    sample = set(sample_elements if sample_elements is not None else (getattr(s, "_sample_elements", None) or ()))
+    host = re.match(r"[A-Z][a-z]?", s.element or "")
+    allowed = {host.group(0) if host else "", "O", "H"} | sample
+    out = []
+    for t in ref.get("states", []):
+        if not sample:
+            ok = t.get("kind") in ("metal", "oxide", "hydroxide")
+        else:
+            ok = set(re.findall(r"[A-Z][a-z]?", t["formula"].replace("Ox", "O"))) <= allowed
+        if ok:
+            out.append(t)
+    return out
+
+
+def _ref_of(s):
+    ref = getattr(s, "_ref", None)
+    if ref is None:
+        try:
+            from . import reference
+            ref = reference.for_orbital(s.element)
+        except Exception:
+            ref = None
+    return ref if ref and not ref.get("missing") and ref.get("states") else None
+
+
+def nist_candidates(s, ref=None):
+    """NIST 中本元素的单质 / 氧化物 / 氢氧化物 / 氮化物 / 碳化物（≥ 3 条记录），落在数据窗口内的；相近的合并。
+    返回 [{name, kind, median, lo, hi, n, formulas}]，按 BE 排序。"""
+    ref = ref or _ref_of(s)
+    if not ref:
+        return []
+    el = re.match(r"^[A-Z][a-z]?", s.element or "").group(0) if re.match(r"^[A-Z][a-z]?", s.element or "") else ""
+    xlo, xhi = float(np.min(s.be)) + 0.5, float(np.max(s.be)) - 0.5
+    pool = plausible_states(ref, s) if getattr(s, "_sample_elements", None) else ref["states"]
+    st = [t for t in pool if t.get("kind") in NIST_KINDS and t["n"] >= NIST_MIN_N and xlo <= t["median"] <= xhi]
+    st.sort(key=lambda t: t["median"])
+    groups = []
+    for t in st:
+        if groups and t["median"] - groups[-1][-1]["median"] < NIST_MERGE and (t["kind"] == "metal") == (groups[-1][0]["kind"] == "metal"):
+            groups[-1].append(t)
+        else:
+            groups.append([t])
+    # 与单质相差 < NIST_MERGE 的化合物（如 MoN 228.4 与 Mo 228.0）按结合能分不开：样品里有对应元素（氮化物 N、
+    # 碳化物 C）时与单质合并为一个候选并写明（如 Mo0/MoN），否则不列为候选
+    sample = set(getattr(s, "_sample_elements", None) or ())
+    partner = {"nitride": "N", "carbide": "C", "oxynitride": "N"}
+    metal_g = next((g for g in groups if g[0]["kind"] == "metal"), None)
+    if metal_g:
+        mm = metal_g[0]["median"]
+        for g in [g for g in groups if g is not metal_g]:
+            if all(abs(t["median"] - mm) < NIST_MERGE for t in g):
+                keep = [t for t in g if partner.get(t["kind"]) in sample]
+                groups.remove(g)
+                metal_g.extend(keep)
+    out = []
+    for g in groups:
+        g.sort(key=lambda t: -t["n"])
+        top = g[0]
+        kinds = []
+        for t in g:                                # 名称：记录最多的化学式；不同类别（如氮化物与氧化物）一起写出
+            if t["kind"] not in [k for k, _ in kinds]:
+                kinds.append((t["kind"], t["formula"]))
+        if top["kind"] == "metal":
+            name = el + "0" + "".join("/" + f for k, f in kinds if k != "metal")[:12]
+        else:
+            name = "/".join(f for _, f in kinds[:2])
+        med = sum(t["median"] * t["n"] for t in g) / sum(t["n"] for t in g)
+        lo = min(min(t["q1"] for t in g), med - 0.3) - 0.3
+        hi = max(max(t["q3"] for t in g), med + 0.3) + 0.3
+        out.append({"name": name, "kind": "metal" if top["kind"] == "metal" else "oxide", "median": round(med, 2),
+                    "lo": round(max(lo, med - 0.9), 2), "hi": round(min(hi, med + 0.9), 2), "n": sum(t["n"] for t in g),
+                    "formulas": [t["formula"] for t in g]})
+    return out
+
+
+def nist_model(s, log, oxide="auto"):
+    """没有内置模型、但 NIST 数据库有本元素的单质 / 氧化物等数据时：每个化学态（NIST 中位数，峰位限制在四分位范围
+    放宽 0.3 eV、最多 ±0.9 eV）作为候选；p/d/f 轨道用自旋轨道双峰（文献范围），金属态用不对称峰。
+    拟合后逐个去掉 BIC 改善最多的候选（见 run），只保留数据需要的。"""
+    ref = _ref_of(s)
+    C = nist_candidates(s, ref)
+    if not C:
+        return None
+    x, y, bg, _, _ = s.compute()
+    sig = core.smooth(y - bg, 7)
+    top = float(np.max(sig)) or 1.0
+    l_ = s.element[-1]
+    split = (ref.get("split") or {}).get("median") or SPLIT.get(s.element)
+    narrow = l_ in "df"
+    peaks, used = [], []
+    for c in C:
+        if oxide == "metal" and c["kind"] != "metal" or oxide == "oxide" and c["kind"] == "metal":
+            continue
+        m = np.abs(x - c["median"]) <= 0.6
+        if m.any() and float(np.max(sig[m])) < 0.03 * top:
+            continue                               # 该位置几乎没有信号：不作为候选
+        metal = c["kind"] == "metal"
+        w0, wmin, wmax = ((0.8, 0.4, 1.4) if metal else (1.4, 0.7, 2.4)) if narrow else ((1.0, 0.6, 1.8) if metal else (2.0, 1.0, 3.0))
+        shape = "Asym" if metal else "GL"
+        if l_ == "s":
+            pk = [_P(c["name"], c["median"], w0, shape=shape, lo=c["lo"], hi=c["hi"], wmin=wmin, wmax=wmax)]
+        elif core.so_rule(s.element):
+            pk = _D(c["name"], c["median"], None, None, w0, shape=shape, lo=c["lo"], hi=c["hi"], wmin=wmin, wmax=wmax, orb=s.element)
+        elif split:
+            pk = _D(c["name"], c["median"], split, RATIO[l_], w0, sub=s.element[-2:], shape=shape, lo=c["lo"], hi=c["hi"],
+                    wmin=wmin, wmax=wmax, fwr=(1.0, 1.0))
+        else:
+            pk = [_P(c["name"], c["median"], w0, shape=shape, lo=c["lo"], hi=c["hi"], wmin=wmin, wmax=wmax)]
+        _kind(pk, "metal" if metal else "oxide")
+        for p in pk:
+            p["optional"] = c["name"]
+            p["nist"] = True
+        peaks += pk
+        used.append(c)
+    if not peaks:
+        return None
+    if oxide == "metal":
+        for p in peaks:
+            if p.get("shape") == "Asym" and not p.get("pair"):
+                p["tail"]["max"], p["tau"]["max"] = 0.8, 8.0
+    log("%s：没有内置模型 → 按 NIST 数据库（SRD 20）建模，候选化学态 %s；拟合后逐个去掉 BIC 改善最多的候选，只保留数据需要的"
+        % (s.element, "、".join("%s %.1f eV（n=%d）" % (c["name"], c["median"], c["n"]) for c in used)))
+    return peaks
+
+
+def oxide_capable(s):
+    """能选“仅金属 / 仅氧化”的轨道：内置模型的，以及 NIST 数据库里同时有单质和化合物候选的。"""
+    if s.element in OXIDE_ELEMENTS:
+        return True
+    if s.element in ("O1s", "C1s"):
+        return False
+    kinds = {c["kind"] for c in nist_candidates(s)}
+    return {"metal", "oxide"} <= kinds
 
 
 def generic_model(s, log, ref=None):
@@ -419,8 +565,9 @@ def generic_model(s, log, ref=None):
         if split and any(abs(c - (u + split)) < 0.8 for u in used):
             continue                       # 已被某双峰的 1/2 分量覆盖
         name = "P%.1f" % c
-        if ref and not ref.get("missing"):
-            st = min(ref["states"], key=lambda t: abs(t["median"] - c))
+        cand = plausible_states(ref, s)
+        if cand:
+            st = min(cand, key=lambda t: abs(t["median"] - c))
             if abs(st["median"] - c) < 1.0:
                 name = st["formula"]
         if split and l_ in RATIO:
@@ -562,9 +709,10 @@ def classify(c, width, s, sample_elements, ref, log_ctx):
             continue
         if a - 0.2 <= c <= b + 0.2 and not any(p["name"].startswith(name) for p in s.peaks):
             return ("main", name, None, "%.2f eV 落在 %s 的常见范围（%.1f–%.1f eV）→ 新化学态" % (c, name, a, b))
-    # 4) 参考库里的化学态
-    if ref and not ref.get("missing"):
-        st = min(ref["states"], key=lambda t: abs(t["median"] - c))
+    # 4) 参考库里的化学态（只用与样品元素相符的，见 plausible_states）
+    cand = plausible_states(ref, s, sample_elements)
+    if cand:
+        st = min(cand, key=lambda t: abs(t["median"] - c))
         if abs(st["median"] - c) <= max(0.6, st["q3"] - st["q1"]):
             return ("main", st["formula"], None, "%.2f eV 接近 NIST 中 %s（%.2f eV）→ 新化学态" % (c, st["formula"], st["median"]))
     return ("unknown", "unknown @%.1f" % c, None, "%.2f eV 的残差峰无法归属（不是同样品其他元素的谱线，也不在卫星区间）→ 作为未知峰，不计入定量，请确认" % c)
@@ -778,6 +926,8 @@ def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
                 log("⚠ 文件名为 %s，但谱图更像 %s（%s）；如果文件名有误，请重命名后再拟合" % (s.element, cands[0][0], cands[0][2]))
     except Exception:
         pass
+    s._ref = ref if ref and not ref.get("missing") else None
+    s._sample_elements = list(sample_elements or ())
     noise = choose_background(s, log)
     det = detection(s)
     if det:
@@ -788,9 +938,10 @@ def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
             return report
         log("信号：S/N %.0f%s" % (det["snr"], "（≥ %.0f 已检出，但 < %.0f 定量限：照常拟合，比例的不确定性大）" % (LOD_SNR, LOQ_SNR)
                                  if det["status"] == "weak" else ""))
+    capable = oxide_capable(s)
     if oxide != "auto":
-        log("氧化态：%s%s" % (OXIDE_MODES[oxide], "" if s.element in OXIDE_ELEMENTS else "（此轨道没有金属 / 氧化态模型，该选项不适用）"))
-    peaks = recipe(s, log, oxide if s.element in OXIDE_ELEMENTS else "auto")
+        log("氧化态：%s%s" % (OXIDE_MODES[oxide], "" if capable else "（此轨道没有金属 / 氧化态模型，该选项不适用）"))
+    peaks = recipe(s, log, oxide if capable else "auto")
     if peaks is None:
         peaks = generic_model(s, log, ref)
     else:
@@ -825,14 +976,40 @@ def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
     core.apply_template(s, peaks)
     for p, q in zip(s.peaks, peaks):        # 保留模型自己的峰位范围（apply_template 只在没有范围时加 ±1 eV）
         p["center"]["min"], p["center"]["max"] = q["center"]["min"], q["center"]["max"]
-    restricted = oxide in ("metal", "oxide") and s.element in OXIDE_ELEMENTS
+    restricted = oxide in ("metal", "oxide") and capable
     metal_only = restricted and oxide == "metal"
     excl = _excluded_regions(s, oxide) if restricted else []
     prior_overlaps(s, sample_elements, log, excl, "氧化态" if metal_only else "金属态")
     r = staged_fit(s)
     b0 = bic(s, r)
     log("初次拟合：约化 χ² %.3g（先固定金属拖尾定位各组分，再放开拖尾）" % r["rchi2"])
-    # 候选组分：与去掉它们的模型比较 BIC
+    # 候选组分：与去掉它们的模型比较 BIC。候选多（NIST 模型）时逐步剔除：每一轮去掉 BIC 改善最多的一个
+    tags = sorted({p.get("optional") for p in s.peaks if p.get("optional")})
+    if len(tags) >= 3:
+        import copy as _c
+        while True:
+            tags = sorted({p.get("optional") for p in s.peaks if p.get("optional")})
+            if len(tags) < 2:
+                break
+            best = None
+            for tag in tags:
+                t = _c.deepcopy(s)
+                t.peaks = [p for p in t.peaks if p.get("optional") != tag]
+                if not any(p.get("role", "main") == "main" for p in t.peaks):
+                    continue
+                r_wo = staged_fit(t)
+                b_wo = bic(t, r_wo)
+                if best is None or b_wo < best[0]:
+                    best = (b_wo, tag, t, r_wo)
+            if best is None or best[0] > b0 - 2:
+                break
+            b0, s.peaks, s.bg, r = best[0], best[2].peaks, best[2].bg, best[3]
+            s.last_fit = r
+            log("候选 %s：去掉后拟合同样好或更好（BIC），不保留" % best[1])
+        for p in s.peaks:
+            if p.get("optional"):
+                p.pop("optional")
+        log("保留的化学态：%s" % "、".join(sorted({core.state_name(p["name"]) for p in s.peaks if p.get("role", "main") == "main" and not p.get("pair")})))
     for tag in sorted({p.get("optional") for p in s.peaks if p.get("optional")}):
         import copy as _c
         if not any(p.get("optional") == tag for p in s.peaks):
@@ -862,7 +1039,7 @@ def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
                 log("候选 %s：保留后拟合明显更好（BIC），参数都在合理范围内 → 保留" % tag)
     if s.element == "Fe2p" and any(p.get("fe_phase") for p in s.peaks):
         b0, r = fe_select(s, log)
-    if not restricted:
+    if not restricted and not any(p.get("nist") for p in s.peaks):   # NIST 模型的候选已包含常见化学态
         b0, r = test_known_states(s, b0, r, log)
     # 预置的重叠峰若拟合后面积很小（<1%），去掉
     tot = sum(p["area"]["value"] for p in s.peaks) or 1.0
@@ -1000,13 +1177,17 @@ def _check_mode(s, s_in, sample_elements, ref, b_sel, oxide, log):
         log("对比：自动判断%s，BIC 不比当前更好（ΔBIC %+.0f），与选择一致" % ("也不含%s" % other if not names else "加入%s" % other, b_auto - b_sel))
 
 
-# 金属氧化物的生成自由能（每 mol O2，越负越容易氧化）：Al > Cr > Fe > Co > Ni > Cu
-OXOPHILIC = ["Al", "Cr", "Fe", "Co", "Ni", "Cu"]
+# 最稳定的常见氧化物的标准生成吉布斯自由能（298 K，kJ / mol O2，越负越容易氧化）：
+# HfO2、Al2O3、ZrO2、TiO2、SiO2、Ta2O5、MnO、Nb2O5、Cr2O3、MoO2、FeO、CoO、NiO、Cu2O
+OXIDE_DG = {"Hf": -1088, "Al": -1055, "Zr": -1043, "Ti": -889, "Si": -856, "Ta": -764, "Mn": -726, "Nb": -706,
+            "Cr": -705, "Mo": -533, "Fe": -503, "Co": -428, "Ni": -423, "Cu": -292}
+OXOPHILIC = sorted(OXIDE_DG, key=OXIDE_DG.get)
+DG_MARGIN = 60          # 两元素相差小于此值（kJ / mol O2，如 Co 与 Ni、Cr 与 Nb）时热力学上分不出先后，不比较
 
 
 def oxidized_fraction(s):
     """氧化态（含卫星）占该谱已定量面积的比例；没有金属 / 氧化态区分的谱返回 None。"""
-    if s.element not in OXIDE_ELEMENTS or not s.peaks:
+    if not s.peaks or not (s.element in OXIDE_ELEMENTS or any(p.get("nist") for p in s.peaks)):
         return None
     st = core.chemical_states(s)
     tot = sum(a for _, a in st) or 0.0
@@ -1030,10 +1211,10 @@ def sample_consistency(specs):
             fr[el.group(0)] = (f, t)
     out = []
     for e, (f, t) in fr.items():
-        more = [(k, fr[k][0]) for k in OXOPHILIC[:OXOPHILIC.index(e)] if k in fr and f - fr[k][0] > 0.2]
+        more = [(k, fr[k][0]) for k in OXOPHILIC if k in fr and OXIDE_DG[k] < OXIDE_DG[e] - DG_MARGIN and f - fr[k][0] > 0.2]
         if more:
             msg = ("⚠ 样品一致性：%s 的氧化态比例（%.0f%%）明显高于更易氧化的 %s。按热力学，%s 不应先于它们氧化——"
-                   "%s 的“氧化态”可能是金属线形（长拖尾、损失结构、2p1/2 展宽）造成的假象；可用“仅金属”对比"
+                   "%s 的“氧化态”可能是金属线形（长拖尾、损失结构、1/2 分量展宽）造成的假象；可用“仅金属”对比"
                    % (e, 100 * f, "、".join("%s（%.0f%%）" % (k, 100 * v) for k, v in more), e, e))
             t.consistency_warn = msg
             out.append((t, msg))
@@ -1497,7 +1678,19 @@ GRADE_TEXT = {"ok": ("可靠", "Reliable"), "check": ("需检查", "Check"), "ba
               "nd": ("未检出", "Not detected"), "none": ("未拟合", "Not fitted")}
 # 线形模型本身的系统偏差，拟合内部的检查看不出来。以已知真值的合成谱（tools/benchmark_autofit.py，每个轨道 16 次，
 # 带 Shirley 台阶、斜坡、泊松噪声、随机比例）上自动拟合的化学态比例误差（百分点）作为参考：（中位，90% 以内）
-MODEL_ACCURACY = {"Co2p": (7, 10), "Cr2p": (6, 9), "Cu2p": (4, 6), "C1s": (3, 5), "Al2p": (1, 3), "O1s": (1, 3)}
+# v1.1：模拟更接近真实数据（真实峰位在 NIST 文献分布内随机、峰宽 / L% / 拖尾 / 整体能量偏移 ±0.2 eV 随机）。
+# 内置模型（tools/benchmark_autofit.py，XPS_BENCH_REALISTIC=1，每轨道 16 次）：化学态比例误差；
+# 按 NIST 建模的轨道（tools/benchmark_nist.py，每轨道 10 次）：金属态比例误差。单位：百分点（中位，90% 以内）
+MODEL_ACCURACY = {"Co2p": (8, 12), "Cr2p": (3, 7), "Cu2p": (4, 8), "C1s": (2, 4), "Al2p": (5, 8), "O1s": (1, 4),
+                  "Ti2p": (1, 3), "Zr3d": (1, 2), "Nb3d": (2, 6), "Ta4f": (2, 3), "Hf4f": (2, 4), "Mo3d": (1, 4),
+                  "Mn2p": (2, 5), "Si2p": (4, 13), "Ni2p": (8, 11)}
+ACCURACY_NOTE = {
+    "Al2p": ("；与 Cu3p 重叠时最大约 16 个百分点", " (up to ≈ 16 when overlapping with Cu3p)"),
+    "Si2p": ("；含 SiC / Si₃N₄ 等第二化合物时误差较大", " (larger with a second compound such as SiC / Si₃N₄)"),
+    "Ni2p": ("；NiO 的多重分裂与卫星没有专门的包络模型，NiO 与 Ni(OH)₂ 的区分不可靠",
+             "; NiO multiplets and satellites have no dedicated envelope model, so NiO vs Ni(OH)₂ is not reliable"),
+}
+NIST_MODELLED = ("Ti2p", "Zr3d", "Nb3d", "Ta4f", "Hf4f", "Mo3d", "Mn2p", "Si2p", "Ni2p")
 
 
 def accuracy_text(element, lang="zh"):
@@ -1511,14 +1704,18 @@ def accuracy_text(element, lang="zh"):
     a = MODEL_ACCURACY.get(element)
     if not a:
         return None
+    note = ACCURACY_NOTE.get(element, ("", ""))[1 if en else 0]
+    nist = element in NIST_MODELLED
     if en:
-        return ("Synthetic-spectrum validation: for this orbital the automatic fit's state fractions are off by a median of "
-                "±%d percentage points, 90%% within ±%d%s. This is systematic bias of the line-shape model, invisible to the "
-                "fit's own checks; allow for it when reporting fractions"
-                % (a[0], a[1], " (up to ≈ 10 when overlapping with Cu3p)" if element == "Al2p" else ""))
-    return ("合成谱验证：本轨道自动拟合的化学态比例误差中位 ±%d 个百分点，90%% 在 ±%d 以内%s。"
-            "这是线形模型本身的系统偏差，拟合内部的检查看不出来，报告比例时应考虑"
-            % (a[0], a[1], "；与 Cu3p 重叠时最大约 10 个百分点" if element == "Al2p" else ""))
+        return ("Synthetic-spectrum validation (true positions drawn from the NIST literature spread): for this orbital the automatic "
+                "fit's %s fractions are off by a median of ±%d percentage points, 90%% within ±%d%s. This is systematic bias of the "
+                "line-shape model, invisible to the fit's own checks; allow for it when reporting fractions%s"
+                % ("metal" if nist else "state", a[0], a[1], note,
+                   ". Modelled from the NIST database: states outside the literature spread (mixed oxides, solid solutions) need manual review" if nist else ""))
+    return ("合成谱验证（真实峰位在 NIST 文献分布内随机）：本轨道自动拟合的%s比例误差中位 ±%d 个百分点，90%% 在 ±%d 以内%s。"
+            "这是线形模型本身的系统偏差，拟合内部的检查看不出来，报告比例时应考虑%s"
+            % ("金属态" if nist else "化学态", a[0], a[1], note,
+               "。本轨道按 NIST 数据库建模：化学态偏离文献分布（混合氧化物、固溶体等）时需要人工复核" if nist else ""))
 
 
 def _state_fraction_errors(s):

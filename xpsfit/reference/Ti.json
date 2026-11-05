@@ -1,0 +1,333 @@
+{
+ "element": "Ti",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 315,
+ "orbitals": {
+  "Ti2p": {
+   "line": "2p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 5.8,
+    "n": 45,
+    "min": 5.2,
+    "max": 8.4
+   },
+   "states": [
+    {
+     "formula": "TiSi2",
+     "kind": "other",
+     "name": "titanium disilicide",
+     "median": 453.1,
+     "q1": 453.1,
+     "q3": 453.5,
+     "min": 453.1,
+     "max": 453.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40735",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91434",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112037"
+     ]
+    },
+    {
+     "formula": "Ti",
+     "kind": "metal",
+     "name": "titanium",
+     "median": 454.0,
+     "q1": 453.89,
+     "q3": 454.0,
+     "min": 453.2,
+     "max": 454.3,
+     "n": 13,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27031",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27032",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27034"
+     ]
+    },
+    {
+     "formula": "TiO",
+     "kind": "oxide",
+     "name": "titanium(II) oxide",
+     "median": 455.1,
+     "q1": 454.85,
+     "q3": 455.5,
+     "min": 454.6,
+     "max": 455.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26906",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26909",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/56110"
+     ]
+    },
+    {
+     "formula": "TiN",
+     "kind": "nitride",
+     "name": "titanium nitride",
+     "median": 455.19,
+     "q1": 454.93,
+     "q3": 455.48,
+     "min": 454.77,
+     "max": 455.8,
+     "n": 10,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113179",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113181",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/276"
+     ]
+    },
+    {
+     "formula": "Ni0.86TiO1.86",
+     "kind": "other",
+     "name": "nickel titanium oxide",
+     "median": 456.5,
+     "q1": 455.75,
+     "q3": 457.5,
+     "min": 455.0,
+     "max": 458.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27268",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27269",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27270"
+     ]
+    },
+    {
+     "formula": "TiS2",
+     "kind": "other",
+     "name": "titanium disulfide",
+     "median": 456.75,
+     "q1": 456.17,
+     "q3": 457.65,
+     "min": 456.1,
+     "max": 458.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43494",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111294",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112507"
+     ]
+    },
+    {
+     "formula": "TiO1.5",
+     "kind": "oxide",
+     "name": "titanium oxide",
+     "median": 456.8,
+     "q1": 456.0,
+     "q3": 457.65,
+     "min": 455.2,
+     "max": 458.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27262",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27256",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27257"
+     ]
+    },
+    {
+     "formula": "Ti2O3",
+     "kind": "oxide",
+     "name": "titanium(III) oxide",
+     "median": 456.9,
+     "q1": 456.85,
+     "q3": 457.35,
+     "min": 456.8,
+     "max": 457.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27239",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26605",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/56108"
+     ]
+    },
+    {
+     "formula": "NiO0.25+ TiO1.59",
+     "kind": "other",
+     "name": "nickel oxide + titanium oxide",
+     "median": 456.9,
+     "q1": 456.1,
+     "q3": 457.7,
+     "min": 455.3,
+     "max": 458.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27259",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27265",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27266"
+     ]
+    },
+    {
+     "formula": "TiOS",
+     "kind": "other",
+     "name": "titanium oxysulfide(TiOS)",
+     "median": 457.5,
+     "q1": 456.73,
+     "q3": 458.5,
+     "min": 456.5,
+     "max": 458.9,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/59238",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/59240",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/59242"
+     ]
+    },
+    {
+     "formula": "TiO0.3S1.5",
+     "kind": "other",
+     "name": "titanium oxysulfide(TiO0.3S1.5)",
+     "median": 457.5,
+     "q1": 456.6,
+     "q3": 458.48,
+     "min": 456.3,
+     "max": 458.9,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/56112",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/56114",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/56116"
+     ]
+    },
+    {
+     "formula": "SrTiO3",
+     "kind": "other",
+     "name": "strontium titanate",
+     "median": 458.15,
+     "q1": 458.1,
+     "q3": 458.2,
+     "min": 457.6,
+     "max": 458.8,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66390",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111073",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27127"
+     ]
+    },
+    {
+     "formula": "Al54Cu2Ti44Ox",
+     "kind": "other",
+     "name": "aluminum copper titanium alloy (54:02:44) oxides",
+     "median": 458.4,
+     "q1": 458.3,
+     "q3": 458.7,
+     "min": 458.2,
+     "max": 459.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66471",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66472",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66473"
+     ]
+    },
+    {
+     "formula": "Al56Cu7Ti37Ox",
+     "kind": "other",
+     "name": "aluminum copper titanium alloy (560737) oxides",
+     "median": 458.4,
+     "q1": 458.3,
+     "q3": 458.7,
+     "min": 458.2,
+     "max": 459.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66469",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66470",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66468"
+     ]
+    },
+    {
+     "formula": "BaTiO3",
+     "kind": "other",
+     "name": "barium titanium trioxide (cubic)",
+     "median": 458.52,
+     "q1": 458.21,
+     "q3": 458.53,
+     "min": 457.9,
+     "max": 458.55,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26617",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26619",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5612"
+     ]
+    },
+    {
+     "formula": "PbTiO3",
+     "kind": "other",
+     "name": "lead titanate",
+     "median": 458.58,
+     "q1": 457.8,
+     "q3": 458.7,
+     "min": 457.5,
+     "max": 458.8,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91288",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91407",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2590"
+     ]
+    },
+    {
+     "formula": "TiO2",
+     "kind": "oxide",
+     "name": "titanium(IV) dioxide",
+     "median": 458.6,
+     "q1": 458.5,
+     "q3": 458.8,
+     "min": 458.0,
+     "max": 459.6,
+     "n": 47,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2125",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92093",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92278"
+     ]
+    }
+   ],
+   "satellites": [
+    {
+     "formula": "TiN0.9",
+     "median": 456.87,
+     "min": 456.87,
+     "max": 456.87,
+     "n": 1
+    }
+   ],
+   "n_records": 232
+  },
+  "Ti2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 1
+  },
+  "Ti3p": {
+   "line": "3p",
+   "l": "p",
+   "ratio": 0.5,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 15
+  },
+  "Ti3s": {
+   "line": "3s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 5
+  }
+ },
+ "auger": {
+  "line": "L23M23V",
+  "rows": []
+ }
+}

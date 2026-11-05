@@ -1,0 +1,464 @@
+{
+ "element": "Mo",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 684,
+ "orbitals": {
+  "Mo2p": {
+   "line": "2p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 104.8,
+    "n": 1,
+    "min": 104.8,
+    "max": 104.8
+   },
+   "states": [],
+   "satellites": [],
+   "n_records": 1
+  },
+  "Mo2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 1
+  },
+  "Mo3d": {
+   "line": "3d5/2",
+   "l": "d",
+   "ratio": 0.6666666666666666,
+   "split": {
+    "median": 3.1,
+    "n": 138,
+    "min": 2.3,
+    "max": 3.5
+   },
+   "states": [
+    {
+     "formula": "Mo",
+     "kind": "metal",
+     "name": "molybdenum",
+     "median": 228.0,
+     "q1": 227.83,
+     "q3": 228.07,
+     "min": 226.1,
+     "max": 228.6,
+     "n": 30,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28784",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28716",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28718"
+     ]
+    },
+    {
+     "formula": "MoN",
+     "kind": "nitride",
+     "name": "molybdenum nitride (MoN)",
+     "median": 228.4,
+     "q1": 228.25,
+     "q3": 228.68,
+     "min": 228.1,
+     "max": 228.95,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44137",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112360",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112354"
+     ]
+    },
+    {
+     "formula": "MoS3",
+     "kind": "other",
+     "name": "Molybdenum(VI) sulfide",
+     "median": 229.3,
+     "q1": 229.25,
+     "q3": 229.4,
+     "min": 229.2,
+     "max": 229.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112604",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92037",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91897"
+     ]
+    },
+    {
+     "formula": "MoO2",
+     "kind": "oxide",
+     "name": "molybdenum(IV) dioxide",
+     "median": 229.4,
+     "q1": 229.3,
+     "q3": 229.8,
+     "min": 228.8,
+     "max": 232.0,
+     "n": 17,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28850",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28852",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28854"
+     ]
+    },
+    {
+     "formula": "MoS2",
+     "kind": "other",
+     "name": "molybdenum(IV) sulfide",
+     "median": 229.45,
+     "q1": 229.0,
+     "q3": 229.7,
+     "min": 228.5,
+     "max": 232.1,
+     "n": 22,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29201",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29203",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29215"
+     ]
+    },
+    {
+     "formula": "Li2.9MoO1.6S1.9",
+     "kind": "other",
+     "name": "lithium molybdenum oxide sulfide (Li2.9MoO1.6S1.9)",
+     "median": 230.35,
+     "q1": 229.35,
+     "q3": 231.43,
+     "min": 228.3,
+     "max": 232.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93966",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93968",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93970"
+     ]
+    },
+    {
+     "formula": "MoO0.6S1.9",
+     "kind": "other",
+     "name": "molybdenum oxide sulfide (MoO0.6S1.9)",
+     "median": 230.7,
+     "q1": 230.15,
+     "q3": 231.7,
+     "min": 229.6,
+     "max": 232.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93756",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93758",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93760"
+     ]
+    },
+    {
+     "formula": "MoO1.0S2.0",
+     "kind": "other",
+     "name": "molybdenum oxide sulfide (MoO1.0S2.0)",
+     "median": 230.8,
+     "q1": 230.2,
+     "q3": 231.75,
+     "min": 229.6,
+     "max": 232.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93768",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93770",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93772"
+     ]
+    },
+    {
+     "formula": "MoO1.6S1.6",
+     "kind": "other",
+     "name": "molybdenum oxide sulfide (MoO1.6S1.6)",
+     "median": 230.9,
+     "q1": 230.3,
+     "q3": 231.85,
+     "min": 229.7,
+     "max": 232.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93780",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93782",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93784"
+     ]
+    },
+    {
+     "formula": "MoCl5",
+     "kind": "other",
+     "name": "Molybdenum(V) chloride",
+     "median": 231.0,
+     "q1": 231.0,
+     "q3": 231.0,
+     "min": 231.0,
+     "max": 231.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28371",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28375",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43909"
+     ]
+    },
+    {
+     "formula": "MoO1.6S1.9",
+     "kind": "other",
+     "name": "molybdenum oxide sulfide (MoO1.6S1.9)",
+     "median": 231.0,
+     "q1": 230.35,
+     "q3": 231.85,
+     "min": 229.7,
+     "max": 232.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93942",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93944",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93946"
+     ]
+    },
+    {
+     "formula": "LiMoO1.6S1.9",
+     "kind": "other",
+     "name": "lithium molybdenum oxide sulfide (LiMoO1.6S1.9)",
+     "median": 231.1,
+     "q1": 230.4,
+     "q3": 231.9,
+     "min": 229.7,
+     "max": 232.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93982",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93984",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93986"
+     ]
+    },
+    {
+     "formula": "Li0.5MoO1.6S1.9",
+     "kind": "other",
+     "name": "lithium molybdenum oxide sulfide (Li0.5MoO1.6S1.9)",
+     "median": 231.1,
+     "q1": 230.45,
+     "q3": 231.9,
+     "min": 229.8,
+     "max": 232.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93954",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93956",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93958"
+     ]
+    },
+    {
+     "formula": "Na2MoO4",
+     "kind": "other",
+     "name": "sodium molybdate",
+     "median": 232.0,
+     "q1": 232.0,
+     "q3": 232.1,
+     "min": 231.9,
+     "max": 232.5,
+     "n": 9,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29005",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29000",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29001"
+     ]
+    },
+    {
+     "formula": "(MoO3)70(SiO)30",
+     "kind": "other",
+     "name": "molybdenum silicon oxide ((MoO3)70(SiO)30)",
+     "median": 232.1,
+     "q1": 231.95,
+     "q3": 232.2,
+     "min": 231.8,
+     "max": 232.2,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41608",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41615",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41618"
+     ]
+    },
+    {
+     "formula": "Mo4O11",
+     "kind": "oxide",
+     "name": "gamma-tetramolybdenum undecaoxide",
+     "median": 232.31,
+     "q1": 231.91,
+     "q3": 232.67,
+     "min": 231.23,
+     "max": 233.35,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/1597",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/1589",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/1590"
+     ]
+    },
+    {
+     "formula": "MoOx",
+     "kind": "oxide",
+     "name": "molybdenum oxides",
+     "median": 232.48,
+     "q1": 231.97,
+     "q3": 232.69,
+     "min": 228.4,
+     "max": 232.8,
+     "n": 14,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28096",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41561",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41564"
+     ]
+    },
+    {
+     "formula": "CoMoO4",
+     "kind": "other",
+     "name": "cobalt(II) molybdate",
+     "median": 232.5,
+     "q1": 232.35,
+     "q3": 232.95,
+     "min": 232.3,
+     "max": 233.15,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29041",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29029",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29031"
+     ]
+    },
+    {
+     "formula": "Al2(MoO4)3",
+     "kind": "other",
+     "name": "aluminum(III) trimolybdate(VI)",
+     "median": 232.7,
+     "q1": 232.6,
+     "q3": 233.0,
+     "min": 232.5,
+     "max": 233.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28862",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28863",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28865"
+     ]
+    },
+    {
+     "formula": "MoO3",
+     "kind": "oxide",
+     "name": "molybdenum(VI) oxide",
+     "median": 232.7,
+     "q1": 232.5,
+     "q3": 232.9,
+     "min": 231.7,
+     "max": 233.6,
+     "n": 57,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91905",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91922",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67104"
+     ]
+    },
+    {
+     "formula": "NiMoO4",
+     "kind": "other",
+     "name": "nickel(II) molybdate",
+     "median": 233.0,
+     "q1": 232.75,
+     "q3": 233.35,
+     "min": 232.5,
+     "max": 233.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114002",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110836",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29025"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 472
+  },
+  "Mo3p": {
+   "line": "3p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 17.5,
+    "n": 2,
+    "min": 17.4,
+    "max": 17.6
+   },
+   "states": [
+    {
+     "formula": "MoS2",
+     "kind": "other",
+     "name": "molybdenum(IV) sulfide",
+     "median": 395.69,
+     "q1": 395.4,
+     "q3": 395.96,
+     "min": 395.3,
+     "max": 395.97,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30077",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30166",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30167"
+     ]
+    },
+    {
+     "formula": "MoO3",
+     "kind": "oxide",
+     "name": "molybdenum(VI) oxide",
+     "median": 398.5,
+     "q1": 398.48,
+     "q3": 398.76,
+     "min": 398.4,
+     "max": 399.5,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113317",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30017",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30018"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 29
+  },
+  "Mo3s": {
+   "line": "3s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 3
+  },
+  "Mo4p": {
+   "line": "4p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 2.1,
+    "n": 1,
+    "min": 2.1,
+    "max": 2.1
+   },
+   "states": [],
+   "satellites": [],
+   "n_records": 3
+  },
+  "Mo4s": {
+   "line": "4s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 4
+  }
+ },
+ "auger": {
+  "line": "L3M45M45(1G)",
+  "rows": []
+ }
+}

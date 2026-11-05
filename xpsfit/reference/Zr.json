@@ -1,0 +1,191 @@
+{
+ "element": "Zr",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 307,
+ "orbitals": {
+  "Zr2p": {
+   "line": "2p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 84.5,
+    "n": 1,
+    "min": 84.5,
+    "max": 84.5
+   },
+   "states": [],
+   "satellites": [],
+   "n_records": 1
+  },
+  "Zr2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 1
+  },
+  "Zr3d": {
+   "line": "3d5/2",
+   "l": "d",
+   "ratio": 0.6666666666666666,
+   "split": {
+    "median": 2.4,
+    "n": 60,
+    "min": 2.1,
+    "max": 3.2
+   },
+   "states": [
+    {
+     "formula": "Zr",
+     "kind": "metal",
+     "name": "zirconium",
+     "median": 179.0,
+     "q1": 178.8,
+     "q3": 179.0,
+     "min": 178.29,
+     "max": 179.3,
+     "n": 24,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43616",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114480",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/1782"
+     ]
+    },
+    {
+     "formula": "Ni64Zr36",
+     "kind": "other",
+     "name": "nickel zirconium alloy (64-36)",
+     "median": 179.4,
+     "q1": 179.4,
+     "q3": 181.15,
+     "min": 179.4,
+     "max": 182.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43618",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43619",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43622"
+     ]
+    },
+    {
+     "formula": "Zr98Sn1.5Fe0.22",
+     "kind": "other",
+     "name": "zircaloy-4",
+     "median": 180.9,
+     "q1": 179.3,
+     "q3": 181.3,
+     "min": 179.2,
+     "max": 183.3,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29428",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29431",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29433"
+     ]
+    },
+    {
+     "formula": "ZrO2",
+     "kind": "oxide",
+     "name": "zirconium dioxide",
+     "median": 182.3,
+     "q1": 182.2,
+     "q3": 182.95,
+     "min": 181.5,
+     "max": 184.0,
+     "n": 19,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29406",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110674",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5041"
+     ]
+    },
+    {
+     "formula": "Zr(HPO4)2.H2O",
+     "kind": "other",
+     "name": "zirconium di(hydrogen phosphate) hydrate",
+     "median": 183.1,
+     "q1": 182.7,
+     "q3": 184.0,
+     "min": 182.7,
+     "max": 184.0,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29507",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/211",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/216"
+     ]
+    },
+    {
+     "formula": "ZrF4",
+     "kind": "other",
+     "name": "zirconium(IV) tetrafluoride",
+     "median": 185.3,
+     "q1": 185.2,
+     "q3": 185.45,
+     "min": 185.1,
+     "max": 185.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/28416",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41240",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110672"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 208
+  },
+  "Zr3p": {
+   "line": "3p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 13.7,
+    "n": 1,
+    "min": 13.7,
+    "max": 13.7
+   },
+   "states": [],
+   "satellites": [],
+   "n_records": 5
+  },
+  "Zr3s": {
+   "line": "3s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 4
+  },
+  "Zr4p": {
+   "line": "4p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 1.4,
+    "n": 1,
+    "min": 1.4,
+    "max": 1.4
+   },
+   "states": [],
+   "satellites": [],
+   "n_records": 2
+  },
+  "Zr4s": {
+   "line": "4s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 2
+  }
+ },
+ "auger": {
+  "line": "M5N23V",
+  "rows": []
+ }
+}

@@ -1,0 +1,2900 @@
+{
+ "element": "O",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 3451,
+ "orbitals": {
+  "O1s": {
+   "line": "1s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "AgO",
+     "kind": "other",
+     "name": "silver(II) oxide",
+     "median": 528.55,
+     "q1": 528.42,
+     "q3": 529.12,
+     "min": 528.4,
+     "max": 530.5,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22520",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22521",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22481"
+     ]
+    },
+    {
+     "formula": "BaO",
+     "kind": "other",
+     "name": "barium oxide",
+     "median": 528.6,
+     "q1": 528.38,
+     "q3": 529.8,
+     "min": 527.7,
+     "max": 530.2,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22440",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22434",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22436"
+     ]
+    },
+    {
+     "formula": "Bi2Sr2CaCu2Ox",
+     "kind": "other",
+     "name": "dibismuth distrontium calcium dicopper oxides (Bi2Sr2CaCu2Ox",
+     "median": 528.6,
+     "q1": 528.2,
+     "q3": 529.55,
+     "min": 528.2,
+     "max": 531.2,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91870",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91871",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91872"
+     ]
+    },
+    {
+     "formula": "PbO2",
+     "kind": "other",
+     "name": "lead dioxide",
+     "median": 528.7,
+     "q1": 528.05,
+     "q3": 528.85,
+     "min": 527.4,
+     "max": 529.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22052",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22049",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22084"
+     ]
+    },
+    {
+     "formula": "Bi2Sr2CaCu2O8+x",
+     "kind": "other",
+     "name": "dibismuth distrontium calcium dicopper oxides (Bi2Sr2CaCu2O8",
+     "median": 528.8,
+     "q1": 528.8,
+     "q3": 528.8,
+     "min": 528.8,
+     "max": 528.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68465",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68154",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/94108"
+     ]
+    },
+    {
+     "formula": "PbO",
+     "kind": "other",
+     "name": "lead oxide",
+     "median": 529.1,
+     "q1": 528.9,
+     "q3": 529.4,
+     "min": 527.5,
+     "max": 531.6,
+     "n": 9,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22553",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22565",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22561"
+     ]
+    },
+    {
+     "formula": "CeO2",
+     "kind": "other",
+     "name": "cerium dioxide",
+     "median": 529.2,
+     "q1": 529.0,
+     "q3": 529.45,
+     "min": 528.7,
+     "max": 529.6,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40849",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22027",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22023"
+     ]
+    },
+    {
+     "formula": "CdO",
+     "kind": "other",
+     "name": "cadmium oxide",
+     "median": 529.2,
+     "q1": 529.05,
+     "q3": 529.85,
+     "min": 528.8,
+     "max": 531.6,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/56044",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40744",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22525"
+     ]
+    },
+    {
+     "formula": "SrTiO3",
+     "kind": "other",
+     "name": "strontium titanate",
+     "median": 529.2,
+     "q1": 529.2,
+     "q3": 529.3,
+     "min": 529.2,
+     "max": 529.3,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23143",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92400",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66389"
+     ]
+    },
+    {
+     "formula": "La2O3",
+     "kind": "other",
+     "name": "lanthanum(III) trioxide",
+     "median": 529.3,
+     "q1": 528.77,
+     "q3": 530.78,
+     "min": 528.4,
+     "max": 533.5,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22293",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22254",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22255"
+     ]
+    },
+    {
+     "formula": "Tb2O3",
+     "kind": "other",
+     "name": "terbium(III) trioxide",
+     "median": 529.3,
+     "q1": 529.05,
+     "q3": 530.2,
+     "min": 528.8,
+     "max": 531.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22222",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22238",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22239"
+     ]
+    },
+    {
+     "formula": "Ag2O",
+     "kind": "other",
+     "name": "silver(I) oxide",
+     "median": 529.3,
+     "q1": 529.2,
+     "q3": 529.5,
+     "min": 529.2,
+     "max": 530.9,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67296",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/54530",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112121"
+     ]
+    },
+    {
+     "formula": "RuO2",
+     "kind": "other",
+     "name": "ruthenium dioxide",
+     "median": 529.4,
+     "q1": 529.38,
+     "q3": 529.4,
+     "min": 529.3,
+     "max": 529.4,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22014",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21999",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22009"
+     ]
+    },
+    {
+     "formula": "Y2O3",
+     "kind": "other",
+     "name": "yttrium(III) oxide",
+     "median": 529.42,
+     "q1": 529.15,
+     "q3": 530.04,
+     "min": 529.0,
+     "max": 531.2,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40816",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67807",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22313"
+     ]
+    },
+    {
+     "formula": "Mn3O4",
+     "kind": "other",
+     "name": "Manganese(II,III) oxide",
+     "median": 529.45,
+     "q1": 529.38,
+     "q3": 529.52,
+     "min": 529.3,
+     "max": 529.6,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22418",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22369",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22371"
+     ]
+    },
+    {
+     "formula": "Nd2O3",
+     "kind": "other",
+     "name": "neodymium(III) trioxide",
+     "median": 529.5,
+     "q1": 529.1,
+     "q3": 530.05,
+     "min": 528.7,
+     "max": 530.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22267",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22297",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114361"
+     ]
+    },
+    {
+     "formula": "Li0.3Ni0.7O",
+     "kind": "other",
+     "name": "lithium nickel oxide",
+     "median": 529.5,
+     "q1": 529.25,
+     "q3": 529.6,
+     "min": 529.0,
+     "max": 529.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69278",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69279",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66141"
+     ]
+    },
+    {
+     "formula": "MnO2",
+     "kind": "other",
+     "name": "manganese(IV) dioxide",
+     "median": 529.6,
+     "q1": 529.4,
+     "q3": 530.0,
+     "min": 529.2,
+     "max": 530.4,
+     "n": 9,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21986",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21988",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21996"
+     ]
+    },
+    {
+     "formula": "Mn2O3",
+     "kind": "other",
+     "name": "manganese(III) oxide",
+     "median": 529.6,
+     "q1": 529.52,
+     "q3": 529.82,
+     "min": 528.5,
+     "max": 530.0,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22278",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22270",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22272"
+     ]
+    },
+    {
+     "formula": "NiO",
+     "kind": "other",
+     "name": "nickel(II) oxide",
+     "median": 529.6,
+     "q1": 529.4,
+     "q3": 529.8,
+     "min": 528.9,
+     "max": 531.0,
+     "n": 25,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22597",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22616",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22586"
+     ]
+    },
+    {
+     "formula": "PbTiO3",
+     "kind": "other",
+     "name": "lead titanate",
+     "median": 529.64,
+     "q1": 529.34,
+     "q3": 530.0,
+     "min": 529.2,
+     "max": 530.3,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2591",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91290",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91405"
+     ]
+    },
+    {
+     "formula": "CuO",
+     "kind": "other",
+     "name": "copper(II) oxide",
+     "median": 529.7,
+     "q1": 529.6,
+     "q3": 529.8,
+     "min": 528.6,
+     "max": 530.7,
+     "n": 21,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22461",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22468",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22451"
+     ]
+    },
+    {
+     "formula": "Fe2O3",
+     "kind": "other",
+     "name": "iron(III) oxide",
+     "median": 529.8,
+     "q1": 529.77,
+     "q3": 530.12,
+     "min": 529.5,
+     "max": 531.95,
+     "n": 16,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114030",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22101",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22193"
+     ]
+    },
+    {
+     "formula": "Co3O4",
+     "kind": "other",
+     "name": "tricobalt tetraoxide",
+     "median": 529.8,
+     "q1": 529.6,
+     "q3": 530.1,
+     "min": 529.3,
+     "max": 531.35,
+     "n": 15,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22393",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22410",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22383"
+     ]
+    },
+    {
+     "formula": "MnO",
+     "kind": "other",
+     "name": "manganese(II) oxide",
+     "median": 529.8,
+     "q1": 529.62,
+     "q3": 529.92,
+     "min": 529.4,
+     "max": 530.0,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22550",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22538",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22546"
+     ]
+    },
+    {
+     "formula": "Zr0.85Ti1.15O4",
+     "kind": "other",
+     "name": "zirconium titanium oxide(Zr0.85Ti1.15O4)",
+     "median": 529.8,
+     "q1": 529.7,
+     "q3": 530.9,
+     "min": 529.6,
+     "max": 532.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67620",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67621",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67629"
+     ]
+    },
+    {
+     "formula": "Zr1.09Ti0.91O4",
+     "kind": "other",
+     "name": "zirconium titanium oxide(Zr1.09Ti0.91O4)",
+     "median": 529.8,
+     "q1": 529.8,
+     "q3": 530.9,
+     "min": 529.8,
+     "max": 532.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67603",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67604",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67612"
+     ]
+    },
+    {
+     "formula": "LaCoO3",
+     "kind": "other",
+     "name": "lanthanum cobalt trioxide",
+     "median": 529.8,
+     "q1": 528.85,
+     "q3": 530.85,
+     "min": 527.9,
+     "max": 531.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113504",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113505",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113506"
+     ]
+    },
+    {
+     "formula": "TiO2",
+     "kind": "other",
+     "name": "titanium(IV) dioxide",
+     "median": 529.9,
+     "q1": 529.8,
+     "q3": 530.1,
+     "min": 529.4,
+     "max": 531.2,
+     "n": 30,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22184",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22199",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22152"
+     ]
+    },
+    {
+     "formula": "Sc2O3",
+     "kind": "other",
+     "name": "scandium(III) trioxide",
+     "median": 529.9,
+     "q1": 529.65,
+     "q3": 530.0,
+     "min": 529.4,
+     "max": 530.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22246",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22280",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22292"
+     ]
+    },
+    {
+     "formula": "NiFe2O4",
+     "kind": "other",
+     "name": "nickel(II) iron(III) oxide",
+     "median": 529.9,
+     "q1": 529.9,
+     "q3": 529.95,
+     "min": 529.9,
+     "max": 530.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22347",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22352",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113531"
+     ]
+    },
+    {
+     "formula": "Bi2O3",
+     "kind": "other",
+     "name": "bismuth(III) oxide",
+     "median": 529.95,
+     "q1": 529.77,
+     "q3": 530.13,
+     "min": 529.7,
+     "max": 530.22,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22155",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22145",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93552"
+     ]
+    },
+    {
+     "formula": "Dy2O3",
+     "kind": "other",
+     "name": "dysprosium(III) trioxide",
+     "median": 529.95,
+     "q1": 529.6,
+     "q3": 530.5,
+     "min": 529.6,
+     "max": 531.1,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22190",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22120",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22124"
+     ]
+    },
+    {
+     "formula": "CoO",
+     "kind": "other",
+     "name": "cobalt(II) oxide",
+     "median": 529.95,
+     "q1": 529.62,
+     "q3": 530.2,
+     "min": 529.2,
+     "max": 530.4,
+     "n": 10,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22518",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22519",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22489"
+     ]
+    },
+    {
+     "formula": "Fe3O4",
+     "kind": "other",
+     "name": "Iron(II,III) oxide",
+     "median": 530.0,
+     "q1": 529.65,
+     "q3": 530.12,
+     "min": 529.1,
+     "max": 530.7,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22407",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43966",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113527"
+     ]
+    },
+    {
+     "formula": "Na2MoO4",
+     "kind": "other",
+     "name": "sodium molybdate",
+     "median": 530.0,
+     "q1": 529.9,
+     "q3": 530.25,
+     "min": 529.9,
+     "max": 530.3,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22362",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22365",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22368"
+     ]
+    },
+    {
+     "formula": "NaVO3",
+     "kind": "other",
+     "name": "Sodium metavanadate",
+     "median": 530.0,
+     "q1": 530.0,
+     "q3": 530.3,
+     "min": 530.0,
+     "max": 530.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40030",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40883",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30"
+     ]
+    },
+    {
+     "formula": "SnO",
+     "kind": "other",
+     "name": "tin(II) oxide",
+     "median": 530.0,
+     "q1": 529.85,
+     "q3": 530.05,
+     "min": 529.7,
+     "max": 530.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111650",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22579",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22567"
+     ]
+    },
+    {
+     "formula": "Cr2O3",
+     "kind": "other",
+     "name": "Chromium(III) oxide",
+     "median": 530.1,
+     "q1": 530.08,
+     "q3": 530.52,
+     "min": 529.8,
+     "max": 530.8,
+     "n": 20,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110660",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/1941",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90689"
+     ]
+    },
+    {
+     "formula": "Ho2O3",
+     "kind": "other",
+     "name": "holmium(III) trioxide",
+     "median": 530.1,
+     "q1": 529.7,
+     "q3": 530.6,
+     "min": 529.3,
+     "max": 531.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114391",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22128",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22126"
+     ]
+    },
+    {
+     "formula": "In2O3",
+     "kind": "other",
+     "name": "indium(III) oxide",
+     "median": 530.1,
+     "q1": 530.0,
+     "q3": 530.65,
+     "min": 529.8,
+     "max": 532.1,
+     "n": 11,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22304",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22316",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22224"
+     ]
+    },
+    {
+     "formula": "MoO2",
+     "kind": "other",
+     "name": "molybdenum(IV) dioxide",
+     "median": 530.2,
+     "q1": 530.05,
+     "q3": 530.65,
+     "min": 529.8,
+     "max": 531.1,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21984",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21979",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22051"
+     ]
+    },
+    {
+     "formula": "Eu2O3",
+     "kind": "other",
+     "name": "europium(III) trioxide",
+     "median": 530.2,
+     "q1": 529.95,
+     "q3": 530.8,
+     "min": 529.7,
+     "max": 531.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22109",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22110",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114371"
+     ]
+    },
+    {
+     "formula": "V2O5",
+     "kind": "other",
+     "name": "vanadium(V) pentaoxide",
+     "median": 530.2,
+     "q1": 530.0,
+     "q3": 530.55,
+     "min": 529.6,
+     "max": 530.6,
+     "n": 15,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40880",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90791",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110835"
+     ]
+    },
+    {
+     "formula": "MgO",
+     "kind": "other",
+     "name": "magnesium oxide",
+     "median": 530.2,
+     "q1": 530.0,
+     "q3": 531.0,
+     "min": 529.6,
+     "max": 532.1,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111079",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22583",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22584"
+     ]
+    },
+    {
+     "formula": "SrO",
+     "kind": "other",
+     "name": "strontium oxide",
+     "median": 530.2,
+     "q1": 530.2,
+     "q3": 530.35,
+     "min": 530.2,
+     "max": 530.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22607",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22585",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66367"
+     ]
+    },
+    {
+     "formula": "ZrO2",
+     "kind": "other",
+     "name": "zirconium dioxide",
+     "median": 530.3,
+     "q1": 530.0,
+     "q3": 530.8,
+     "min": 529.6,
+     "max": 531.3,
+     "n": 15,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22119",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22121",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22123"
+     ]
+    },
+    {
+     "formula": "Na2CrO4",
+     "kind": "other",
+     "name": "Sodium chromate",
+     "median": 530.3,
+     "q1": 530.15,
+     "q3": 530.7,
+     "min": 530.0,
+     "max": 531.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22349",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22332",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22337"
+     ]
+    },
+    {
+     "formula": "Nb2O5",
+     "kind": "other",
+     "name": "niobium(V) pentoxide",
+     "median": 530.3,
+     "q1": 530.2,
+     "q3": 530.5,
+     "min": 529.6,
+     "max": 531.3,
+     "n": 15,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22487",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22490",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22494"
+     ]
+    },
+    {
+     "formula": "Ta2O5",
+     "kind": "other",
+     "name": "ditantalum pentoxide",
+     "median": 530.3,
+     "q1": 530.23,
+     "q3": 530.53,
+     "min": 529.8,
+     "max": 530.8,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22508",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22512",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22528"
+     ]
+    },
+    {
+     "formula": "ZnO",
+     "kind": "other",
+     "name": "zinc oxide",
+     "median": 530.3,
+     "q1": 530.2,
+     "q3": 530.65,
+     "min": 529.7,
+     "max": 531.5,
+     "n": 19,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66478",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/56043",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40740"
+     ]
+    },
+    {
+     "formula": "ZrTiO4",
+     "kind": "other",
+     "name": "zirconium titanium tetraoxide",
+     "median": 530.3,
+     "q1": 530.15,
+     "q3": 531.3,
+     "min": 530.0,
+     "max": 532.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67586",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67587",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67595"
+     ]
+    },
+    {
+     "formula": "TeO2",
+     "kind": "other",
+     "name": "tellurium(IV) dioxide",
+     "median": 530.4,
+     "q1": 530.32,
+     "q3": 530.47,
+     "min": 530.1,
+     "max": 530.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22111",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22201",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22202"
+     ]
+    },
+    {
+     "formula": "UO2",
+     "kind": "other",
+     "name": "uranium(IV) dioxide",
+     "median": 530.4,
+     "q1": 530.3,
+     "q3": 530.4,
+     "min": 529.7,
+     "max": 530.7,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22151",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22153",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22147"
+     ]
+    },
+    {
+     "formula": "CrO3",
+     "kind": "other",
+     "name": "Chromium(VI) oxide",
+     "median": 530.4,
+     "q1": 530.08,
+     "q3": 530.65,
+     "min": 529.7,
+     "max": 530.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22122",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22206",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22168"
+     ]
+    },
+    {
+     "formula": "Na2WO4",
+     "kind": "other",
+     "name": "Sodium tungstate",
+     "median": 530.4,
+     "q1": 530.4,
+     "q3": 531.3,
+     "min": 530.4,
+     "max": 533.5,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112608",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112609",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40003"
+     ]
+    },
+    {
+     "formula": "K2Cr2O7",
+     "kind": "other",
+     "name": "potassium dichromate(VI)",
+     "median": 530.4,
+     "q1": 530.17,
+     "q3": 530.5,
+     "min": 529.8,
+     "max": 530.5,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22446",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22442",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22443"
+     ]
+    },
+    {
+     "formula": "Pb2.15Ru1.85O6.5",
+     "kind": "other",
+     "name": "lead ruthenium oxide(Pb2.15Ru1.85O6.5)",
+     "median": 530.4,
+     "q1": 529.6,
+     "q3": 531.1,
+     "min": 528.8,
+     "max": 531.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66540",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66541",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66542"
+     ]
+    },
+    {
+     "formula": "Bi2.86Ru1.14O7-x",
+     "kind": "other",
+     "name": "bismuth ruthenium oxides(Bi2.86Ru1.14O7-x)",
+     "median": 530.4,
+     "q1": 529.75,
+     "q3": 531.0,
+     "min": 529.1,
+     "max": 531.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66558",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66559",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66560"
+     ]
+    },
+    {
+     "formula": "La0.95Ba0.05FeO3",
+     "kind": "other",
+     "name": "lanthanum barium iron trioxide ss",
+     "median": 530.4,
+     "q1": 529.4,
+     "q3": 531.25,
+     "min": 528.4,
+     "max": 532.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113499",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113500",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113501"
+     ]
+    },
+    {
+     "formula": "V2O3",
+     "kind": "other",
+     "name": "vanadium(III) trioxide",
+     "median": 530.5,
+     "q1": 530.4,
+     "q3": 530.6,
+     "min": 530.3,
+     "max": 530.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22324",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22296",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90806"
+     ]
+    },
+    {
+     "formula": "WO3",
+     "kind": "other",
+     "name": "tungsten trioxide",
+     "median": 530.5,
+     "q1": 530.5,
+     "q3": 530.6,
+     "min": 529.9,
+     "max": 530.8,
+     "n": 10,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/54660",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22299",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22286"
+     ]
+    },
+    {
+     "formula": "Na3PO4",
+     "kind": "other",
+     "name": "sodium phosphate",
+     "median": 530.5,
+     "q1": 530.4,
+     "q3": 530.85,
+     "min": 530.3,
+     "max": 531.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113283",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22341",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22344"
+     ]
+    },
+    {
+     "formula": "Cu2O",
+     "kind": "other",
+     "name": "copper(I) oxide",
+     "median": 530.5,
+     "q1": 530.3,
+     "q3": 530.65,
+     "min": 530.2,
+     "max": 531.1,
+     "n": 11,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113232",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66476",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69896"
+     ]
+    },
+    {
+     "formula": "Y2(CO3)3.3H2O",
+     "kind": "other",
+     "name": "Yttrium(III) carbonate trihydrate",
+     "median": 530.5,
+     "q1": 530.5,
+     "q3": 530.5,
+     "min": 530.5,
+     "max": 530.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23476",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40818",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43291"
+     ]
+    },
+    {
+     "formula": "Li2WO4",
+     "kind": "other",
+     "name": "lithium tungsten(VI) tetraoxide",
+     "median": 530.5,
+     "q1": 530.5,
+     "q3": 530.65,
+     "min": 530.5,
+     "max": 530.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/6",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40006",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69628"
+     ]
+    },
+    {
+     "formula": "Pb2.62Ru1.38O6.5",
+     "kind": "other",
+     "name": "lead ruthenium oxide(Pb2.62Ru1.38O6.5)",
+     "median": 530.5,
+     "q1": 529.55,
+     "q3": 531.25,
+     "min": 528.6,
+     "max": 532.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66531",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66532",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66533"
+     ]
+    },
+    {
+     "formula": "Bi2.39Ru1.61O7-x",
+     "kind": "other",
+     "name": "bismuth ruthenium oxides(Bi2.39Ru1.61O7-x)",
+     "median": 530.5,
+     "q1": 529.75,
+     "q3": 531.3,
+     "min": 529.0,
+     "max": 532.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66567",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66568",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66569"
+     ]
+    },
+    {
+     "formula": "La0.95Ba0.05MnO3",
+     "kind": "other",
+     "name": "lanthanum barium manganese trioxide ss",
+     "median": 530.5,
+     "q1": 529.75,
+     "q3": 531.1,
+     "min": 529.0,
+     "max": 531.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113493",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113494",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113495"
+     ]
+    },
+    {
+     "formula": "WO2",
+     "kind": "other",
+     "name": "tungsten(IV) dioxide",
+     "median": 530.6,
+     "q1": 530.4,
+     "q3": 530.85,
+     "min": 530.4,
+     "max": 531.0,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22212",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22205",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22194"
+     ]
+    },
+    {
+     "formula": "Rh2O3",
+     "kind": "other",
+     "name": "rhodium(III) oxide",
+     "median": 530.6,
+     "q1": 530.38,
+     "q3": 530.85,
+     "min": 530.3,
+     "max": 531.0,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22277",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22279",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22218"
+     ]
+    },
+    {
+     "formula": "CoMoO4",
+     "kind": "other",
+     "name": "cobalt(II) molybdate",
+     "median": 530.6,
+     "q1": 530.3,
+     "q3": 530.7,
+     "min": 530.2,
+     "max": 532.0,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/48689",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22378",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22380"
+     ]
+    },
+    {
+     "formula": "Pb2.06Ru1.94O6.5",
+     "kind": "other",
+     "name": "lead ruthenium oxide(Pb2.06Ru1.94O6.5)",
+     "median": 530.6,
+     "q1": 529.75,
+     "q3": 531.4,
+     "min": 528.9,
+     "max": 532.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66549",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66550",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66551"
+     ]
+    },
+    {
+     "formula": "Fe(OH)O",
+     "kind": "other",
+     "name": "iron(III) hydroxide oxide",
+     "median": 530.65,
+     "q1": 530.1,
+     "q3": 531.2,
+     "min": 530.1,
+     "max": 531.8,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21648",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21653",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21655"
+     ]
+    },
+    {
+     "formula": "MoOx",
+     "kind": "other",
+     "name": "molybdenum oxides",
+     "median": 530.68,
+     "q1": 530.58,
+     "q3": 530.78,
+     "min": 530.5,
+     "max": 530.8,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41563",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41566",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41569"
+     ]
+    },
+    {
+     "formula": "MoO3",
+     "kind": "other",
+     "name": "molybdenum(VI) oxide",
+     "median": 530.7,
+     "q1": 530.5,
+     "q3": 531.04,
+     "min": 529.8,
+     "max": 531.6,
+     "n": 27,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/608",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67105",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91923"
+     ]
+    },
+    {
+     "formula": "CaO",
+     "kind": "other",
+     "name": "calcium oxide",
+     "median": 530.7,
+     "q1": 529.57,
+     "q3": 531.38,
+     "min": 529.0,
+     "max": 531.5,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22522",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22523",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22524"
+     ]
+    },
+    {
+     "formula": "Bi1.65Pb0.35Sr2Ca2Cu3O10",
+     "kind": "other",
+     "name": "bismuth lead strontium calcium copper oxide",
+     "median": 530.7,
+     "q1": 530.05,
+     "q3": 531.28,
+     "min": 529.4,
+     "max": 531.85,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113208",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113209",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113210"
+     ]
+    },
+    {
+     "formula": "La0.95Ba0.05CoO3",
+     "kind": "other",
+     "name": "lanthanum barium cobalt trioxide ss",
+     "median": 530.7,
+     "q1": 529.6,
+     "q3": 531.45,
+     "min": 528.5,
+     "max": 532.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113496",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113497",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113498"
+     ]
+    },
+    {
+     "formula": "Ag2CO3",
+     "kind": "other",
+     "name": "Silver(I) carbonate",
+     "median": 530.8,
+     "q1": 530.7,
+     "q3": 530.8,
+     "min": 530.6,
+     "max": 530.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20028",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20030",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67312"
+     ]
+    },
+    {
+     "formula": "Ga2O3",
+     "kind": "other",
+     "name": "gallium(III) trioxide",
+     "median": 530.8,
+     "q1": 530.75,
+     "q3": 531.2,
+     "min": 529.8,
+     "max": 532.0,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22178",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22176",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22196"
+     ]
+    },
+    {
+     "formula": "UO3",
+     "kind": "other",
+     "name": "uranium(VI) trioxide",
+     "median": 530.8,
+     "q1": 530.12,
+     "q3": 530.84,
+     "min": 528.9,
+     "max": 530.85,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22269",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22319",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44588"
+     ]
+    },
+    {
+     "formula": "SnO2",
+     "kind": "other",
+     "name": "tin(IV) dioxide",
+     "median": 530.86,
+     "q1": 530.52,
+     "q3": 531.0,
+     "min": 530.1,
+     "max": 532.0,
+     "n": 18,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66400",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111655",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22080"
+     ]
+    },
+    {
+     "formula": "Na2SO3",
+     "kind": "other",
+     "name": "sodium sulfite",
+     "median": 530.95,
+     "q1": 530.7,
+     "q3": 531.33,
+     "min": 530.7,
+     "max": 531.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40887",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22298",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22300"
+     ]
+    },
+    {
+     "formula": "(Ce0.9Tb0.1)PO4",
+     "kind": "other",
+     "name": "cerium terbium phosphate",
+     "median": 530.95,
+     "q1": 530.77,
+     "q3": 531.95,
+     "min": 528.6,
+     "max": 533.9,
+     "n": 12,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23587",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23589",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23603"
+     ]
+    },
+    {
+     "formula": "NaC2H3O2",
+     "kind": "other",
+     "name": "sodium acetate",
+     "median": 531.0,
+     "q1": 530.75,
+     "q3": 531.0,
+     "min": 530.5,
+     "max": 531.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20019",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20024",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20025"
+     ]
+    },
+    {
+     "formula": "Gd2O3",
+     "kind": "other",
+     "name": "gadolinium(III) trioxide",
+     "median": 531.0,
+     "q1": 530.62,
+     "q3": 531.38,
+     "min": 529.5,
+     "max": 531.4,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22133",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22130",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22172"
+     ]
+    },
+    {
+     "formula": "Yb2O3",
+     "kind": "other",
+     "name": "ytterbium(III) trioxide",
+     "median": 531.0,
+     "q1": 530.45,
+     "q3": 531.1,
+     "min": 529.9,
+     "max": 531.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22244",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22245",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22287"
+     ]
+    },
+    {
+     "formula": "Na4P2O7",
+     "kind": "other",
+     "name": "sodium diphosphate",
+     "median": 531.1,
+     "q1": 530.9,
+     "q3": 532.5,
+     "min": 530.6,
+     "max": 532.9,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22467",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22502",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22529"
+     ]
+    },
+    {
+     "formula": "[NH4]10[W12O41]",
+     "kind": "other",
+     "name": "decaammonium dodecawolframate(VI)",
+     "median": 531.1,
+     "q1": 530.9,
+     "q3": 531.15,
+     "min": 530.7,
+     "max": 531.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23106",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23108",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23110"
+     ]
+    },
+    {
+     "formula": "LaNiO3",
+     "kind": "other",
+     "name": "lanthanum nickel trioxide",
+     "median": 531.1,
+     "q1": 529.75,
+     "q3": 531.4,
+     "min": 528.4,
+     "max": 531.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5401",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5402",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92881"
+     ]
+    },
+    {
+     "formula": "Al2CoO4",
+     "kind": "other",
+     "name": "aluminum(III) cobaltate(V)",
+     "median": 531.15,
+     "q1": 530.92,
+     "q3": 531.35,
+     "min": 530.7,
+     "max": 531.5,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22248",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22221",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22225"
+     ]
+    },
+    {
+     "formula": "SrCO3",
+     "kind": "other",
+     "name": "strontium carbonate",
+     "median": 531.2,
+     "q1": 531.1,
+     "q3": 531.52,
+     "min": 531.0,
+     "max": 532.2,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67694",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92888",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20315"
+     ]
+    },
+    {
+     "formula": "Co(OH)2",
+     "kind": "other",
+     "name": "cobalt(II) hydroxide",
+     "median": 531.2,
+     "q1": 530.9,
+     "q3": 531.2,
+     "min": 530.8,
+     "max": 531.4,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21159",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21094",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/56503"
+     ]
+    },
+    {
+     "formula": "Cu(OH)2",
+     "kind": "other",
+     "name": "copper(II) hydroxide",
+     "median": 531.2,
+     "q1": 531.05,
+     "q3": 531.35,
+     "min": 530.9,
+     "max": 531.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21191",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21192",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69917"
+     ]
+    },
+    {
+     "formula": "NaAsO2",
+     "kind": "other",
+     "name": "sodium arsenite",
+     "median": 531.2,
+     "q1": 531.1,
+     "q3": 531.35,
+     "min": 531.0,
+     "max": 531.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22016",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22013",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44174"
+     ]
+    },
+    {
+     "formula": "Al2NiO4",
+     "kind": "other",
+     "name": "aluminum(III) nickelate(II)",
+     "median": 531.2,
+     "q1": 531.0,
+     "q3": 531.4,
+     "min": 531.0,
+     "max": 531.4,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22252",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22241",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22263"
+     ]
+    },
+    {
+     "formula": "O in Pt90Rh10",
+     "kind": "other",
+     "name": "oxygen impurity in platinum rhodium alloy (90-10)",
+     "median": 531.2,
+     "q1": 531.2,
+     "q3": 531.3,
+     "min": 531.2,
+     "max": 531.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23649",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23651",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23660"
+     ]
+    },
+    {
+     "formula": "Ni(OH)2",
+     "kind": "other",
+     "name": "nickel(II) hydroxide",
+     "median": 531.2,
+     "q1": 531.0,
+     "q3": 531.5,
+     "min": 530.7,
+     "max": 532.0,
+     "n": 15,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112461",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113230",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113285"
+     ]
+    },
+    {
+     "formula": "BaCO3",
+     "kind": "other",
+     "name": "barium carbonate",
+     "median": 531.3,
+     "q1": 531.1,
+     "q3": 531.3,
+     "min": 530.9,
+     "max": 532.2,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20559",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20561",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91371"
+     ]
+    },
+    {
+     "formula": "CaCO3",
+     "kind": "other",
+     "name": "calcium carbonate",
+     "median": 531.3,
+     "q1": 531.2,
+     "q3": 531.4,
+     "min": 531.2,
+     "max": 531.7,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67677",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20607",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20601"
+     ]
+    },
+    {
+     "formula": "Na2SO4",
+     "kind": "other",
+     "name": "sodium sulfate",
+     "median": 531.3,
+     "q1": 531.2,
+     "q3": 531.7,
+     "min": 531.1,
+     "max": 532.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22426",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90598",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40893"
+     ]
+    },
+    {
+     "formula": "VOPO4",
+     "kind": "other",
+     "name": "vanadyl phosphate",
+     "median": 531.3,
+     "q1": 531.3,
+     "q3": 532.8,
+     "min": 531.3,
+     "max": 532.9,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110818",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110822",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110825"
+     ]
+    },
+    {
+     "formula": "Al(OH)3",
+     "kind": "other",
+     "name": "aluminum(III) hydroxide",
+     "median": 531.35,
+     "q1": 531.2,
+     "q3": 531.53,
+     "min": 531.1,
+     "max": 532.1,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21243",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21245",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21287"
+     ]
+    },
+    {
+     "formula": "Cr(OH)3",
+     "kind": "other",
+     "name": "chromium(III) hydroxide",
+     "median": 531.4,
+     "q1": 531.1,
+     "q3": 531.62,
+     "min": 530.8,
+     "max": 531.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21281",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21282",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21235"
+     ]
+    },
+    {
+     "formula": "CaHPO4",
+     "kind": "other",
+     "name": "calcium hydrogen phosphate",
+     "median": 531.4,
+     "q1": 531.4,
+     "q3": 531.6,
+     "min": 531.2,
+     "max": 533.0,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113215",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21683",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67216"
+     ]
+    },
+    {
+     "formula": "O in Zr98Sn1.5Fe0.22",
+     "kind": "other",
+     "name": "oxygen impurity in zircaloy-4",
+     "median": 531.4,
+     "q1": 531.3,
+     "q3": 532.2,
+     "min": 531.2,
+     "max": 533.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23637",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23641",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23643"
+     ]
+    },
+    {
+     "formula": "BeO",
+     "kind": "other",
+     "name": "beryllium oxide",
+     "median": 531.6,
+     "q1": 531.6,
+     "q3": 531.68,
+     "min": 531.6,
+     "max": 531.9,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20515",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20517",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20576"
+     ]
+    },
+    {
+     "formula": "Al2OSiO4",
+     "kind": "other",
+     "name": "aluminum(III) oxide silicate",
+     "median": 531.6,
+     "q1": 531.45,
+     "q3": 531.74,
+     "min": 531.3,
+     "max": 531.88,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22465",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22469",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22516"
+     ]
+    },
+    {
+     "formula": "As2O3",
+     "kind": "other",
+     "name": "diarsenic trioxide",
+     "median": 531.6,
+     "q1": 531.6,
+     "q3": 531.8,
+     "min": 531.5,
+     "max": 532.3,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44165",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22187",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22185"
+     ]
+    },
+    {
+     "formula": "Li4P2O7",
+     "kind": "other",
+     "name": "lithium diphosphate",
+     "median": 531.7,
+     "q1": 531.65,
+     "q3": 532.5,
+     "min": 531.6,
+     "max": 533.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21802",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69620",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69621"
+     ]
+    },
+    {
+     "formula": "SrSO4",
+     "kind": "other",
+     "name": "strontium sulfate",
+     "median": 531.85,
+     "q1": 531.8,
+     "q3": 532.0,
+     "min": 531.8,
+     "max": 532.3,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22401",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22364",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111068"
+     ]
+    },
+    {
+     "formula": "(-C6H5NH-)n",
+     "kind": "other",
+     "name": "poly(aniline)",
+     "median": 531.85,
+     "q1": 531.15,
+     "q3": 532.62,
+     "min": 531.0,
+     "max": 533.0,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23584",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23563",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23565"
+     ]
+    },
+    {
+     "formula": "O2",
+     "kind": "other",
+     "name": "molecular oxygen on aluminum",
+     "median": 531.85,
+     "q1": 530.97,
+     "q3": 533.12,
+     "min": 529.8,
+     "max": 533.8,
+     "n": 10,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5173",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5174",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5175"
+     ]
+    },
+    {
+     "formula": "Na2B4O7",
+     "kind": "other",
+     "name": "sodium tetraborate",
+     "median": 531.9,
+     "q1": 531.27,
+     "q3": 532.65,
+     "min": 530.6,
+     "max": 533.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113751",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113752",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113753"
+     ]
+    },
+    {
+     "formula": "GeO2",
+     "kind": "other",
+     "name": "germanium(IV) dioxide",
+     "median": 531.9,
+     "q1": 531.68,
+     "q3": 532.12,
+     "min": 529.2,
+     "max": 532.3,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22075",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22070",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112432"
+     ]
+    },
+    {
+     "formula": "As2O5",
+     "kind": "other",
+     "name": "arsenic(V) pentaoxide",
+     "median": 531.9,
+     "q1": 531.75,
+     "q3": 532.08,
+     "min": 531.6,
+     "max": 532.3,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22486",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22488",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44167"
+     ]
+    },
+    {
+     "formula": "Na5P3O10",
+     "kind": "other",
+     "name": "sodium catena-triphosphate",
+     "median": 531.95,
+     "q1": 531.22,
+     "q3": 532.65,
+     "min": 531.0,
+     "max": 532.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67223",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67224",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113732"
+     ]
+    },
+    {
+     "formula": "NaPO3",
+     "kind": "other",
+     "name": "sodium metaphosphate",
+     "median": 532.0,
+     "q1": 531.8,
+     "q3": 533.3,
+     "min": 531.5,
+     "max": 533.3,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22213",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67226",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67227"
+     ]
+    },
+    {
+     "formula": "CaSO4",
+     "kind": "other",
+     "name": "calcium sulfate",
+     "median": 532.0,
+     "q1": 532.0,
+     "q3": 532.45,
+     "min": 532.0,
+     "max": 532.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22336",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22399",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/40891"
+     ]
+    },
+    {
+     "formula": "NaClO3",
+     "kind": "other",
+     "name": "sodium chlorate",
+     "median": 532.1,
+     "q1": 531.75,
+     "q3": 532.25,
+     "min": 531.4,
+     "max": 532.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22229",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111645",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2593"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C(O)CH3)-)n",
+     "kind": "other",
+     "name": "poly(vinyl methyl ketone)",
+     "median": 532.1,
+     "q1": 532.05,
+     "q3": 532.25,
+     "min": 532.0,
+     "max": 532.39,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68417",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22661",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44497"
+     ]
+    },
+    {
+     "formula": "Al4Si4O10(OH)8",
+     "kind": "other",
+     "name": "kaolinite",
+     "median": 532.17,
+     "q1": 531.96,
+     "q3": 532.18,
+     "min": 531.75,
+     "max": 532.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21599",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21615",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21617"
+     ]
+    },
+    {
+     "formula": "Y2(SO4)3",
+     "kind": "other",
+     "name": "yttrium(III) sulfate",
+     "median": 532.2,
+     "q1": 532.2,
+     "q3": 532.6,
+     "min": 532.2,
+     "max": 533.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21995",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22000",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43285"
+     ]
+    },
+    {
+     "formula": "KClO3",
+     "kind": "other",
+     "name": "potassium chlorate",
+     "median": 532.2,
+     "q1": 532.04,
+     "q3": 532.38,
+     "min": 531.87,
+     "max": 532.6,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22150",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22158",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22186"
+     ]
+    },
+    {
+     "formula": "BaSO4",
+     "kind": "other",
+     "name": "barium sulfate",
+     "median": 532.2,
+     "q1": 532.0,
+     "q3": 532.35,
+     "min": 531.8,
+     "max": 532.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22340",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22343",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22360"
+     ]
+    },
+    {
+     "formula": "CuSO4",
+     "kind": "other",
+     "name": "copper(II) sulfate",
+     "median": 532.2,
+     "q1": 531.4,
+     "q3": 532.3,
+     "min": 530.6,
+     "max": 532.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22413",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22415",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44609"
+     ]
+    },
+    {
+     "formula": "NiSO4",
+     "kind": "other",
+     "name": "nickel(II) sulfate",
+     "median": 532.2,
+     "q1": 532.15,
+     "q3": 532.28,
+     "min": 532.0,
+     "max": 532.5,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22377",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92883",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20386"
+     ]
+    },
+    {
+     "formula": "Mg3H2(SiO3)4",
+     "kind": "other",
+     "name": "magnesium silicate talc",
+     "median": 532.23,
+     "q1": 532.01,
+     "q3": 532.41,
+     "min": 531.8,
+     "max": 532.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20304",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20307",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20311"
+     ]
+    },
+    {
+     "formula": "(-C6H4S(O)2C6H4O-)n",
+     "kind": "other",
+     "name": "poly(oxy-1,4-phenylenesulfonyl-1,4-phenylene)",
+     "median": 532.3,
+     "q1": 532.1,
+     "q3": 533.1,
+     "min": 531.8,
+     "max": 533.8,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44553",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44322",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44323"
+     ]
+    },
+    {
+     "formula": "Zn(CH3COO)2.2H2O",
+     "kind": "other",
+     "name": "zinc acetate dihydrate",
+     "median": 532.45,
+     "q1": 531.3,
+     "q3": 532.7,
+     "min": 530.8,
+     "max": 535.5,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93125",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93126",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93130"
+     ]
+    },
+    {
+     "formula": "(-(CH2)4O-)n",
+     "kind": "other",
+     "name": "poly(tetramethylene glycol)",
+     "median": 532.5,
+     "q1": 532.5,
+     "q3": 532.56,
+     "min": 532.5,
+     "max": 532.62,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22842",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68414",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/55852"
+     ]
+    },
+    {
+     "formula": "(-Si(CH3)2O-)n",
+     "kind": "other",
+     "name": "poly(dimethylsiloxane)",
+     "median": 532.5,
+     "q1": 532.4,
+     "q3": 532.6,
+     "min": 532.0,
+     "max": 533.6,
+     "n": 13,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113992",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23036",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23038"
+     ]
+    },
+    {
+     "formula": "Zr(HPO4)2.H2O",
+     "kind": "other",
+     "name": "alpha-zirconium hydrogen phosphate monohydrate",
+     "median": 532.55,
+     "q1": 532.0,
+     "q3": 532.73,
+     "min": 530.8,
+     "max": 532.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/217",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/212",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92724"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(OH)-)n",
+     "kind": "other",
+     "name": "poly(vinyl alcohol)",
+     "median": 532.6,
+     "q1": 532.5,
+     "q3": 532.8,
+     "min": 532.4,
+     "max": 533.2,
+     "n": 9,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21439",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21441",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/640"
+     ]
+    },
+    {
+     "formula": "(-C6H4OC6H4OC6H4C(O)-)n",
+     "kind": "other",
+     "name": "poly(oxy-1,4-phenyleneoxy-1,4-phenylenecarbonyl-1,4-phenylen",
+     "median": 532.6,
+     "q1": 531.52,
+     "q3": 533.45,
+     "min": 531.3,
+     "max": 533.8,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/55842",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/55843",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92819"
+     ]
+    },
+    {
+     "formula": "(-CH2C(CH3)(C(O)OCH3)-)n",
+     "kind": "other",
+     "name": "poly(methyl methacrylate)",
+     "median": 532.65,
+     "q1": 532.0,
+     "q3": 533.58,
+     "min": 531.6,
+     "max": 533.8,
+     "n": 16,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22787",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22624",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113846"
+     ]
+    },
+    {
+     "formula": "KClO4",
+     "kind": "other",
+     "name": "potassium perchlorate",
+     "median": 532.7,
+     "q1": 532.45,
+     "q3": 532.81,
+     "min": 532.2,
+     "max": 532.92,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22355",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22357",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22358"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(OC(O)CH3)-)n",
+     "kind": "other",
+     "name": "poly(vinyl acetate)",
+     "median": 532.85,
+     "q1": 532.26,
+     "q3": 533.42,
+     "min": 532.16,
+     "max": 533.5,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22691",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22693",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93859"
+     ]
+    },
+    {
+     "formula": "(P2O5)50(ZnO)50",
+     "kind": "other",
+     "name": "diphosphorus pentoxide zinc oxide ((P2O5)50(ZnO)50)",
+     "median": 532.85,
+     "q1": 532.25,
+     "q3": 533.5,
+     "min": 531.8,
+     "max": 534.1,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93065",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93066",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93584"
+     ]
+    },
+    {
+     "formula": "(-C5HxN0.56O1.76P0.07-)n",
+     "kind": "other",
+     "name": "poly((6,9-dihydro-6,9-dioxobisbenzimidazo[2,1-b:1',2'-j]benz",
+     "median": 532.89,
+     "q1": 532.2,
+     "q3": 533.72,
+     "min": 531.51,
+     "max": 534.55,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66266",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66267",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66268"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C(O)OH)-)n",
+     "kind": "other",
+     "name": "poly(acrylic acid)",
+     "median": 532.9,
+     "q1": 532.6,
+     "q3": 533.41,
+     "min": 532.19,
+     "max": 534.0,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43474",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93865",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93866"
+     ]
+    },
+    {
+     "formula": "Ba(NO3)2",
+     "kind": "other",
+     "name": "barium(II) nitrate",
+     "median": 532.9,
+     "q1": 532.9,
+     "q3": 532.95,
+     "min": 532.9,
+     "max": 533.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21791",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21849",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66392"
+     ]
+    },
+    {
+     "formula": "SiO2,quartz",
+     "kind": "other",
+     "name": "silicon(IV) dioxide (Quartz)",
+     "median": 532.9,
+     "q1": 532.6,
+     "q3": 533.1,
+     "min": 532.1,
+     "max": 534.3,
+     "n": 37,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41520",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21992",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21997"
+     ]
+    },
+    {
+     "formula": "(-RNC(O)R'-C(O))n",
+     "kind": "other",
+     "name": "polyimide",
+     "median": 532.9,
+     "q1": 532.27,
+     "q3": 533.52,
+     "min": 532.2,
+     "max": 533.6,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23629",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23631",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23634"
+     ]
+    },
+    {
+     "formula": "SiO2",
+     "kind": "other",
+     "name": "silicon dioxide",
+     "median": 532.9,
+     "q1": 532.7,
+     "q3": 533.2,
+     "min": 532.0,
+     "max": 533.8,
+     "n": 39,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113217",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113414",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112744"
+     ]
+    },
+    {
+     "formula": "Sr(NO3)2",
+     "kind": "other",
+     "name": "strontium nitrate",
+     "median": 533.0,
+     "q1": 532.98,
+     "q3": 533.2,
+     "min": 532.9,
+     "max": 533.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21937",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21878",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66380"
+     ]
+    },
+    {
+     "formula": "SnSeOx",
+     "kind": "other",
+     "name": "tin selenium oxides",
+     "median": 533.0,
+     "q1": 532.7,
+     "q3": 533.02,
+     "min": 531.8,
+     "max": 533.1,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2922",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2917",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2912"
+     ]
+    },
+    {
+     "formula": "[Cr(CO)3(C6H6)]",
+     "kind": "other",
+     "name": "tricarbonyl(benzene)chromium",
+     "median": 533.1,
+     "q1": 533.05,
+     "q3": 533.2,
+     "min": 533.0,
+     "max": 533.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21729",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21758",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21654"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C(O)OCH3)-)n",
+     "kind": "other",
+     "name": "poly(methyl acrylate)",
+     "median": 533.14,
+     "q1": 532.45,
+     "q3": 533.85,
+     "min": 532.21,
+     "max": 534.1,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21566",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21569",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21571"
+     ]
+    },
+    {
+     "formula": "(P2O5)40(ZnO)60",
+     "kind": "other",
+     "name": "diphosphorus pentoxide zinc oxide ((P2O5)40(ZnO)60)",
+     "median": 533.15,
+     "q1": 532.57,
+     "q3": 533.75,
+     "min": 531.9,
+     "max": 534.5,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93590",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93591",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90159"
+     ]
+    },
+    {
+     "formula": "[Cr(CO)5NH3]",
+     "kind": "other",
+     "name": "ammine(pentacarbonyl)chromium",
+     "median": 533.2,
+     "q1": 532.8,
+     "q3": 533.2,
+     "min": 532.4,
+     "max": 533.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20135",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20137",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20140"
+     ]
+    },
+    {
+     "formula": "(-C6H2(CH3)2O-)n",
+     "kind": "other",
+     "name": "poly(2,6-dimethyl-1,4-phenylene oxide)",
+     "median": 533.2,
+     "q1": 533.09,
+     "q3": 533.4,
+     "min": 532.98,
+     "max": 533.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22788",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44490",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66161"
+     ]
+    },
+    {
+     "formula": "B2O3",
+     "kind": "other",
+     "name": "diboron(III) trioxide",
+     "median": 533.25,
+     "q1": 533.05,
+     "q3": 533.45,
+     "min": 532.5,
+     "max": 533.8,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20454",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20456",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110756"
+     ]
+    },
+    {
+     "formula": "LiClO4",
+     "kind": "other",
+     "name": "lithium perchlorate",
+     "median": 533.3,
+     "q1": 533.12,
+     "q3": 533.45,
+     "min": 532.9,
+     "max": 533.6,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113288",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113289",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21837"
+     ]
+    },
+    {
+     "formula": "[Dy(C14H12O2)2Cl3].2H2O",
+     "kind": "other",
+     "name": "dibenzoin(trichloro)dysprosium(III) dihydrate",
+     "median": 533.3,
+     "q1": 532.95,
+     "q3": 534.0,
+     "min": 532.6,
+     "max": 534.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110416",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110417",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110418"
+     ]
+    },
+    {
+     "formula": "[Sm(C14H12O2)2Cl3].2H2O",
+     "kind": "other",
+     "name": "dibenzoin(trichloro)samarium(III) dihydrate",
+     "median": 533.4,
+     "q1": 532.8,
+     "q3": 534.0,
+     "min": 532.2,
+     "max": 534.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110413",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110414",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110415"
+     ]
+    },
+    {
+     "formula": "[Pr(C14H12O2)2Cl3].2H2O",
+     "kind": "other",
+     "name": "dibenzoin(trichloro)preseodymium(III) dihydrate",
+     "median": 533.5,
+     "q1": 532.9,
+     "q3": 533.95,
+     "min": 532.3,
+     "max": 534.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110407",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110408",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110409"
+     ]
+    },
+    {
+     "formula": "P2O5",
+     "kind": "other",
+     "name": "phosphorus(V) pentaoxide",
+     "median": 533.6,
+     "q1": 532.6,
+     "q3": 534.3,
+     "min": 532.2,
+     "max": 534.8,
+     "n": 9,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93356",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/605",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/606"
+     ]
+    },
+    {
+     "formula": "[Nd(C14H12O2)2Cl3].2H2O",
+     "kind": "other",
+     "name": "dibenzoin(trichloro)neodymium(III) dihydrate",
+     "median": 533.6,
+     "q1": 532.95,
+     "q3": 533.95,
+     "min": 532.3,
+     "max": 534.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110410",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110411",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110412"
+     ]
+    },
+    {
+     "formula": "[Ho(C14H12O2)2Cl3].2H2O",
+     "kind": "other",
+     "name": "dibenzoin(trichloro)holmium(III) dihydrate",
+     "median": 533.6,
+     "q1": 533.15,
+     "q3": 534.1,
+     "min": 532.7,
+     "max": 534.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110419",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110420",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110421"
+     ]
+    },
+    {
+     "formula": "[La(C14H12O2)2Cl3].2H2O",
+     "kind": "other",
+     "name": "dibenzoin(trichloro)lanthanum(III) dihydrate",
+     "median": 533.6,
+     "q1": 532.9,
+     "q3": 533.95,
+     "min": 532.2,
+     "max": 534.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110404",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110405",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110406"
+     ]
+    },
+    {
+     "formula": "[Cr(CO)6]",
+     "kind": "other",
+     "name": "hexacarbonylchromium",
+     "median": 533.9,
+     "q1": 533.9,
+     "q3": 534.0,
+     "min": 532.6,
+     "max": 534.5,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20584",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20531",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20533"
+     ]
+    },
+    {
+     "formula": "H2O",
+     "kind": "other",
+     "name": "water",
+     "median": 534.05,
+     "q1": 533.15,
+     "q3": 535.03,
+     "min": 532.8,
+     "max": 538.0,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21139",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21090",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21113"
+     ]
+    },
+    {
+     "formula": "CaAl2O4",
+     "kind": "other",
+     "name": "calcium dialuminum tetraoxide",
+     "median": 534.1,
+     "q1": 533.35,
+     "q3": 534.7,
+     "min": 532.6,
+     "max": 535.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66174",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66175",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66176"
+     ]
+    },
+    {
+     "formula": "(C6H5)OC(O)O(C6H5)",
+     "kind": "other",
+     "name": "diphenyl carbonate",
+     "median": 534.4,
+     "q1": 533.7,
+     "q3": 535.1,
+     "min": 533.7,
+     "max": 535.1,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20812",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20816",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20835"
+     ]
+    },
+    {
+     "formula": "C6H2(C(O)O(O)C-)2",
+     "kind": "other",
+     "name": "1,2,4,5-benzenetetracarboxylic dianhydride",
+     "median": 535.1,
+     "q1": 534.4,
+     "q3": 537.45,
+     "min": 533.7,
+     "max": 539.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23718",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23549",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23551"
+     ]
+    }
+   ],
+   "satellites": [
+    {
+     "formula": "K2MnO4",
+     "median": 531.9,
+     "min": 531.9,
+     "max": 531.9,
+     "n": 1
+    },
+    {
+     "formula": "KMnO4",
+     "median": 534.45,
+     "min": 533.3,
+     "max": 535.6,
+     "n": 2
+    },
+    {
+     "formula": "(=(C10H2O4)=N-(C6H4)-O-(C6H4)-N=)n",
+     "median": 538.1,
+     "min": 537.9,
+     "max": 540.0,
+     "n": 3
+    },
+    {
+     "formula": "(-O-C(O)-C6H4-C(O)-O-CH2-CH2-)n",
+     "median": 538.2,
+     "min": 538.2,
+     "max": 538.2,
+     "n": 1
+    },
+    {
+     "formula": "(-CH2CH2OC(O)C6H4C(O)O-)n",
+     "median": 538.3,
+     "min": 535.7,
+     "max": 540.1,
+     "n": 9
+    },
+    {
+     "formula": "C10H4N2O4/Ag",
+     "median": 538.3,
+     "min": 538.2,
+     "max": 538.4,
+     "n": 2
+    },
+    {
+     "formula": "(-C6H4S(O)2C6H4O-)n",
+     "median": 538.6,
+     "min": 538.6,
+     "max": 538.6,
+     "n": 1
+    },
+    {
+     "formula": "(-Si(CH3)2-C6H4-Si(CH3)2-O-)n",
+     "median": 538.7,
+     "min": 538.7,
+     "max": 538.7,
+     "n": 2
+    },
+    {
+     "formula": "(-Si(C6H5)2O-)n",
+     "median": 538.7,
+     "min": 538.7,
+     "max": 538.7,
+     "n": 1
+    },
+    {
+     "formula": "Ag/(-CH2CH2OC(O)C6H4C(O)O-)n",
+     "median": 538.7,
+     "min": 538.7,
+     "max": 538.7,
+     "n": 1
+    },
+    {
+     "formula": "(-OC(O)NHC6H4CH2C6H4NHC(O)OCH2(CF2)2CH2-)n",
+     "median": 538.7,
+     "min": 538.7,
+     "max": 538.7,
+     "n": 1
+    },
+    {
+     "formula": "CH3Si((C6H5)2)OSi(CH3)(C6H5)OSi((C6H5)2)CH3",
+     "median": 538.8,
+     "min": 538.8,
+     "max": 538.8,
+     "n": 1
+    },
+    {
+     "formula": "(-C6H4S(O)2-)n",
+     "median": 538.9,
+     "min": 538.9,
+     "max": 538.9,
+     "n": 1
+    },
+    {
+     "formula": "(-C(O)-C6H4-C(O)-O-C6H3(CH3)-O-)x-(-C(O)-C6H4-C(O)-O-C6H3(CH3)-O-)y",
+     "median": 539.0,
+     "min": 539.0,
+     "max": 539.0,
+     "n": 1
+    },
+    {
+     "formula": "(-Si(C6H5)(CH3)O-)n",
+     "median": 539.0,
+     "min": 539.0,
+     "max": 539.0,
+     "n": 1
+    },
+    {
+     "formula": "C20H12O5",
+     "median": 539.0,
+     "min": 539.0,
+     "max": 539.0,
+     "n": 1
+    },
+    {
+     "formula": "(-O-C6H10-O-C(O)-C6H10-C(O)-)x-(-C(O)-C6H4-C(O)-O-C6H3(CH3)-O-)y",
+     "median": 539.05,
+     "min": 539.0,
+     "max": 539.1,
+     "n": 2
+    },
+    {
+     "formula": "(-C6H4C(CH3)2C6H4OC6H4S(O)2C6H4O-)n",
+     "median": 539.1,
+     "min": 539.1,
+     "max": 539.1,
+     "n": 1
+    },
+    {
+     "formula": "(-C(O)-C6H4-C(O)-O-C6H3(CH3)-O-)n",
+     "median": 539.1,
+     "min": 539.0,
+     "max": 539.2,
+     "n": 3
+    },
+    {
+     "formula": "(-C6H4C(CH3)2C6H4OC(O)O-)n",
+     "median": 539.3,
+     "min": 539.3,
+     "max": 539.3,
+     "n": 1
+    },
+    {
+     "formula": "(-NHC(O)NHC6H4CH2C6H4NHC(O)NHC6F4C6F4-)n",
+     "median": 539.3,
+     "min": 539.3,
+     "max": 539.3,
+     "n": 1
+    },
+    {
+     "formula": "(-NHC(O)NHC6H4CH2C6H4NHC(O)NHC6F4-)n",
+     "median": 539.4,
+     "min": 539.4,
+     "max": 539.4,
+     "n": 1
+    },
+    {
+     "formula": "((-OC(O)NHC6H4CH2C6H4NHC(O)OCH2(CF2)3CH2-)n",
+     "median": 539.9,
+     "min": 539.9,
+     "max": 539.9,
+     "n": 1
+    },
+    {
+     "formula": "(-C6H4OC6H4OC6H4C(O)-)n",
+     "median": 540.3,
+     "min": 540.3,
+     "max": 540.3,
+     "n": 1
+    },
+    {
+     "formula": "C6H5(OC6H4)3OC6H5",
+     "median": 540.5,
+     "min": 540.5,
+     "max": 540.5,
+     "n": 1
+    }
+   ],
+   "n_records": 3208
+  },
+  "O2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 83
+  }
+ },
+ "auger": {
+  "line": "KVV",
+  "rows": [
+   {
+    "formula": "SiO2,quartz",
+    "ke": 506.7,
+    "n": 13,
+    "alpha": 1039.6,
+    "alpha_line": "1s"
+   },
+   {
+    "formula": "Fe2O3",
+    "ke": 512.4,
+    "n": 3,
+    "alpha": 1042.2,
+    "alpha_line": "1s"
+   },
+   {
+    "formula": "PbO",
+    "ke": 513.0,
+    "n": 3,
+    "alpha": 1042.1,
+    "alpha_line": "1s"
+   }
+  ]
+ }
+}

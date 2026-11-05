@@ -1,0 +1,319 @@
+{
+ "element": "Co",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 231,
+ "orbitals": {
+  "Co2p": {
+   "line": "2p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 15.55,
+    "n": 56,
+    "min": 14.6,
+    "max": 17.0
+   },
+   "states": [
+    {
+     "formula": "Co",
+     "kind": "metal",
+     "name": "cobalt",
+     "median": 778.25,
+     "q1": 778.02,
+     "q3": 778.32,
+     "min": 777.8,
+     "max": 778.5,
+     "n": 10,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25749",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25751",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25754"
+     ]
+    },
+    {
+     "formula": "CoNi",
+     "kind": "other",
+     "name": "cobalt nickel",
+     "median": 778.57,
+     "q1": 778.52,
+     "q3": 778.76,
+     "min": 778.47,
+     "max": 778.95,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27226",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27228",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27234"
+     ]
+    },
+    {
+     "formula": "Co2O3",
+     "kind": "oxide",
+     "name": "cobalt(III) trioxide",
+     "median": 780.0,
+     "q1": 779.95,
+     "q3": 780.65,
+     "min": 779.9,
+     "max": 781.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26566",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/59262",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2071"
+     ]
+    },
+    {
+     "formula": "Co3O4",
+     "kind": "oxide",
+     "name": "tricobalt tetraoxide",
+     "median": 780.1,
+     "q1": 779.55,
+     "q3": 780.25,
+     "min": 779.3,
+     "max": 780.7,
+     "n": 11,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26686",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26694",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26695"
+     ]
+    },
+    {
+     "formula": "CoO",
+     "kind": "oxide",
+     "name": "cobalt(II) oxide",
+     "median": 780.4,
+     "q1": 780.2,
+     "q3": 780.58,
+     "min": 780.0,
+     "max": 781.2,
+     "n": 14,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26768",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26793",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26804"
+     ]
+    },
+    {
+     "formula": "Al2CoO4",
+     "kind": "other",
+     "name": "aluminum(III) cobaltate(V)",
+     "median": 780.8,
+     "q1": 780.7,
+     "q3": 780.95,
+     "min": 780.6,
+     "max": 781.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26609",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26612",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26632"
+     ]
+    },
+    {
+     "formula": "CoMoO4",
+     "kind": "other",
+     "name": "cobalt(II) molybdate",
+     "median": 780.9,
+     "q1": 780.9,
+     "q3": 781.1,
+     "min": 780.9,
+     "max": 781.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26712",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26673",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26677"
+     ]
+    },
+    {
+     "formula": "Co(OH)2",
+     "kind": "hydroxide",
+     "name": "cobalt(II) hydroxide",
+     "median": 781.65,
+     "q1": 781.22,
+     "q3": 782.02,
+     "min": 781.0,
+     "max": 782.1,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26135",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26086",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26087"
+     ]
+    },
+    {
+     "formula": "Co(NH3)6Cl3",
+     "kind": "other",
+     "name": "hexaamminecobalt trichloride",
+     "median": 781.8,
+     "q1": 781.45,
+     "q3": 782.0,
+     "min": 781.1,
+     "max": 782.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26142",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26149",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26152"
+     ]
+    },
+    {
+     "formula": "K3[Co(CN)6]",
+     "kind": "other",
+     "name": "tripotassium hexacyanocobaltate(III)",
+     "median": 782.0,
+     "q1": 781.6,
+     "q3": 782.05,
+     "min": 781.2,
+     "max": 782.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25548",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25550",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25552"
+     ]
+    }
+   ],
+   "satellites": [
+    {
+     "formula": "Co(NO3)2",
+     "median": 786.85,
+     "min": 786.85,
+     "max": 786.85,
+     "n": 1
+    },
+    {
+     "formula": "Co((C6H5)3PO)2(NO3)2",
+     "median": 787.35,
+     "min": 787.35,
+     "max": 787.35,
+     "n": 1
+    },
+    {
+     "formula": "Co(OH)2",
+     "median": 787.5,
+     "min": 787.5,
+     "max": 787.5,
+     "n": 1
+    },
+    {
+     "formula": "Co2O3",
+     "median": 787.6,
+     "min": 787.6,
+     "max": 787.6,
+     "n": 1
+    },
+    {
+     "formula": "Co3O4",
+     "median": 788.2,
+     "min": 788.2,
+     "max": 788.2,
+     "n": 1
+    },
+    {
+     "formula": "CoO",
+     "median": 789.1,
+     "min": 789.1,
+     "max": 789.1,
+     "n": 1
+    }
+   ],
+   "n_records": 145
+  },
+  "Co2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 2
+  },
+  "Co3p": {
+   "line": "3p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 1.1,
+    "n": 1,
+    "min": 1.1,
+    "max": 1.1
+   },
+   "states": [
+    {
+     "formula": "Co",
+     "kind": "metal",
+     "name": "cobalt",
+     "median": 59.0,
+     "q1": 58.98,
+     "q3": 59.08,
+     "min": 58.9,
+     "max": 59.3,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90872",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29808",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29810"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 11
+  },
+  "Co3s": {
+   "line": "3s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "Co",
+     "kind": "metal",
+     "name": "cobalt",
+     "median": 101.1,
+     "q1": 101.0,
+     "q3": 101.24,
+     "min": 101.0,
+     "max": 101.35,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/48786",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30204",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30205"
+     ]
+    },
+    {
+     "formula": "CoO",
+     "kind": "oxide",
+     "name": "cobalt(II) oxide",
+     "median": 102.2,
+     "q1": 102.1,
+     "q3": 102.55,
+     "min": 102.0,
+     "max": 102.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30303",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30306",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/48952"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 20
+  }
+ },
+ "auger": {
+  "line": "L3VV",
+  "rows": [
+   {
+    "formula": "Co",
+    "ke": 773.2,
+    "n": 3,
+    "alpha": 1551.45,
+    "alpha_line": "2p3/2"
+   }
+  ]
+ }
+}

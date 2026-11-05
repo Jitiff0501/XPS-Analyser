@@ -1,151 +1,475 @@
 {
  "element": "Fe",
- "source": "文献汇总（Biesinger 2011；Yamashita & Hayes 2008；Grosvenor 2004；McIntyre & Zetaruk 1977），非 NIST；导入 NIST 的 Fe 数据后自动替换",
- "curated": true,
- "records": 0,
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 450,
  "orbitals": {
   "Fe2p": {
    "line": "2p3/2",
    "l": "p",
    "ratio": 0.5,
    "split": {
-    "median": 13.6,
-    "n": 4,
-    "min": 13.1,
-    "max": 13.9
+    "median": 13.2,
+    "n": 32,
+    "min": 12.7,
+    "max": 14.5
    },
    "states": [
     {
-     "formula": "Fe",
-     "name": "iron metal (ΔE 13.1 eV, asymmetric)",
-     "median": 706.7,
-     "q1": 706.6,
-     "q3": 706.9,
-     "min": 706.4,
-     "max": 707.2,
+     "formula": "B20Fe80",
+     "kind": "other",
+     "name": "boron iron alloy (20-80)",
+     "median": 706.9,
+     "q1": 706.9,
+     "q3": 706.95,
+     "min": 706.9,
+     "max": 707.1,
      "n": 4,
      "refs": [
-      "https://doi.org/10.1016/j.apsusc.2010.10.051",
-      "https://doi.org/10.1016/j.apsusc.2007.09.063",
-      "https://doi.org/10.1002/sia.1984",
-      "https://doi.org/10.1021/ac50019a016"
+      "https://srdata.nist.gov/xps/XPSSummaryPage/48683",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/48685",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/48687"
+     ]
+    },
+    {
+     "formula": "Fe",
+     "kind": "metal",
+     "name": "iron",
+     "median": 707.0,
+     "q1": 706.85,
+     "q3": 707.3,
+     "min": 706.5,
+     "max": 710.7,
+     "n": 47,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25938",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25949",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25954"
      ]
     },
     {
      "formula": "FeS2",
-     "name": "pyrite (low-spin Fe2+, narrow)",
-     "median": 707.3,
-     "q1": 707.2,
-     "q3": 707.4,
-     "min": 706.9,
-     "max": 707.6,
-     "n": 1,
+     "kind": "other",
+     "name": "iron sulfide",
+     "median": 707.02,
+     "q1": 706.73,
+     "q3": 707.29,
+     "min": 706.6,
+     "max": 708.6,
+     "n": 6,
      "refs": [
-      "https://doi.org/10.1002/sia.1984"
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26967",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26968",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26969"
+     ]
+    },
+    {
+     "formula": "[Fe(C5H5)2]",
+     "kind": "other",
+     "name": "bis(cyclopentadienyl)iron",
+     "median": 707.7,
+     "q1": 707.6,
+     "q3": 707.73,
+     "min": 707.3,
+     "max": 707.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25989",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26010",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25961"
+     ]
+    },
+    {
+     "formula": "CuFeS2",
+     "kind": "other",
+     "name": "copper iron disulfide (chalcopyrite)",
+     "median": 708.3,
+     "q1": 708.2,
+     "q3": 708.5,
+     "min": 708.1,
+     "max": 708.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91713",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110259",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26946"
+     ]
+    },
+    {
+     "formula": "B6Cr14Fe32Ni36P12Ox",
+     "kind": "other",
+     "name": "boron chromium iron nickel phosphorus oxides",
+     "median": 709.5,
+     "q1": 708.3,
+     "q3": 710.1,
+     "min": 707.1,
+     "max": 710.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43458",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43459",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43460"
      ]
     },
     {
      "formula": "FeO",
-     "name": "wüstite Fe1-xO (Fe2+; satellite ~715.5)",
+     "kind": "oxide",
+     "name": "iron(II) oxide",
      "median": 709.6,
-     "q1": 709.4,
-     "q3": 709.9,
-     "min": 709.1,
-     "max": 710.2,
-     "n": 3,
+     "q1": 709.5,
+     "q3": 710.1,
+     "min": 709.3,
+     "max": 710.7,
+     "n": 7,
      "refs": [
-      "https://doi.org/10.1016/j.apsusc.2010.10.051",
-      "https://doi.org/10.1016/j.apsusc.2007.09.063",
-      "https://doi.org/10.1021/ac50019a016"
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26854",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26855",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26856"
+     ]
+    },
+    {
+     "formula": "FeOx",
+     "kind": "oxide",
+     "name": "iron/nickel oxide/nickel",
+     "median": 709.9,
+     "q1": 708.95,
+     "q3": 710.82,
+     "min": 707.6,
+     "max": 711.1,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2094",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2089",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2090"
      ]
     },
     {
      "formula": "Fe3O4",
-     "name": "magnetite (Fe2+:Fe3+ = 1:2; no distinct satellite)",
-     "median": 710.5,
-     "q1": 710.3,
-     "q3": 710.7,
-     "min": 710.0,
-     "max": 710.9,
-     "n": 4,
-     "refs": [
-      "https://doi.org/10.1016/j.apsusc.2010.10.051",
-      "https://doi.org/10.1016/j.apsusc.2007.09.063",
-      "https://doi.org/10.1002/sia.1984",
-      "https://doi.org/10.1021/ac50019a016"
-     ]
-    },
-    {
-     "formula": "α-Fe2O3",
-     "name": "hematite (Fe3+; satellite ~719.0)",
-     "median": 710.9,
-     "q1": 710.7,
-     "q3": 711.1,
-     "min": 710.5,
+     "kind": "oxide",
+     "name": "Iron(II,III) oxide",
+     "median": 710.3,
+     "q1": 709.05,
+     "q3": 710.77,
+     "min": 708.1,
      "max": 711.4,
+     "n": 10,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26664",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26666",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26648"
+     ]
+    },
+    {
+     "formula": "Fe2O3",
+     "kind": "oxide",
+     "name": "iron(III) oxide",
+     "median": 711.0,
+     "q1": 710.8,
+     "q3": 711.3,
+     "min": 709.9,
+     "max": 711.6,
+     "n": 19,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26534",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26536",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26537"
+     ]
+    },
+    {
+     "formula": "Fe(OH)O",
+     "kind": "other",
+     "name": "iron(III) hydroxide oxide",
+     "median": 711.27,
+     "q1": 711.19,
+     "q3": 711.42,
+     "min": 711.0,
+     "max": 711.8,
      "n": 4,
      "refs": [
-      "https://doi.org/10.1016/j.apsusc.2010.10.051",
-      "https://doi.org/10.1016/j.apsusc.2007.09.063",
-      "https://doi.org/10.1002/sia.1984",
-      "https://doi.org/10.1021/ac50019a016"
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26348",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26352",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26354"
      ]
     },
     {
-     "formula": "γ-Fe2O3",
-     "name": "maghemite (Fe3+; satellite ~719.0)",
-     "median": 710.9,
-     "q1": 710.7,
-     "q3": 711.1,
-     "min": 710.5,
-     "max": 711.3,
-     "n": 2,
-     "refs": [
-      "https://doi.org/10.1016/j.apsusc.2007.09.063",
-      "https://doi.org/10.1002/sia.1984"
-     ]
-    },
-    {
-     "formula": "α-FeOOH",
-     "name": "goethite (Fe3+; satellite ~719.5)",
-     "median": 711.3,
-     "q1": 711.1,
-     "q3": 711.6,
-     "min": 710.9,
-     "max": 711.9,
+     "formula": "FeS",
+     "kind": "other",
+     "name": "iron(II) sulfide",
+     "median": 712.1,
+     "q1": 711.2,
+     "q3": 712.85,
+     "min": 710.3,
+     "max": 713.6,
      "n": 3,
      "refs": [
-      "https://doi.org/10.1016/j.apsusc.2010.10.051",
-      "https://doi.org/10.1002/sia.1984",
-      "https://doi.org/10.1021/ac50019a016"
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27010",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27012",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27013"
+     ]
+    },
+    {
+     "formula": "FeF3",
+     "kind": "other",
+     "name": "iron(III) fluoride",
+     "median": 714.2,
+     "q1": 714.05,
+     "q3": 714.5,
+     "min": 713.9,
+     "max": 714.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25920",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25909",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25912"
      ]
     }
    ],
    "satellites": [
     {
+     "formula": "O2/Fe/Cu",
+     "median": 718.6,
+     "min": 718.6,
+     "max": 718.6,
+     "n": 1
+    }
+   ],
+   "n_records": 250
+  },
+  "Fe2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 1
+  },
+  "Fe3p": {
+   "line": "3p3/2（含未分辨的 3p）",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 0.8,
+    "n": 1,
+    "min": 0.8,
+    "max": 0.8
+   },
+   "states": [
+    {
+     "formula": "B20Fe80",
+     "kind": "other",
+     "name": "boron iron alloy (20-80)",
+     "median": 52.7,
+     "q1": 52.68,
+     "q3": 52.7,
+     "min": 52.6,
+     "max": 52.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43455",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43445",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43449"
+     ]
+    },
+    {
+     "formula": "Fe",
+     "kind": "metal",
+     "name": "iron",
+     "median": 52.8,
+     "q1": 52.5,
+     "q3": 53.0,
+     "min": 52.1,
+     "max": 53.5,
+     "n": 13,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90856",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29838",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29558"
+     ]
+    },
+    {
+     "formula": "FeS2",
+     "kind": "other",
+     "name": "iron sulfide",
+     "median": 54.05,
+     "q1": 53.96,
+     "q3": 54.18,
+     "min": 53.85,
+     "max": 54.4,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29680",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29681",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29684"
+     ]
+    },
+    {
      "formula": "FeO",
-     "median": 715.5,
-     "min": 714.8,
-     "max": 716.0,
-     "n": 3
+     "kind": "oxide",
+     "name": "iron(II) oxide",
+     "median": 54.75,
+     "q1": 54.7,
+     "q3": 55.1,
+     "min": 54.7,
+     "max": 56.0,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29668",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29674",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29675"
+     ]
+    },
+    {
+     "formula": "Fe3O4",
+     "kind": "oxide",
+     "name": "Iron(II,III) oxide",
+     "median": 55.05,
+     "q1": 53.7,
+     "q3": 56.5,
+     "min": 53.7,
+     "max": 56.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29646",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29648",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29649"
+     ]
     },
     {
      "formula": "Fe2O3",
-     "median": 719.0,
-     "min": 718.6,
-     "max": 719.5,
-     "n": 4
-    },
-    {
-     "formula": "FeOOH",
-     "median": 719.6,
-     "min": 719.2,
-     "max": 720.0,
-     "n": 2
+     "kind": "oxide",
+     "name": "iron(III) oxide",
+     "median": 55.6,
+     "q1": 55.55,
+     "q3": 55.9,
+     "min": 54.8,
+     "max": 56.6,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29611",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29612",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/29614"
+     ]
     }
    ],
-   "n_records": 0
+   "satellites": [],
+   "n_records": 104
+  },
+  "Fe3s": {
+   "line": "3s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "B20Fe80",
+     "kind": "other",
+     "name": "boron iron alloy (20-80)",
+     "median": 90.8,
+     "q1": 90.77,
+     "q3": 90.85,
+     "min": 90.7,
+     "max": 91.0,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43444",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43446",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43448"
+     ]
+    },
+    {
+     "formula": "Fe",
+     "kind": "metal",
+     "name": "iron",
+     "median": 91.3,
+     "q1": 90.9,
+     "q3": 91.3,
+     "min": 90.8,
+     "max": 91.4,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/59067",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30219",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30221"
+     ]
+    },
+    {
+     "formula": "FeS2",
+     "kind": "other",
+     "name": "iron sulfide",
+     "median": 92.4,
+     "q1": 92.2,
+     "q3": 92.65,
+     "min": 92.0,
+     "max": 92.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30325",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30326",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30334"
+     ]
+    },
+    {
+     "formula": "FeO",
+     "kind": "oxide",
+     "name": "iron(II) oxide",
+     "median": 93.3,
+     "q1": 92.8,
+     "q3": 93.45,
+     "min": 92.3,
+     "max": 93.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30312",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30314",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30320"
+     ]
+    },
+    {
+     "formula": "Fe2O3",
+     "kind": "oxide",
+     "name": "iron(III) oxide",
+     "median": 93.45,
+     "q1": 93.25,
+     "q3": 93.62,
+     "min": 92.8,
+     "max": 94.0,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30276",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30278",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/49047"
+     ]
+    }
+   ],
+   "satellites": [
+    {
+     "formula": "C32H16FeN8",
+     "median": 96.6,
+     "min": 96.6,
+     "max": 96.6,
+     "n": 1
+    },
+    {
+     "formula": "Fe2O3",
+     "median": 99.6,
+     "min": 99.6,
+     "max": 99.6,
+     "n": 1
+    }
+   ],
+   "n_records": 64
   }
  },
- "auger": null
+ "auger": {
+  "line": "L3VV",
+  "rows": [
+   {
+    "formula": "Fe",
+    "ke": 702.7,
+    "n": 3,
+    "alpha": 1409.7,
+    "alpha_line": "2p3/2"
+   }
+  ]
+ }
 }

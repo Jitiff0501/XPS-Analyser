@@ -1,0 +1,194 @@
+{
+ "element": "Ta",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 129,
+ "orbitals": {
+  "Ta3d": {
+   "line": "3d5/2",
+   "l": "d",
+   "ratio": 0.6666666666666666,
+   "split": {
+    "median": 58.2,
+    "n": 1,
+    "min": 58.2,
+    "max": 58.2
+   },
+   "states": [],
+   "satellites": [],
+   "n_records": 1
+  },
+  "Ta3p": {
+   "line": "3p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 1
+  },
+  "Ta3s": {
+   "line": "3s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 1
+  },
+  "Ta4d": {
+   "line": "4d5/2",
+   "l": "d",
+   "ratio": 0.6666666666666666,
+   "split": {
+    "median": 11.5,
+    "n": 1,
+    "min": 11.5,
+    "max": 11.5
+   },
+   "states": [
+    {
+     "formula": "Ta",
+     "kind": "metal",
+     "name": "tantalum",
+     "median": 226.35,
+     "q1": 226.3,
+     "q3": 226.48,
+     "min": 226.3,
+     "max": 226.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44621",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30692",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30701"
+     ]
+    },
+    {
+     "formula": "Ta2O5",
+     "kind": "oxide",
+     "name": "ditantalum pentoxide",
+     "median": 230.4,
+     "q1": 230.0,
+     "q3": 230.5,
+     "min": 229.6,
+     "max": 230.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30654",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30655",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/30657"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 23
+  },
+  "Ta4f": {
+   "line": "4f7/2",
+   "l": "f",
+   "ratio": 0.75,
+   "split": {
+    "median": 1.9,
+    "n": 15,
+    "min": 1.81,
+    "max": 2.1
+   },
+   "states": [
+    {
+     "formula": "Ta",
+     "kind": "metal",
+     "name": "tantalum",
+     "median": 21.7,
+     "q1": 21.61,
+     "q3": 21.9,
+     "min": 21.6,
+     "max": 22.0,
+     "n": 14,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66327",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5252",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91917"
+     ]
+    },
+    {
+     "formula": "TaS2",
+     "kind": "other",
+     "name": "tantalum disulfide",
+     "median": 23.6,
+     "q1": 23.25,
+     "q3": 25.15,
+     "min": 22.9,
+     "max": 26.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111192",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91165",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/31485"
+     ]
+    },
+    {
+     "formula": "Ta2O5",
+     "kind": "oxide",
+     "name": "ditantalum pentoxide",
+     "median": 26.9,
+     "q1": 26.5,
+     "q3": 27.0,
+     "min": 26.0,
+     "max": 27.05,
+     "n": 9,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/31410",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/31423",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/31429"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 60
+  },
+  "Ta4p": {
+   "line": "4p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 62.5,
+    "n": 1,
+    "min": 62.5,
+    "max": 62.5
+   },
+   "states": [],
+   "satellites": [],
+   "n_records": 2
+  },
+  "Ta4s": {
+   "line": "4s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 2
+  },
+  "Ta5p": {
+   "line": "5p3/2",
+   "l": "p",
+   "ratio": 0.5,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 6
+  },
+  "Ta5s": {
+   "line": "5s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 1
+  }
+ },
+ "auger": {
+  "line": "M5N67N67",
+  "rows": []
+ }
+}

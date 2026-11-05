@@ -1,0 +1,2948 @@
+{
+ "element": "C",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 2856,
+ "orbitals": {
+  "C1s": {
+   "line": "1s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "TiC",
+     "kind": "other",
+     "name": "titanium carbide",
+     "median": 281.6,
+     "q1": 281.5,
+     "q3": 281.7,
+     "min": 281.5,
+     "max": 281.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20530",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20532",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20526"
+     ]
+    },
+    {
+     "formula": "Cr7C3",
+     "kind": "other",
+     "name": "chromium carbide (Cr7C3)",
+     "median": 282.8,
+     "q1": 282.7,
+     "q3": 282.95,
+     "min": 282.6,
+     "max": 283.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41294",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41295",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92512"
+     ]
+    },
+    {
+     "formula": "WC",
+     "kind": "other",
+     "name": "tungsten carbide",
+     "median": 282.95,
+     "q1": 282.85,
+     "q3": 283.12,
+     "min": 282.7,
+     "max": 283.5,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20514",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20518",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90912"
+     ]
+    },
+    {
+     "formula": "SiC",
+     "kind": "other",
+     "name": "silicon carbide",
+     "median": 283.15,
+     "q1": 282.24,
+     "q3": 283.4,
+     "min": 281.26,
+     "max": 283.8,
+     "n": 12,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20567",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20562",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66577"
+     ]
+    },
+    {
+     "formula": "C2H4",
+     "kind": "other",
+     "name": "ethyl iodide on platinum",
+     "median": 283.9,
+     "q1": 283.85,
+     "q3": 284.05,
+     "min": 282.7,
+     "max": 284.25,
+     "n": 9,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5737",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5169",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/4968"
+     ]
+    },
+    {
+     "formula": "[(C6H5)3PCH2]2AuCl",
+     "kind": "other",
+     "name": "bis(triphenylmethylenephosphorane)gold chloride",
+     "median": 284.2,
+     "q1": 283.6,
+     "q3": 284.8,
+     "min": 283.6,
+     "max": 284.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5333",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5334",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/163"
+     ]
+    },
+    {
+     "formula": "CO",
+     "kind": "oxide",
+     "name": "carbon monoxide/platinum/titanium(IV) dioxide/titanium",
+     "median": 284.25,
+     "q1": 282.68,
+     "q3": 286.2,
+     "min": 282.3,
+     "max": 288.6,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2224",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2782",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2783"
+     ]
+    },
+    {
+     "formula": "(Si(CH3)(C6H5)-O-)n",
+     "kind": "other",
+     "name": "poly(phenylmethylsiloxane)",
+     "median": 284.39,
+     "q1": 284.31,
+     "q3": 284.54,
+     "min": 284.22,
+     "max": 284.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23060",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23058",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23056"
+     ]
+    },
+    {
+     "formula": "C-graphite",
+     "kind": "other",
+     "name": "graphite",
+     "median": 284.48,
+     "q1": 284.4,
+     "q3": 284.64,
+     "min": 283.8,
+     "max": 285.7,
+     "n": 22,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20476",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20477",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20480"
+     ]
+    },
+    {
+     "formula": "(-C6H4S-)n",
+     "kind": "other",
+     "name": "poly(phenylene sulfide)",
+     "median": 284.7,
+     "q1": 284.55,
+     "q3": 284.95,
+     "min": 284.4,
+     "max": 285.21,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23149",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23150",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/4900"
+     ]
+    },
+    {
+     "formula": "(C6H5NC6H4)n",
+     "kind": "other",
+     "name": "poly(carbazole)",
+     "median": 284.7,
+     "q1": 284.42,
+     "q3": 284.98,
+     "min": 283.7,
+     "max": 285.5,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23610",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23611",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23612"
+     ]
+    },
+    {
+     "formula": "C in Zr98Sn1.5Fe0.22",
+     "kind": "other",
+     "name": "carbon impurity in zircaloy-4",
+     "median": 284.7,
+     "q1": 283.35,
+     "q3": 285.35,
+     "min": 282.0,
+     "max": 286.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23639",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23633",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23635"
+     ]
+    },
+    {
+     "formula": "C6H6",
+     "kind": "other",
+     "name": "benzene",
+     "median": 284.8,
+     "q1": 284.6,
+     "q3": 284.85,
+     "min": 284.4,
+     "max": 284.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21780",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21710",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21608"
+     ]
+    },
+    {
+     "formula": "(-Si(CH3)2O-)n",
+     "kind": "other",
+     "name": "poly(dimethylsiloxane)",
+     "median": 284.8,
+     "q1": 284.7,
+     "q3": 284.8,
+     "min": 284.38,
+     "max": 284.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23164",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92473",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68175"
+     ]
+    },
+    {
+     "formula": "C6H4NHC6H4",
+     "kind": "other",
+     "name": "carbazole",
+     "median": 284.8,
+     "q1": 284.55,
+     "q3": 285.05,
+     "min": 284.3,
+     "max": 285.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23579",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23594",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23595"
+     ]
+    },
+    {
+     "formula": "C-diamond",
+     "kind": "other",
+     "name": "diamond",
+     "median": 284.8,
+     "q1": 284.24,
+     "q3": 285.04,
+     "min": 283.7,
+     "max": 285.18,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90404",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90405",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111709"
+     ]
+    },
+    {
+     "formula": "(-C4HS((CH2)5CH3)-)n",
+     "kind": "other",
+     "name": "poly(3-hexylthiophene)",
+     "median": 284.8,
+     "q1": 284.8,
+     "q3": 285.25,
+     "min": 284.8,
+     "max": 285.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110369",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110370",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69984"
+     ]
+    },
+    {
+     "formula": "CH3CH2CHO",
+     "kind": "other",
+     "name": "propionaldehyde/copper(I) oxide",
+     "median": 284.8,
+     "q1": 284.8,
+     "q3": 284.8,
+     "min": 284.8,
+     "max": 284.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92922",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92925",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92928"
+     ]
+    },
+    {
+     "formula": "(-C6H2(CH3)2O-)n",
+     "kind": "other",
+     "name": "poly(2,6-dimethyl-1,4-phenylene oxide)",
+     "median": 284.9,
+     "q1": 284.8,
+     "q3": 285.88,
+     "min": 284.3,
+     "max": 286.0,
+     "n": 10,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22970",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44488",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44489"
+     ]
+    },
+    {
+     "formula": "CsC8",
+     "kind": "other",
+     "name": "cesium octacarbon",
+     "median": 284.95,
+     "q1": 284.84,
+     "q3": 285.18,
+     "min": 284.66,
+     "max": 285.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/57519",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/59184",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/59185"
+     ]
+    },
+    {
+     "formula": "C6H5CH3",
+     "kind": "other",
+     "name": "toluene",
+     "median": 285.0,
+     "q1": 284.85,
+     "q3": 285.05,
+     "min": 284.7,
+     "max": 285.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21667",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21669",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21676"
+     ]
+    },
+    {
+     "formula": "(-CH2CHC(CH3)CH2-)n",
+     "kind": "other",
+     "name": "poly(cis-isoprene)",
+     "median": 285.0,
+     "q1": 284.8,
+     "q3": 285.17,
+     "min": 284.69,
+     "max": 285.28,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22818",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22924",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22976"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C6H5)-)n",
+     "kind": "other",
+     "name": "poly(styrene)",
+     "median": 285.0,
+     "q1": 284.76,
+     "q3": 286.4,
+     "min": 284.4,
+     "max": 291.0,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22824",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22978",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22926"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C5H4COH)-)n",
+     "kind": "other",
+     "name": "poly(4-hydroxystyrene)",
+     "median": 285.0,
+     "q1": 284.9,
+     "q3": 285.76,
+     "min": 284.8,
+     "max": 286.53,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22697",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22678",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22669"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C6H4NO2)-)n",
+     "kind": "other",
+     "name": "poly(4-nitrostyrene)",
+     "median": 285.0,
+     "q1": 284.75,
+     "q3": 285.38,
+     "min": 284.49,
+     "max": 285.76,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22642",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22848",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22984"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C6H4Cl)-)n",
+     "kind": "other",
+     "name": "poly(2-chlorostyrene)",
+     "median": 285.0,
+     "q1": 284.74,
+     "q3": 285.99,
+     "min": 284.7,
+     "max": 286.07,
+     "n": 9,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23132",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23209",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23210"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C6H4Br)-)n",
+     "kind": "other",
+     "name": "poly(4-bromostyrene)",
+     "median": 285.0,
+     "q1": 284.9,
+     "q3": 285.37,
+     "min": 284.8,
+     "max": 285.74,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23080",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23078",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23076"
+     ]
+    },
+    {
+     "formula": "LiC12H4N4",
+     "kind": "other",
+     "name": "lithium 7,7,8,8-tetracyanoquinodimethane",
+     "median": 285.07,
+     "q1": 284.72,
+     "q3": 285.62,
+     "min": 284.37,
+     "max": 286.17,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44382",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44383",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44384"
+     ]
+    },
+    {
+     "formula": "CuC12H4N4",
+     "kind": "other",
+     "name": "copper 7,7,8,8-tetracyanoquinodimethane",
+     "median": 285.07,
+     "q1": 284.72,
+     "q3": 285.52,
+     "min": 284.37,
+     "max": 285.97,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44396",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44397",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44398"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(CH3)-)n",
+     "kind": "other",
+     "name": "poly(propylene)",
+     "median": 285.1,
+     "q1": 285.05,
+     "q3": 285.13,
+     "min": 285.0,
+     "max": 285.16,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22972",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22800",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23724"
+     ]
+    },
+    {
+     "formula": "Ni(C12H4N4)2.3H2O",
+     "kind": "other",
+     "name": "nickel bis(7,7,8,8-tetracyanoquinodimethane) trihydrate",
+     "median": 285.17,
+     "q1": 284.77,
+     "q3": 285.57,
+     "min": 284.37,
+     "max": 285.97,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44391",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44392",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44393"
+     ]
+    },
+    {
+     "formula": "(-CH2C(CH3)2-)n",
+     "kind": "other",
+     "name": "poly(isobutylene)",
+     "median": 285.19,
+     "q1": 285.1,
+     "q3": 285.38,
+     "min": 285.0,
+     "max": 285.56,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22802",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22916",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22804"
+     ]
+    },
+    {
+     "formula": "C23Cs",
+     "kind": "other",
+     "name": "cesium carbon(C23Cs)",
+     "median": 285.2,
+     "q1": 285.01,
+     "q3": 285.4,
+     "min": 284.82,
+     "max": 285.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/59186",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/59187",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/57520"
+     ]
+    },
+    {
+     "formula": "C43Cs",
+     "kind": "other",
+     "name": "cesium carbon(C43Cs)",
+     "median": 285.2,
+     "q1": 285.0,
+     "q3": 285.3,
+     "min": 284.79,
+     "max": 285.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/59188",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/59189",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/57521"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C(O)CH2CH3)-)n",
+     "kind": "other",
+     "name": "poly(vinyl ethyl ketone)",
+     "median": 285.28,
+     "q1": 285.05,
+     "q3": 287.05,
+     "min": 284.8,
+     "max": 287.81,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22663",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22665",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22667"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C(O)CH3)-)n",
+     "kind": "other",
+     "name": "poly(vinyl methyl ketone)",
+     "median": 285.29,
+     "q1": 284.8,
+     "q3": 287.5,
+     "min": 284.8,
+     "max": 287.97,
+     "n": 12,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/54679",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/54680",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68415"
+     ]
+    },
+    {
+     "formula": "CH2=C(CH3)COOCH3",
+     "kind": "other",
+     "name": "methyl methacrylate",
+     "median": 285.3,
+     "q1": 284.8,
+     "q3": 286.3,
+     "min": 284.25,
+     "max": 288.6,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112836",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112837",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112838"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(N(C6H4)2)-)n",
+     "kind": "other",
+     "name": "poly(9-vinylcarbazole)",
+     "median": 285.31,
+     "q1": 284.92,
+     "q3": 285.81,
+     "min": 284.67,
+     "max": 286.41,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23047",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23048",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23049"
+     ]
+    },
+    {
+     "formula": "(-C6H4OC6H4S(O)(O)-)n",
+     "kind": "other",
+     "name": "poly(ether sulfone)",
+     "median": 285.31,
+     "q1": 285.0,
+     "q3": 285.82,
+     "min": 284.7,
+     "max": 286.34,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23152",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23153",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23154"
+     ]
+    },
+    {
+     "formula": "(-CH2CHC(Cl)CH2-)n",
+     "kind": "other",
+     "name": "poly(chloropene)",
+     "median": 285.37,
+     "q1": 285.19,
+     "q3": 285.82,
+     "min": 285.0,
+     "max": 286.27,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23120",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23205",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23259"
+     ]
+    },
+    {
+     "formula": "(-CH2CH2-)n",
+     "kind": "other",
+     "name": "poly(ethylene), high density",
+     "median": 285.39,
+     "q1": 285.0,
+     "q3": 285.78,
+     "min": 285.0,
+     "max": 286.17,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22798",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22796",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22914"
+     ]
+    },
+    {
+     "formula": "C6H5NHC6H4NHC6H5",
+     "kind": "other",
+     "name": "N,N'-Diphenyl-1,4-phenylenediamine [poly(aniline) oligomer]",
+     "median": 285.4,
+     "q1": 285.05,
+     "q3": 285.67,
+     "min": 284.7,
+     "max": 285.94,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23035",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23137",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66587"
+     ]
+    },
+    {
+     "formula": "(-CH2CH2C(O)CHCHC(O)O-)n",
+     "kind": "other",
+     "name": "poly(ethylene-co-maleic anhydride)",
+     "median": 285.4,
+     "q1": 285.1,
+     "q3": 287.31,
+     "min": 284.8,
+     "max": 289.22,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68390",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68391",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68392"
+     ]
+    },
+    {
+     "formula": "(-CH2C(CH3)(C(O)CH3)-)n",
+     "kind": "other",
+     "name": "poly(methyl isopropenyl ketone)",
+     "median": 285.42,
+     "q1": 284.95,
+     "q3": 287.48,
+     "min": 284.8,
+     "max": 287.92,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68287",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68288",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68289"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(OCH2CH(CH3)2)-)n",
+     "kind": "other",
+     "name": "poly(vinyl isobutyl ether)",
+     "median": 285.45,
+     "q1": 284.85,
+     "q3": 286.05,
+     "min": 284.8,
+     "max": 286.3,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22627",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22643",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68277"
+     ]
+    },
+    {
+     "formula": "(-CH2(CH2)2CH2O-)n",
+     "kind": "other",
+     "name": "poly(tetrahydrofuran)",
+     "median": 285.45,
+     "q1": 284.8,
+     "q3": 286.1,
+     "min": 284.8,
+     "max": 286.16,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68271",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68272",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113469"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C5H4N)-)n",
+     "kind": "other",
+     "name": "poly(2-vinylpyridine)",
+     "median": 285.48,
+     "q1": 285.19,
+     "q3": 285.93,
+     "min": 285.0,
+     "max": 286.17,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23037",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23039",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23168"
+     ]
+    },
+    {
+     "formula": "C6H5CN",
+     "kind": "other",
+     "name": "benzonitrile",
+     "median": 285.5,
+     "q1": 285.22,
+     "q3": 285.93,
+     "min": 284.7,
+     "max": 286.9,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21424",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5120",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5121"
+     ]
+    },
+    {
+     "formula": "C2H5I",
+     "kind": "other",
+     "name": "ethyl iodide on platinum",
+     "median": 285.5,
+     "q1": 285.15,
+     "q3": 285.5,
+     "min": 284.8,
+     "max": 285.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5735",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41155",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41157"
+     ]
+    },
+    {
+     "formula": "(-CH(CH3)CH2O-)n",
+     "kind": "other",
+     "name": "poly(isopropylene glycol)",
+     "median": 285.5,
+     "q1": 284.8,
+     "q3": 286.22,
+     "min": 284.8,
+     "max": 286.3,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68409",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68410",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5265"
+     ]
+    },
+    {
+     "formula": "(-C4S(CH3)(OC8H17)-)n",
+     "kind": "other",
+     "name": "poly(3-octyloxy-4-methylthiophene)",
+     "median": 285.5,
+     "q1": 285.15,
+     "q3": 285.9,
+     "min": 284.8,
+     "max": 286.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110363",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110364",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110365"
+     ]
+    },
+    {
+     "formula": "CH2=CHCHO",
+     "kind": "other",
+     "name": "acrolein",
+     "median": 285.5,
+     "q1": 285.15,
+     "q3": 286.6,
+     "min": 284.8,
+     "max": 287.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112832",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112833",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112834"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C(O)OH)-)n",
+     "kind": "other",
+     "name": "poly(acrylic acid)",
+     "median": 285.51,
+     "q1": 284.8,
+     "q3": 288.99,
+     "min": 284.8,
+     "max": 289.18,
+     "n": 16,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21465",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/3176",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/3177"
+     ]
+    },
+    {
+     "formula": "(-C(O)(CH2)8C(O)O-)n",
+     "kind": "other",
+     "name": "poly(sebacic anhydride)",
+     "median": 285.53,
+     "q1": 285.09,
+     "q3": 288.67,
+     "min": 284.8,
+     "max": 289.46,
+     "n": 10,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22983",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22985",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22987"
+     ]
+    },
+    {
+     "formula": "CH2=CHCOOH",
+     "kind": "other",
+     "name": "acrylic acid",
+     "median": 285.55,
+     "q1": 285.18,
+     "q3": 287.43,
+     "min": 284.8,
+     "max": 289.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112827",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112828",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112829"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(CH2CH3)-)n",
+     "kind": "other",
+     "name": "poly(1-butene)",
+     "median": 285.57,
+     "q1": 285.28,
+     "q3": 285.87,
+     "min": 285.0,
+     "max": 286.16,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22806",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22808",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22918"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(CH2CH(CH3)2)-)n",
+     "kind": "other",
+     "name": "poly(4-methyl-1-pentene)",
+     "median": 285.58,
+     "q1": 285.29,
+     "q3": 285.88,
+     "min": 285.0,
+     "max": 286.17,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22920",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22974",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22810"
+     ]
+    },
+    {
+     "formula": "(-(CH2)4O-)n",
+     "kind": "other",
+     "name": "poly(tetramethylene glycol)",
+     "median": 285.6,
+     "q1": 284.85,
+     "q3": 286.2,
+     "min": 284.8,
+     "max": 286.35,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22840",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22982",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68412"
+     ]
+    },
+    {
+     "formula": "(-CH2(CH2)9CH2C(O)NH-)n",
+     "kind": "other",
+     "name": "nylon 12 (N12)",
+     "median": 285.61,
+     "q1": 285.23,
+     "q3": 286.42,
+     "min": 285.0,
+     "max": 287.97,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22688",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22684",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22866"
+     ]
+    },
+    {
+     "formula": "(-CH2CH2CH2O-)n",
+     "kind": "other",
+     "name": "poly(propylene glycol)",
+     "median": 285.62,
+     "q1": 284.95,
+     "q3": 286.29,
+     "min": 284.8,
+     "max": 286.44,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68269",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68270",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22838"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(OCH2CH3)-)n",
+     "kind": "other",
+     "name": "poly(vinyl ethyl ether)",
+     "median": 285.62,
+     "q1": 284.95,
+     "q3": 286.29,
+     "min": 284.8,
+     "max": 286.44,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68276",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68405",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22632"
+     ]
+    },
+    {
+     "formula": "(-CH2C(CH3)(C(O)NH2)-)n",
+     "kind": "other",
+     "name": "poly(methacrylamide)",
+     "median": 285.64,
+     "q1": 285.32,
+     "q3": 286.97,
+     "min": 285.0,
+     "max": 288.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22992",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22734",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22729"
+     ]
+    },
+    {
+     "formula": "(-CH2(CH2)3CH2C(O)NH-)n",
+     "kind": "other",
+     "name": "nylon 6 (N6)",
+     "median": 285.65,
+     "q1": 285.23,
+     "q3": 286.5,
+     "min": 285.0,
+     "max": 288.01,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22990",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22872",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22692"
+     ]
+    },
+    {
+     "formula": "(-CH2C(CH3)(C(O)OH)-)n",
+     "kind": "other",
+     "name": "poly(methacrylic acid)",
+     "median": 285.7,
+     "q1": 285.15,
+     "q3": 288.3,
+     "min": 284.8,
+     "max": 289.33,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68353",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68354",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68355"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C5H4COCH3)-)n",
+     "kind": "other",
+     "name": "poly(4-methoxystyrene)",
+     "median": 285.71,
+     "q1": 284.94,
+     "q3": 286.5,
+     "min": 284.77,
+     "max": 286.75,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22670",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22749",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22647"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(OC(O)CH2CH3)-)n",
+     "kind": "other",
+     "name": "poly(vinyl propionate)",
+     "median": 285.74,
+     "q1": 285.0,
+     "q3": 287.02,
+     "min": 284.8,
+     "max": 288.85,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68360",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68361",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68362"
+     ]
+    },
+    {
+     "formula": "K(CH3CH2OCS2)",
+     "kind": "other",
+     "name": "potassium 1-dithioxo-2-oxa-butane",
+     "median": 285.75,
+     "q1": 284.8,
+     "q3": 286.77,
+     "min": 284.8,
+     "max": 287.0,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23302",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92653",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92657"
+     ]
+    },
+    {
+     "formula": "(-CH2C-H(NC4H6(O)))n",
+     "kind": "other",
+     "name": "poly(N-vinylpyrrolidone)",
+     "median": 285.76,
+     "q1": 285.27,
+     "q3": 286.57,
+     "min": 285.0,
+     "max": 287.79,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22723",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22725",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22741"
+     ]
+    },
+    {
+     "formula": "C5H5N",
+     "kind": "other",
+     "name": "pyridine",
+     "median": 285.8,
+     "q1": 285.65,
+     "q3": 286.0,
+     "min": 285.5,
+     "max": 286.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21392",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/996",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/999"
+     ]
+    },
+    {
+     "formula": "CH3CH2COOH",
+     "kind": "other",
+     "name": "propanoic acid",
+     "median": 285.8,
+     "q1": 285.3,
+     "q3": 287.75,
+     "min": 284.8,
+     "max": 289.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112822",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112823",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/112824"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C(O)NH2)-)n",
+     "kind": "other",
+     "name": "poly(acrylamide)",
+     "median": 285.81,
+     "q1": 284.95,
+     "q3": 288.0,
+     "min": 284.8,
+     "max": 288.59,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22738",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44238",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44239"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C(O)OCH2CH3)-)n",
+     "kind": "other",
+     "name": "poly(ethyl acrylate)",
+     "median": 285.88,
+     "q1": 285.14,
+     "q3": 287.1,
+     "min": 284.8,
+     "max": 288.87,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68345",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68346",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68347"
+     ]
+    },
+    {
+     "formula": "(-CH2C(CH3)(CN)-)n",
+     "kind": "other",
+     "name": "poly(methacrylonitrile)",
+     "median": 285.94,
+     "q1": 285.31,
+     "q3": 286.53,
+     "min": 285.0,
+     "max": 286.74,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22886",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23020",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22742"
+     ]
+    },
+    {
+     "formula": "C6H5Cl",
+     "kind": "other",
+     "name": "chlorobenzene",
+     "median": 285.95,
+     "q1": 285.52,
+     "q3": 286.42,
+     "min": 285.0,
+     "max": 287.1,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21406",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21410",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21414"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(OC(O)CH3)-)n",
+     "kind": "other",
+     "name": "poly(vinyl acetate)",
+     "median": 285.95,
+     "q1": 285.21,
+     "q3": 287.21,
+     "min": 284.8,
+     "max": 289.17,
+     "n": 16,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22683",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22685",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22687"
+     ]
+    },
+    {
+     "formula": "CH3CH2CN",
+     "kind": "other",
+     "name": "ethyl cyanide on nickel",
+     "median": 286.0,
+     "q1": 285.7,
+     "q3": 286.7,
+     "min": 284.7,
+     "max": 287.1,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5116",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5117",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5098"
+     ]
+    },
+    {
+     "formula": "C9H16NO2",
+     "kind": "other",
+     "name": "tetramethylpiperidine-N-oxyl",
+     "median": 286.09,
+     "q1": 285.43,
+     "q3": 286.89,
+     "min": 284.8,
+     "max": 287.92,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113318",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113319",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113320"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(Cl)-)n",
+     "kind": "other",
+     "name": "poly(vinyl chloride)",
+     "median": 286.1,
+     "q1": 285.35,
+     "q3": 286.2,
+     "min": 284.8,
+     "max": 287.0,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23097",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23099",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23195"
+     ]
+    },
+    {
+     "formula": "(CN)2=C=C6H4=C=(CN)2",
+     "kind": "other",
+     "name": "tetracyanoquinodimethane",
+     "median": 286.1,
+     "q1": 285.45,
+     "q3": 287.4,
+     "min": 284.8,
+     "max": 288.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2883",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2884",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2885"
+     ]
+    },
+    {
+     "formula": "(-CH(CH3)CH2C(O)O-)n",
+     "kind": "other",
+     "name": "poly(3-hydroxybutyrate)",
+     "median": 286.19,
+     "q1": 285.41,
+     "q3": 287.41,
+     "min": 285.0,
+     "max": 289.17,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22917",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22915",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22919"
+     ]
+    },
+    {
+     "formula": "(-C6H5NH-)n",
+     "kind": "other",
+     "name": "poly(aniline)",
+     "median": 286.2,
+     "q1": 285.45,
+     "q3": 287.05,
+     "min": 284.7,
+     "max": 287.9,
+     "n": 12,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23548",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23550",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23553"
+     ]
+    },
+    {
+     "formula": "(-C(O)(CH2)4C(O)O-)n",
+     "kind": "other",
+     "name": "poly(1,6-hexanedioic anhydride)",
+     "median": 286.2,
+     "q1": 285.32,
+     "q3": 287.5,
+     "min": 284.8,
+     "max": 289.3,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66756",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66757",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66758"
+     ]
+    },
+    {
+     "formula": "(-C(O)(CH2)7C(O)O-)n",
+     "kind": "other",
+     "name": "poly(nonanedioic anhydride)",
+     "median": 286.2,
+     "q1": 285.32,
+     "q3": 287.5,
+     "min": 284.8,
+     "max": 289.3,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66764",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66765",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66766"
+     ]
+    },
+    {
+     "formula": "(-C(O)(CH2)6C(O)O-)n",
+     "kind": "other",
+     "name": "poly(octanedioic anhydride)",
+     "median": 286.2,
+     "q1": 285.32,
+     "q3": 287.5,
+     "min": 284.8,
+     "max": 289.3,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66760",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66761",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66762"
+     ]
+    },
+    {
+     "formula": "C82H114Br2N2O4",
+     "kind": "other",
+     "name": "N,N'-bis(4-bromo-2,5-didodecylphenyl)pyromellitdiimide",
+     "median": 286.2,
+     "q1": 285.75,
+     "q3": 287.85,
+     "min": 285.3,
+     "max": 289.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92583",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92584",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92585"
+     ]
+    },
+    {
+     "formula": "(-C4H2O-)n",
+     "kind": "other",
+     "name": "poly(furan)",
+     "median": 286.24,
+     "q1": 285.52,
+     "q3": 287.4,
+     "min": 284.8,
+     "max": 288.56,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92849",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92850",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92851"
+     ]
+    },
+    {
+     "formula": "CH3C(O)OH",
+     "kind": "other",
+     "name": "acetic acid/palladium",
+     "median": 286.25,
+     "q1": 284.8,
+     "q3": 287.7,
+     "min": 284.8,
+     "max": 287.7,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92893",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92894",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93088"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(OCH3)-)n",
+     "kind": "other",
+     "name": "poly(vinyl methyl ether)",
+     "median": 286.26,
+     "q1": 284.9,
+     "q3": 286.47,
+     "min": 284.8,
+     "max": 286.68,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68274",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68275",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22936"
+     ]
+    },
+    {
+     "formula": "(-C5HxN0.56O1.76P0.07-)n",
+     "kind": "other",
+     "name": "poly((6,9-dihydro-6,9-dioxobisbenzimidazo[2,1-b:1',2'-j]benz",
+     "median": 286.26,
+     "q1": 285.53,
+     "q3": 287.12,
+     "min": 284.8,
+     "max": 287.97,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66261",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66262",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66263"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(OH)-)n",
+     "kind": "other",
+     "name": "poly(vinyl alcohol)",
+     "median": 286.3,
+     "q1": 284.8,
+     "q3": 286.3,
+     "min": 284.8,
+     "max": 286.47,
+     "n": 19,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21433",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21435",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21437"
+     ]
+    },
+    {
+     "formula": "(-(CH2)5C(O)O-)n",
+     "kind": "other",
+     "name": "poly(caprolactone)",
+     "median": 286.3,
+     "q1": 285.27,
+     "q3": 287.71,
+     "min": 284.8,
+     "max": 289.08,
+     "n": 11,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68376",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68377",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68378"
+     ]
+    },
+    {
+     "formula": "CH3CH2NH2",
+     "kind": "other",
+     "name": "ethylamine/silver",
+     "median": 286.3,
+     "q1": 286.2,
+     "q3": 286.5,
+     "min": 286.1,
+     "max": 286.7,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/318",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/316",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/320"
+     ]
+    },
+    {
+     "formula": "(C100H158N2O4)n",
+     "kind": "other",
+     "name": "poly(2,5,2',5',2\",5\"-hexadodecyl-p-terphenyl-4,4\"-ylen-alt-1",
+     "median": 286.3,
+     "q1": 285.8,
+     "q3": 287.75,
+     "min": 285.3,
+     "max": 289.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92629",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92630",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92631"
+     ]
+    },
+    {
+     "formula": "(-C6H4OC6H4OC6H4CO-)n",
+     "kind": "other",
+     "name": "poly(ether ether ketone)",
+     "median": 286.32,
+     "q1": 285.51,
+     "q3": 286.71,
+     "min": 284.7,
+     "max": 287.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22733",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22954",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22950"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(CN)-)n",
+     "kind": "other",
+     "name": "poly(acrylonitrile)",
+     "median": 286.35,
+     "q1": 285.92,
+     "q3": 286.54,
+     "min": 285.48,
+     "max": 286.73,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22892",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22894",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22994"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C(O)OCH3)-)n",
+     "kind": "other",
+     "name": "poly(methyl acrylate)",
+     "median": 286.39,
+     "q1": 285.36,
+     "q3": 288.6,
+     "min": 284.8,
+     "max": 289.04,
+     "n": 12,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21561",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21562",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21564"
+     ]
+    },
+    {
+     "formula": "(-C6H4OC6H4OC6H4C(O)-)n",
+     "kind": "other",
+     "name": "poly(oxy-1,4-phenyleneoxy-1,4-phenylenecarbonyl-1,4-phenylen",
+     "median": 286.4,
+     "q1": 284.8,
+     "q3": 287.12,
+     "min": 284.8,
+     "max": 287.2,
+     "n": 12,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92815",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92816",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92817"
+     ]
+    },
+    {
+     "formula": "(-OCH2CH2CH2OC(O)-)n",
+     "kind": "other",
+     "name": "poly(1,3-dioxan-2-one)",
+     "median": 286.4,
+     "q1": 285.6,
+     "q3": 288.4,
+     "min": 284.8,
+     "max": 290.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68474",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68475",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68476"
+     ]
+    },
+    {
+     "formula": "C46H30Cl2N6O4",
+     "kind": "other",
+     "name": "4,4'-[(3,3'-dichloro[1,1'-biphenyl]-4,4'-diyl)bis(azo)]bis[3",
+     "median": 286.4,
+     "q1": 285.6,
+     "q3": 287.15,
+     "min": 284.8,
+     "max": 287.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90016",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90017",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90018"
+     ]
+    },
+    {
+     "formula": "(C112H166N2O4)n",
+     "kind": "other",
+     "name": "poly(2,5,2',5',2\",5\"-hexadodecyl-p-terphenyl-4,4\"-ylen-alt-3",
+     "median": 286.4,
+     "q1": 285.85,
+     "q3": 287.8,
+     "min": 285.3,
+     "max": 289.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92607",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92608",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92609"
+     ]
+    },
+    {
+     "formula": "(-CH2C((CH3)2)C(O)O-)n",
+     "kind": "other",
+     "name": "poly(pivalolactone)",
+     "median": 286.43,
+     "q1": 285.41,
+     "q3": 287.72,
+     "min": 284.8,
+     "max": 289.0,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22949",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22951",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22953"
+     ]
+    },
+    {
+     "formula": "(-CH2C(CH3)(C(O)OCH3)-)n",
+     "kind": "other",
+     "name": "poly(methyl methacrylate)",
+     "median": 286.45,
+     "q1": 285.02,
+     "q3": 288.55,
+     "min": 284.8,
+     "max": 289.2,
+     "n": 42,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22777",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22779",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22781"
+     ]
+    },
+    {
+     "formula": "CH3COOCH2(CH2)14-SH",
+     "kind": "other",
+     "name": "16-thiol methyl hexadecanoate/gold",
+     "median": 286.49,
+     "q1": 285.55,
+     "q3": 287.78,
+     "min": 284.85,
+     "max": 289.4,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111022",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111023",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111024"
+     ]
+    },
+    {
+     "formula": "CH3CN",
+     "kind": "other",
+     "name": "acetonitrile",
+     "median": 286.6,
+     "q1": 285.88,
+     "q3": 286.97,
+     "min": 284.6,
+     "max": 287.2,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21284",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21303",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21293"
+     ]
+    },
+    {
+     "formula": "CH3CH2CH2CH2CN",
+     "kind": "other",
+     "name": "butyl cyanide on nickel",
+     "median": 286.6,
+     "q1": 286.05,
+     "q3": 286.9,
+     "min": 285.5,
+     "max": 287.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5106",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5107",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5108"
+     ]
+    },
+    {
+     "formula": "(-C-HCH3) (partial unit)",
+     "kind": "other",
+     "name": "chlorinated poly(propylene)",
+     "median": 286.61,
+     "q1": 285.95,
+     "q3": 287.33,
+     "min": 285.0,
+     "max": 288.44,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23107",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23109",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23111"
+     ]
+    },
+    {
+     "formula": "[Cr(CO)3(C6H6)]",
+     "kind": "other",
+     "name": "tricarbonyl(benzene)chromium",
+     "median": 286.7,
+     "q1": 286.5,
+     "q3": 286.85,
+     "min": 286.3,
+     "max": 287.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21645",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21647",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21725"
+     ]
+    },
+    {
+     "formula": "CH3CH2CH2CN",
+     "kind": "other",
+     "name": "propyl cyanide on nickel",
+     "median": 286.7,
+     "q1": 286.2,
+     "q3": 286.95,
+     "min": 285.7,
+     "max": 287.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5101",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5102",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5103"
+     ]
+    },
+    {
+     "formula": "CxHy(Cl)vNOz",
+     "kind": "other",
+     "name": "chlorine-doped poly(aniline) oxide",
+     "median": 286.75,
+     "q1": 285.85,
+     "q3": 287.55,
+     "min": 284.8,
+     "max": 288.3,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93903",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93904",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93905"
+     ]
+    },
+    {
+     "formula": "(-CHFCH2-)n",
+     "kind": "other",
+     "name": "poly(vinyl fluoride)",
+     "median": 286.77,
+     "q1": 285.73,
+     "q3": 287.83,
+     "min": 285.7,
+     "max": 287.91,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23173",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23051",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23052"
+     ]
+    },
+    {
+     "formula": "(-CH(CH3)C(O)O-)n",
+     "kind": "other",
+     "name": "poly(lactide)",
+     "median": 286.78,
+     "q1": 285.79,
+     "q3": 287.82,
+     "min": 284.8,
+     "max": 288.86,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68383",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68384",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68385"
+     ]
+    },
+    {
+     "formula": "C21H14O2F4N4",
+     "kind": "other",
+     "name": "poly(aminocarbonylamino-phenylenemethylene-phenyleneaminocar",
+     "median": 286.8,
+     "q1": 285.7,
+     "q3": 288.0,
+     "min": 284.8,
+     "max": 289.2,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/82",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/83",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/84"
+     ]
+    },
+    {
+     "formula": "-NHCSNHCSCHCH-",
+     "kind": "other",
+     "name": "2,4-dithiouracil",
+     "median": 286.88,
+     "q1": 286.2,
+     "q3": 287.55,
+     "min": 285.45,
+     "max": 288.3,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21505",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21509",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21511"
+     ]
+    },
+    {
+     "formula": "C6H5CF3",
+     "kind": "other",
+     "name": "(trifluoromethyl)benzene",
+     "median": 286.9,
+     "q1": 286.55,
+     "q3": 290.35,
+     "min": 286.2,
+     "max": 293.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21422",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21518",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21482"
+     ]
+    },
+    {
+     "formula": "C3H4N2",
+     "kind": "other",
+     "name": "imidazole",
+     "median": 286.9,
+     "q1": 286.5,
+     "q3": 287.25,
+     "min": 286.1,
+     "max": 287.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93674",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93675",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93676"
+     ]
+    },
+    {
+     "formula": "(-OC(O)CH(CH3)-)n",
+     "kind": "other",
+     "name": "poly(d,l-lactide)",
+     "median": 286.98,
+     "q1": 285.99,
+     "q3": 288.02,
+     "min": 285.0,
+     "max": 289.06,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22903",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22905",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22907"
+     ]
+    },
+    {
+     "formula": "CH3(CH2)18C(O)OH",
+     "kind": "other",
+     "name": "arachidic acid/silicone",
+     "median": 287.0,
+     "q1": 284.8,
+     "q3": 289.2,
+     "min": 284.8,
+     "max": 289.2,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43328",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/43329",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68060"
+     ]
+    },
+    {
+     "formula": "C6H6Cr(CO)3",
+     "kind": "other",
+     "name": "(eta6-benzene)tricarbonylchromium",
+     "median": 287.0,
+     "q1": 285.9,
+     "q3": 288.86,
+     "min": 284.8,
+     "max": 290.71,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/94000",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/94001",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/94002"
+     ]
+    },
+    {
+     "formula": "[Cr(CO)5NH3]",
+     "kind": "other",
+     "name": "ammine(pentacarbonyl)chromium",
+     "median": 287.1,
+     "q1": 286.6,
+     "q3": 287.1,
+     "min": 286.1,
+     "max": 287.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20116",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20118",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20121"
+     ]
+    },
+    {
+     "formula": "(-(C6H10O5)-)n",
+     "kind": "other",
+     "name": "cellulose",
+     "median": 287.3,
+     "q1": 286.68,
+     "q3": 287.91,
+     "min": 286.53,
+     "max": 288.06,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23026",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23027",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68292"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(C(O)OCH2CF3)-)n",
+     "kind": "other",
+     "name": "poly(trifluoroethyl acrylate)",
+     "median": 287.35,
+     "q1": 285.42,
+     "q3": 289.12,
+     "min": 285.0,
+     "max": 292.72,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23192",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23252",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23089"
+     ]
+    },
+    {
+     "formula": "((CH3)4C6H2)Cr(CO)3",
+     "kind": "other",
+     "name": "(eta6-1,2,4,5-tetramethylbenzene)tricarbonylchromium",
+     "median": 287.39,
+     "q1": 286.1,
+     "q3": 289.17,
+     "min": 284.8,
+     "max": 290.95,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/94028",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/94029",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/94030"
+     ]
+    },
+    {
+     "formula": "(-RNC(O)R'-C(O))n",
+     "kind": "other",
+     "name": "polyimide",
+     "median": 287.4,
+     "q1": 285.62,
+     "q3": 289.45,
+     "min": 284.8,
+     "max": 291.3,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23648",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23705",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23734"
+     ]
+    },
+    {
+     "formula": "-NCH3CONHCOCHCH-",
+     "kind": "other",
+     "name": "1-methyluracil",
+     "median": 287.48,
+     "q1": 286.16,
+     "q3": 288.69,
+     "min": 285.3,
+     "max": 289.25,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21600",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21602",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21706"
+     ]
+    },
+    {
+     "formula": "-NHCSNHCOCHCH-",
+     "kind": "other",
+     "name": "2-thiouracil",
+     "median": 287.5,
+     "q1": 286.36,
+     "q3": 288.41,
+     "min": 285.35,
+     "max": 288.75,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21489",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21491",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21493"
+     ]
+    },
+    {
+     "formula": "C20H12O5",
+     "kind": "other",
+     "name": "3',6'-dihydroxyspiro(isobenzofuran-1(3H),9'-(9H)xanthen-3-on",
+     "median": 287.5,
+     "q1": 286.22,
+     "q3": 288.58,
+     "min": 284.8,
+     "max": 289.4,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111634",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111635",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111636"
+     ]
+    },
+    {
+     "formula": "C21H14O2F8N4",
+     "kind": "other",
+     "name": "poly(aminocarbonylamino-phenylenemethylene-phenyleneaminocar",
+     "median": 287.6,
+     "q1": 286.2,
+     "q3": 288.3,
+     "min": 284.8,
+     "max": 289.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/88",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/89",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90"
+     ]
+    },
+    {
+     "formula": "C19H16O4F4N2",
+     "kind": "other",
+     "name": "poly(oxycarbonylamino-phenylenemethylene-phenyleneaminocarbo",
+     "median": 287.6,
+     "q1": 286.0,
+     "q3": 289.9,
+     "min": 284.8,
+     "max": 301.0,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/70",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66"
+     ]
+    },
+    {
+     "formula": "C20H16O4F6N2",
+     "kind": "other",
+     "name": "poly(oxycarbonylamino-phenylenemethylene-phenyleneaminocarbo",
+     "median": 287.7,
+     "q1": 286.0,
+     "q3": 289.8,
+     "min": 284.8,
+     "max": 291.0,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/74",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/75",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/76"
+     ]
+    },
+    {
+     "formula": "C6H5F",
+     "kind": "other",
+     "name": "fluorobenzene",
+     "median": 287.8,
+     "q1": 286.7,
+     "q3": 287.8,
+     "min": 285.6,
+     "max": 287.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21484",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21516",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21426"
+     ]
+    },
+    {
+     "formula": "C3N6H6",
+     "kind": "other",
+     "name": "melamine",
+     "median": 287.8,
+     "q1": 287.8,
+     "q3": 287.8,
+     "min": 287.7,
+     "max": 287.8,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114273",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114276",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114279"
+     ]
+    },
+    {
+     "formula": "(-CH2O-)n",
+     "kind": "other",
+     "name": "poly(methylene glycol)",
+     "median": 287.89,
+     "q1": 287.79,
+     "q3": 287.94,
+     "min": 287.7,
+     "max": 288.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22980",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68267",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/121"
+     ]
+    },
+    {
+     "formula": "[Cr(CO)6]",
+     "kind": "other",
+     "name": "hexacarbonylchromium",
+     "median": 287.9,
+     "q1": 287.6,
+     "q3": 287.9,
+     "min": 286.3,
+     "max": 288.0,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20535",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20537",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20586"
+     ]
+    },
+    {
+     "formula": "(-CH2CH(OC(O)CF3)-)n",
+     "kind": "other",
+     "name": "poly(vinyl trifluoroacetate)",
+     "median": 288.12,
+     "q1": 286.28,
+     "q3": 290.31,
+     "min": 285.0,
+     "max": 292.65,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23083",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23085",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23187"
+     ]
+    },
+    {
+     "formula": "K(OC(O)CH(OH)CH(OH)COOH)",
+     "kind": "other",
+     "name": "potassium hydrogen tartrate",
+     "median": 288.3,
+     "q1": 287.4,
+     "q3": 288.3,
+     "min": 286.5,
+     "max": 288.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21388",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21390",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21386"
+     ]
+    },
+    {
+     "formula": "NaC2H3O2",
+     "kind": "other",
+     "name": "sodium acetate",
+     "median": 288.4,
+     "q1": 288.3,
+     "q3": 288.6,
+     "min": 288.2,
+     "max": 288.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20031",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20035",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20038"
+     ]
+    },
+    {
+     "formula": "Ag2CO3",
+     "kind": "other",
+     "name": "Silver(I) carbonate",
+     "median": 288.5,
+     "q1": 288.45,
+     "q3": 288.5,
+     "min": 288.4,
+     "max": 288.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20041",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20049",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67313"
+     ]
+    },
+    {
+     "formula": "(-CF2CH2-)n",
+     "kind": "other",
+     "name": "poly(vinylidene fluoride)",
+     "median": 288.6,
+     "q1": 286.36,
+     "q3": 290.68,
+     "min": 286.1,
+     "max": 291.1,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23057",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23059",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23175"
+     ]
+    },
+    {
+     "formula": "-NHCONHCOCHCH-",
+     "kind": "other",
+     "name": "uracil",
+     "median": 288.75,
+     "q1": 286.65,
+     "q3": 289.1,
+     "min": 285.45,
+     "max": 289.55,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21473",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21477",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21479"
+     ]
+    },
+    {
+     "formula": "(-CH2C(O)O-)n",
+     "kind": "other",
+     "name": "poly(glycolide)",
+     "median": 288.76,
+     "q1": 286.61,
+     "q3": 288.96,
+     "min": 286.41,
+     "max": 289.0,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68352",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68386",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/22895"
+     ]
+    },
+    {
+     "formula": "Zn(CH3COO)2.2H2O",
+     "kind": "other",
+     "name": "zinc acetate dihydrate",
+     "median": 288.95,
+     "q1": 287.28,
+     "q3": 289.28,
+     "min": 286.4,
+     "max": 292.5,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92962",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92963",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93127"
+     ]
+    },
+    {
+     "formula": "SrCO3",
+     "kind": "other",
+     "name": "strontium carbonate",
+     "median": 289.2,
+     "q1": 289.0,
+     "q3": 289.48,
+     "min": 289.0,
+     "max": 289.6,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20319",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20345",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66372"
+     ]
+    },
+    {
+     "formula": "CH3COOH",
+     "kind": "other",
+     "name": "acetic acid",
+     "median": 289.2,
+     "q1": 287.3,
+     "q3": 289.25,
+     "min": 285.4,
+     "max": 289.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21453",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5178",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/5180"
+     ]
+    },
+    {
+     "formula": "BaCO3",
+     "kind": "other",
+     "name": "barium carbonate",
+     "median": 289.3,
+     "q1": 289.17,
+     "q3": 289.75,
+     "min": 289.1,
+     "max": 290.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20613",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20556",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91370"
+     ]
+    },
+    {
+     "formula": "(-C10F8-)n",
+     "kind": "other",
+     "name": "poly(octafluoronaphthalene)",
+     "median": 289.3,
+     "q1": 288.2,
+     "q3": 291.15,
+     "min": 286.5,
+     "max": 293.4,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2174",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2173",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/2176"
+     ]
+    },
+    {
+     "formula": "CF3I",
+     "kind": "other",
+     "name": "trifluoroiodomethane/silver",
+     "median": 289.6,
+     "q1": 289.6,
+     "q3": 290.7,
+     "min": 289.6,
+     "max": 291.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69949",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69950",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/69954"
+     ]
+    },
+    {
+     "formula": "CaCO3",
+     "kind": "other",
+     "name": "calcium carbonate",
+     "median": 289.65,
+     "q1": 289.45,
+     "q3": 289.78,
+     "min": 289.2,
+     "max": 290.1,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67678",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68194",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20509"
+     ]
+    },
+    {
+     "formula": "COOHC6H4COOH",
+     "kind": "other",
+     "name": "phthalic acid",
+     "median": 289.8,
+     "q1": 287.65,
+     "q3": 291.05,
+     "min": 285.5,
+     "max": 292.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23676",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23677",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23566"
+     ]
+    },
+    {
+     "formula": "C6H2(C(O)O(O)C-)2",
+     "kind": "other",
+     "name": "1,2,4,5-benzenetetracarboxylic dianhydride",
+     "median": 290.7,
+     "q1": 288.9,
+     "q3": 291.65,
+     "min": 287.1,
+     "max": 292.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23670",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23554",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23556"
+     ]
+    },
+    {
+     "formula": "CF3(CF2)7C(O)NH(CH2)2SH",
+     "kind": "other",
+     "name": "2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,9-heptadecafluoro-N-(2-merca",
+     "median": 291.1,
+     "q1": 289.6,
+     "q3": 292.2,
+     "min": 288.1,
+     "max": 293.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92793",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92794",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92795"
+     ]
+    },
+    {
+     "formula": "(CF3CH2O)2CO",
+     "kind": "other",
+     "name": "bis(2,2,2-trifluoroethanol) carbonate",
+     "median": 291.4,
+     "q1": 289.7,
+     "q3": 292.35,
+     "min": 288.0,
+     "max": 293.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21539",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21540",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/21541"
+     ]
+    },
+    {
+     "formula": "CO2",
+     "kind": "oxide",
+     "name": "carbon dioxide",
+     "median": 291.9,
+     "q1": 290.25,
+     "q3": 292.0,
+     "min": 282.5,
+     "max": 292.0,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/20484",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/267",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/268"
+     ]
+    },
+    {
+     "formula": "(-CF2CF2-)n",
+     "kind": "other",
+     "name": "poly(tetrafluoroethylene)",
+     "median": 292.4,
+     "q1": 292.0,
+     "q3": 292.6,
+     "min": 291.7,
+     "max": 292.8,
+     "n": 9,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/111773",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92658",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92659"
+     ]
+    }
+   ],
+   "satellites": [
+    {
+     "formula": "KxC60",
+     "median": 286.2,
+     "min": 286.2,
+     "max": 286.2,
+     "n": 1
+    },
+    {
+     "formula": "(-C4HS((CH2)5CH3)-)n",
+     "median": 287.15,
+     "min": 287.15,
+     "max": 287.15,
+     "n": 1
+    },
+    {
+     "formula": "Cr/(-C4HS((CH2)5CH3)-)n",
+     "median": 287.15,
+     "min": 287.15,
+     "max": 287.15,
+     "n": 1
+    },
+    {
+     "formula": "C70",
+     "median": 287.5,
+     "min": 287.5,
+     "max": 287.5,
+     "n": 1
+    },
+    {
+     "formula": "-C12H4S2-",
+     "median": 287.6,
+     "min": 287.6,
+     "max": 287.6,
+     "n": 1
+    },
+    {
+     "formula": "Mg1.9C76.7N20.2",
+     "median": 288.45,
+     "min": 287.85,
+     "max": 289.05,
+     "n": 2
+    },
+    {
+     "formula": "Ni(C12H4N4)2.3H2O",
+     "median": 288.57,
+     "min": 288.57,
+     "max": 288.57,
+     "n": 1
+    },
+    {
+     "formula": "Ni2.0C77.4N20.0",
+     "median": 288.65,
+     "min": 287.9,
+     "max": 289.4,
+     "n": 2
+    },
+    {
+     "formula": "Fe2.4C78.1N19.1",
+     "median": 288.7,
+     "min": 287.8,
+     "max": 289.6,
+     "n": 2
+    },
+    {
+     "formula": "LiC12H4N4",
+     "median": 288.77,
+     "min": 288.77,
+     "max": 288.77,
+     "n": 1
+    },
+    {
+     "formula": "(VO)2.5C74.6N20.8",
+     "median": 288.77,
+     "min": 287.85,
+     "max": 289.7,
+     "n": 2
+    },
+    {
+     "formula": "Cu1.9C77.7N19.3",
+     "median": 288.8,
+     "min": 287.95,
+     "max": 289.65,
+     "n": 2
+    },
+    {
+     "formula": "Co2.0C76.8N19.6",
+     "median": 288.85,
+     "min": 287.95,
+     "max": 289.75,
+     "n": 2
+    },
+    {
+     "formula": "C4H3S(-(C4H2S)-)4C4H3S",
+     "median": 288.9,
+     "min": 287.4,
+     "max": 290.4,
+     "n": 2
+    },
+    {
+     "formula": "(-C4H2S-)x/Au",
+     "median": 289.0,
+     "min": 287.5,
+     "max": 290.5,
+     "n": 2
+    },
+    {
+     "formula": "HxC78.2N21.4",
+     "median": 289.1,
+     "min": 288.1,
+     "max": 290.1,
+     "n": 2
+    },
+    {
+     "formula": "Mn2.1C74.8N20.6",
+     "median": 289.1,
+     "min": 288.25,
+     "max": 289.95,
+     "n": 2
+    },
+    {
+     "formula": "C12H4N4",
+     "median": 289.27,
+     "min": 289.27,
+     "max": 289.27,
+     "n": 1
+    },
+    {
+     "formula": "Cu(C12H4N4)2",
+     "median": 289.27,
+     "min": 289.27,
+     "max": 289.27,
+     "n": 1
+    },
+    {
+     "formula": "(C2H5)2NC6H4CHNN(C6H5)2",
+     "median": 290.2,
+     "min": 288.2,
+     "max": 292.2,
+     "n": 2
+    },
+    {
+     "formula": "C6H5OCH3Cr(CO)3",
+     "median": 290.39,
+     "min": 290.39,
+     "max": 290.39,
+     "n": 1
+    },
+    {
+     "formula": "C10H2O6",
+     "median": 290.7,
+     "min": 290.7,
+     "max": 290.7,
+     "n": 1
+    },
+    {
+     "formula": "(-C6H4S-)n",
+     "median": 290.8,
+     "min": 290.8,
+     "max": 290.8,
+     "n": 1
+    },
+    {
+     "formula": "Ag/(-CH2CH2OC(O)C6H4C(O)O-)n",
+     "median": 290.8,
+     "min": 290.8,
+     "max": 290.8,
+     "n": 1
+    },
+    {
+     "formula": "(CH3)6C6Cr(CO)3",
+     "median": 290.93,
+     "min": 290.93,
+     "max": 290.93,
+     "n": 1
+    },
+    {
+     "formula": "C6H5CH3Cr(CO)3",
+     "median": 290.98,
+     "min": 290.98,
+     "max": 290.98,
+     "n": 1
+    },
+    {
+     "formula": "NH2C6H4NH2",
+     "median": 291.0,
+     "min": 291.0,
+     "max": 291.0,
+     "n": 1
+    },
+    {
+     "formula": "((CH3)3C6H3)Cr(CO)3",
+     "median": 291.04,
+     "min": 291.04,
+     "max": 291.04,
+     "n": 1
+    },
+    {
+     "formula": "(-Si(CH3)2-C6H4-Si(CH3)2-O-)n",
+     "median": 291.1,
+     "min": 291.1,
+     "max": 291.1,
+     "n": 2
+    },
+    {
+     "formula": "(-C6H2(CH3)2O-)n",
+     "median": 291.2,
+     "min": 291.2,
+     "max": 291.2,
+     "n": 1
+    },
+    {
+     "formula": "(-O-C(O)-C6H4-C(O)-O-CH2-CH2-)n",
+     "median": 291.2,
+     "min": 291.2,
+     "max": 291.2,
+     "n": 1
+    },
+    {
+     "formula": "(-C6H4-)n",
+     "median": 291.3,
+     "min": 291.3,
+     "max": 291.3,
+     "n": 1
+    },
+    {
+     "formula": "(-C6H4-C6H2N2CHC-)n",
+     "median": 291.3,
+     "min": 291.3,
+     "max": 291.3,
+     "n": 1
+    },
+    {
+     "formula": "C10H4N2O4/Ag",
+     "median": 291.3,
+     "min": 291.1,
+     "max": 294.5,
+     "n": 3
+    },
+    {
+     "formula": "(-OC6H4C(CH3)2C6H4OC(O)-)n",
+     "median": 291.4,
+     "min": 291.4,
+     "max": 291.4,
+     "n": 1
+    },
+    {
+     "formula": "C6H5C6H4C(O)ONa",
+     "median": 291.4,
+     "min": 291.4,
+     "max": 291.4,
+     "n": 1
+    },
+    {
+     "formula": "(-C6H3(OH)CH2-)n",
+     "median": 291.4,
+     "min": 291.4,
+     "max": 291.4,
+     "n": 1
+    },
+    {
+     "formula": "(NH2C6H4C(CH3)2)3(C3N3)/SiO2/Si",
+     "median": 291.4,
+     "min": 291.4,
+     "max": 291.4,
+     "n": 1
+    },
+    {
+     "formula": "(-C6H4C(O)C6H4C(O)C6H4O-)n",
+     "median": 291.42,
+     "min": 291.42,
+     "max": 291.42,
+     "n": 1
+    },
+    {
+     "formula": "(-O-C6H4-S(O2)-C6H4-O-C6H4-C((CH3)2)-C6H4-)n",
+     "median": 291.5,
+     "min": 291.5,
+     "max": 291.5,
+     "n": 1
+    },
+    {
+     "formula": "(-C6H4OC6H4OC6H4C(O)-)n",
+     "median": 291.56,
+     "min": 289.39,
+     "max": 293.19,
+     "n": 6
+    },
+    {
+     "formula": "(=(C10H2O4)=N-(C6H4)-O-(C6H4)-N=)n",
+     "median": 291.6,
+     "min": 290.8,
+     "max": 292.7,
+     "n": 4
+    },
+    {
+     "formula": "(CH3C6H4CH3)Cr(CO)3",
+     "median": 291.6,
+     "min": 291.6,
+     "max": 291.6,
+     "n": 1
+    },
+    {
+     "formula": "C6H5C6H4C(O)OH",
+     "median": 291.7,
+     "min": 291.7,
+     "max": 291.7,
+     "n": 1
+    },
+    {
+     "formula": "(-C6H4-C(CH3)2-C6H4-O-C(O)O-)n",
+     "median": 291.7,
+     "min": 291.7,
+     "max": 291.7,
+     "n": 1
+    },
+    {
+     "formula": "C20H12O5",
+     "median": 291.7,
+     "min": 291.0,
+     "max": 292.4,
+     "n": 2
+    },
+    {
+     "formula": "(-C6H4C(CH3)2C6H4OC6H4S(O)2C6H4O-)n",
+     "median": 291.8,
+     "min": 291.6,
+     "max": 291.8,
+     "n": 3
+    },
+    {
+     "formula": "(-C6H4C(CH3)2C6H4OC(O)O-)n",
+     "median": 291.8,
+     "min": 291.2,
+     "max": 291.8,
+     "n": 3
+    },
+    {
+     "formula": "(-C(O)C6H4C(O)O(CH2)4O-)n",
+     "median": 291.8,
+     "min": 291.8,
+     "max": 291.8,
+     "n": 1
+    },
+    {
+     "formula": "CH3CH2OC(O)NHC6H4CH2C6H4NHC(O)OCH2CH3",
+     "median": 291.8,
+     "min": 291.8,
+     "max": 291.8,
+     "n": 1
+    },
+    {
+     "formula": "(-C(O)-C6H4-C(O)-O-C6H3(CH3)-O-)x-(-C(O)-C6H4-C(O)-O-C6H3(CH3)-O-)y",
+     "median": 291.9,
+     "min": 291.9,
+     "max": 291.9,
+     "n": 1
+    },
+    {
+     "formula": "(-C(O)-C6H4-C(O)-O-C6H3(CH3)-O-)n",
+     "median": 291.9,
+     "min": 291.9,
+     "max": 291.9,
+     "n": 3
+    },
+    {
+     "formula": "((-CH2CH(C6H5)-)a(-CH2CH(C3H3N2)-)b)n",
+     "median": 291.9,
+     "min": 291.9,
+     "max": 291.9,
+     "n": 1
+    },
+    {
+     "formula": "(-O-C6H10-O-C(O)-C6H10-C(O)-)x-(-C(O)-C6H4-C(O)-O-C6H3(CH3)-O-)y",
+     "median": 291.95,
+     "min": 291.9,
+     "max": 292.0,
+     "n": 2
+    },
+    {
+     "formula": "CH3Si((C6H5)2)OSi(CH3)(C6H5)OSi((C6H5)2)CH3",
+     "median": 292.25,
+     "min": 290.6,
+     "max": 295.3,
+     "n": 4
+    },
+    {
+     "formula": "(-CH2CH2OC(O)C6H4C(O)O-)n",
+     "median": 292.35,
+     "min": 290.8,
+     "max": 295.75,
+     "n": 14
+    },
+    {
+     "formula": "W(CO)6/Ni",
+     "median": 292.45,
+     "min": 292.45,
+     "max": 292.45,
+     "n": 1
+    },
+    {
+     "formula": "C6H5(OC6H4)3OC6H5",
+     "median": 292.55,
+     "min": 290.4,
+     "max": 294.7,
+     "n": 4
+    },
+    {
+     "formula": "(-C6H4-S-)n",
+     "median": 292.6,
+     "min": 291.1,
+     "max": 294.1,
+     "n": 2
+    },
+    {
+     "formula": "(-NHC(O)NHC6H4CH2C6H4NHC(O)NHC6F4-)n",
+     "median": 292.8,
+     "min": 292.8,
+     "max": 292.8,
+     "n": 1
+    },
+    {
+     "formula": "C6H6/Ag",
+     "median": 293.0,
+     "min": 293.0,
+     "max": 293.0,
+     "n": 1
+    },
+    {
+     "formula": "(-C6H4S(O)2C6H4O-)n",
+     "median": 293.05,
+     "min": 291.4,
+     "max": 294.7,
+     "n": 2
+    },
+    {
+     "formula": "(-C6H4S(O)2-)n",
+     "median": 293.1,
+     "min": 291.6,
+     "max": 294.6,
+     "n": 2
+    },
+    {
+     "formula": "(-Si(C6H5)(CH3)O-)n",
+     "median": 293.45,
+     "min": 291.4,
+     "max": 295.5,
+     "n": 2
+    },
+    {
+     "formula": "(-Si(C6H5)2O-)n",
+     "median": 293.45,
+     "min": 291.4,
+     "max": 295.5,
+     "n": 2
+    },
+    {
+     "formula": "(-NHC(O)NHC6H4CH2C6H4NHC(O)NHC6F4C6F4-)n",
+     "median": 293.5,
+     "min": 293.5,
+     "max": 293.5,
+     "n": 1
+    },
+    {
+     "formula": "(-C10F8-)n",
+     "median": 295.9,
+     "min": 295.9,
+     "max": 295.9,
+     "n": 1
+    }
+   ],
+   "n_records": 2732
+  },
+  "C2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 2
+  }
+ },
+ "auger": {
+  "line": "KVV",
+  "rows": []
+ }
+}

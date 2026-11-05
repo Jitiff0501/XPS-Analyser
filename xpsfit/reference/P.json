@@ -1,0 +1,734 @@
+{
+ "element": "P",
+ "source": "NIST XPS Database (SRD 20), https://srdata.nist.gov/xps/",
+ "records": 1280,
+ "orbitals": {
+  "P1s": {
+   "line": "1s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 38
+  },
+  "P2p": {
+   "line": "2p3/2（含未分辨的 2p）",
+   "l": "p",
+   "ratio": 0.5,
+   "split": {
+    "median": 0.86,
+    "n": 25,
+    "min": 0.7,
+    "max": 1.0
+   },
+   "states": [
+    {
+     "formula": "Zn3P2",
+     "kind": "other",
+     "name": "",
+     "median": 128.3,
+     "q1": 128.2,
+     "q3": 128.48,
+     "min": 128.1,
+     "max": 128.65,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25020",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25035",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/44044"
+     ]
+    },
+    {
+     "formula": "InP",
+     "kind": "other",
+     "name": "",
+     "median": 128.7,
+     "q1": 128.24,
+     "q3": 129.1,
+     "min": 127.5,
+     "max": 129.45,
+     "n": 25,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/90119",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25054",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25055"
+     ]
+    },
+    {
+     "formula": "InPOx",
+     "kind": "other",
+     "name": "",
+     "median": 129.0,
+     "q1": 128.8,
+     "q3": 131.3,
+     "min": 128.6,
+     "max": 133.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/41067",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92099",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92100"
+     ]
+    },
+    {
+     "formula": "GaP",
+     "kind": "other",
+     "name": "",
+     "median": 129.05,
+     "q1": 128.78,
+     "q3": 129.45,
+     "min": 128.5,
+     "max": 129.7,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25043",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25044",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25045"
+     ]
+    },
+    {
+     "formula": "CrP",
+     "kind": "other",
+     "name": "",
+     "median": 129.06,
+     "q1": 129.06,
+     "q3": 129.33,
+     "min": 129.06,
+     "max": 129.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25037",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/93746",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110693"
+     ]
+    },
+    {
+     "formula": "P",
+     "kind": "metal",
+     "name": "",
+     "median": 130.0,
+     "q1": 129.92,
+     "q3": 130.22,
+     "min": 129.44,
+     "max": 130.9,
+     "n": 15,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25022",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25028",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25029"
+     ]
+    },
+    {
+     "formula": "[P(C6H5)3]",
+     "kind": "other",
+     "name": "",
+     "median": 130.9,
+     "q1": 130.78,
+     "q3": 131.03,
+     "min": 130.4,
+     "max": 132.1,
+     "n": 20,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24357",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24347",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24350"
+     ]
+    },
+    {
+     "formula": "[Pt(C2H4)(P(C6H5)3)2]",
+     "kind": "other",
+     "name": "",
+     "median": 131.2,
+     "q1": 131.15,
+     "q3": 131.35,
+     "min": 131.1,
+     "max": 131.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23871",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24545",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24542"
+     ]
+    },
+    {
+     "formula": "[PtCl2(P(C2H5)3)2]",
+     "kind": "other",
+     "name": "",
+     "median": 131.4,
+     "q1": 131.4,
+     "q3": 131.45,
+     "min": 131.4,
+     "max": 131.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25438",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25420",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/23768"
+     ]
+    },
+    {
+     "formula": "[Rh(CO)Cl(P(C6H5)3)2]",
+     "kind": "other",
+     "name": "",
+     "median": 131.5,
+     "q1": 131.43,
+     "q3": 131.5,
+     "min": 131.2,
+     "max": 131.5,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24571",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24544",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24541"
+     ]
+    },
+    {
+     "formula": "[RhCl(P(C6H5)3)3]",
+     "kind": "other",
+     "name": "",
+     "median": 131.55,
+     "q1": 131.43,
+     "q3": 131.67,
+     "min": 131.2,
+     "max": 131.9,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24626",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24604",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24606"
+     ]
+    },
+    {
+     "formula": "cis-[PtCl2(P(C6H5)3)2]",
+     "kind": "other",
+     "name": "",
+     "median": 131.7,
+     "q1": 131.4,
+     "q3": 131.8,
+     "min": 131.1,
+     "max": 131.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24578",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24579",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114070"
+     ]
+    },
+    {
+     "formula": "[AuI(P(C6H5)3)]",
+     "kind": "other",
+     "name": "",
+     "median": 131.9,
+     "q1": 131.9,
+     "q3": 131.9,
+     "min": 131.9,
+     "max": 131.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24247",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24254",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24256"
+     ]
+    },
+    {
+     "formula": "[AuCl(P(C6H5)3)]",
+     "kind": "other",
+     "name": "",
+     "median": 132.0,
+     "q1": 131.9,
+     "q3": 132.1,
+     "min": 131.8,
+     "max": 132.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24264",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24265",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24266"
+     ]
+    },
+    {
+     "formula": "NiPS3",
+     "kind": "other",
+     "name": "",
+     "median": 132.3,
+     "q1": 132.2,
+     "q3": 132.65,
+     "min": 132.1,
+     "max": 133.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/26907",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66734",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114190"
+     ]
+    },
+    {
+     "formula": "[PS(C6H5)3]",
+     "kind": "other",
+     "name": "",
+     "median": 132.45,
+     "q1": 132.4,
+     "q3": 132.65,
+     "min": 130.8,
+     "max": 133.1,
+     "n": 6,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24243",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24239",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24234"
+     ]
+    },
+    {
+     "formula": "[PO(C6H5)3]",
+     "kind": "other",
+     "name": "",
+     "median": 132.5,
+     "q1": 132.33,
+     "q3": 132.6,
+     "min": 132.2,
+     "max": 133.5,
+     "n": 10,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24361",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24372",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24331"
+     ]
+    },
+    {
+     "formula": "NaH2PO2",
+     "kind": "other",
+     "name": "",
+     "median": 132.75,
+     "q1": 132.6,
+     "q3": 133.03,
+     "min": 132.6,
+     "max": 133.4,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24507",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24509",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/91466"
+     ]
+    },
+    {
+     "formula": "Na3PO4",
+     "kind": "other",
+     "name": "",
+     "median": 132.8,
+     "q1": 132.5,
+     "q3": 132.9,
+     "min": 132.3,
+     "max": 136.0,
+     "n": 9,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24952",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24957",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24960"
+     ]
+    },
+    {
+     "formula": "Na2HPO4",
+     "kind": "other",
+     "name": "",
+     "median": 133.1,
+     "q1": 133.1,
+     "q3": 133.2,
+     "min": 132.8,
+     "max": 133.4,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24722",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24723",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24724"
+     ]
+    },
+    {
+     "formula": "(Ce0.9Tb0.1)PO4",
+     "kind": "other",
+     "name": "",
+     "median": 133.15,
+     "q1": 132.97,
+     "q3": 133.42,
+     "min": 132.9,
+     "max": 134.3,
+     "n": 8,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25333",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25334",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25335"
+     ]
+    },
+    {
+     "formula": "Zr(HPO4)2.H2O",
+     "kind": "other",
+     "name": "",
+     "median": 133.2,
+     "q1": 133.1,
+     "q3": 133.75,
+     "min": 133.0,
+     "max": 134.3,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25368",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68630",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68586"
+     ]
+    },
+    {
+     "formula": "Na4P2O7",
+     "kind": "other",
+     "name": "",
+     "median": 133.3,
+     "q1": 133.25,
+     "q3": 133.43,
+     "min": 133.1,
+     "max": 134.1,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25006",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25007",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25008"
+     ]
+    },
+    {
+     "formula": "CrPO4",
+     "kind": "other",
+     "name": "",
+     "median": 133.33,
+     "q1": 133.33,
+     "q3": 133.37,
+     "min": 133.33,
+     "max": 133.4,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/95637",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110702",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/56071"
+     ]
+    },
+    {
+     "formula": "Ca3(PO4)2",
+     "kind": "other",
+     "name": "",
+     "median": 133.4,
+     "q1": 133.15,
+     "q3": 133.6,
+     "min": 132.9,
+     "max": 133.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25262",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/67212",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114452"
+     ]
+    },
+    {
+     "formula": "[C6H5)4P]Br",
+     "kind": "other",
+     "name": "",
+     "median": 133.5,
+     "q1": 133.1,
+     "q3": 133.5,
+     "min": 132.7,
+     "max": 133.5,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24038",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24035",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113926"
+     ]
+    },
+    {
+     "formula": "CaHPO4",
+     "kind": "other",
+     "name": "",
+     "median": 133.55,
+     "q1": 133.45,
+     "q3": 133.65,
+     "min": 133.3,
+     "max": 133.8,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24697",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/114459",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113214"
+     ]
+    },
+    {
+     "formula": "VOPO4",
+     "kind": "other",
+     "name": "",
+     "median": 133.8,
+     "q1": 133.75,
+     "q3": 133.8,
+     "min": 133.7,
+     "max": 133.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110820",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110824",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/110830"
+     ]
+    },
+    {
+     "formula": "InPO4",
+     "kind": "other",
+     "name": "",
+     "median": 133.95,
+     "q1": 133.62,
+     "q3": 134.07,
+     "min": 133.3,
+     "max": 134.2,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25250",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25233",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/66586"
+     ]
+    },
+    {
+     "formula": "NaH2PO4",
+     "kind": "other",
+     "name": "",
+     "median": 134.1,
+     "q1": 134.07,
+     "q3": 134.12,
+     "min": 134.0,
+     "max": 134.2,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24496",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24497",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113280"
+     ]
+    },
+    {
+     "formula": "NaPO3",
+     "kind": "other",
+     "name": "",
+     "median": 134.3,
+     "q1": 134.2,
+     "q3": 134.5,
+     "min": 134.1,
+     "max": 135.3,
+     "n": 5,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24908",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24910",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24929"
+     ]
+    },
+    {
+     "formula": "(NaPO3)3",
+     "kind": "other",
+     "name": "",
+     "median": 134.3,
+     "q1": 133.95,
+     "q3": 134.55,
+     "min": 133.6,
+     "max": 134.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24998",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24999",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/25001"
+     ]
+    },
+    {
+     "formula": "[PO4(C6H5)3]",
+     "kind": "other",
+     "name": "",
+     "median": 134.8,
+     "q1": 134.2,
+     "q3": 134.9,
+     "min": 133.6,
+     "max": 135.0,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24338",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24339",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24336"
+     ]
+    },
+    {
+     "formula": "P2O5",
+     "kind": "oxide",
+     "name": "",
+     "median": 135.2,
+     "q1": 135.2,
+     "q3": 135.55,
+     "min": 135.1,
+     "max": 135.6,
+     "n": 7,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24986",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24989",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24990"
+     ]
+    },
+    {
+     "formula": "P4O10",
+     "kind": "oxide",
+     "name": "",
+     "median": 135.6,
+     "q1": 135.55,
+     "q3": 135.6,
+     "min": 135.5,
+     "max": 135.6,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24855",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24857",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24858"
+     ]
+    },
+    {
+     "formula": "[NH4]PF6",
+     "kind": "other",
+     "name": "",
+     "median": 137.47,
+     "q1": 137.41,
+     "q3": 137.65,
+     "min": 137.3,
+     "max": 138.1,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24643",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/24646",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/68262"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 1074
+  },
+  "P2s": {
+   "line": "2s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [
+    {
+     "formula": "InP",
+     "kind": "other",
+     "name": "",
+     "median": 186.3,
+     "q1": 186.05,
+     "q3": 186.7,
+     "min": 185.8,
+     "max": 187.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27471",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27472",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27469"
+     ]
+    },
+    {
+     "formula": "P",
+     "kind": "metal",
+     "name": "",
+     "median": 187.9,
+     "q1": 187.81,
+     "q3": 187.97,
+     "min": 187.7,
+     "max": 188.05,
+     "n": 4,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27461",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27464",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27470"
+     ]
+    },
+    {
+     "formula": "Na3PO4",
+     "kind": "other",
+     "name": "",
+     "median": 189.8,
+     "q1": 189.7,
+     "q3": 189.95,
+     "min": 189.6,
+     "max": 190.1,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27441",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27442",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27448"
+     ]
+    },
+    {
+     "formula": "Na4P2O7",
+     "kind": "other",
+     "name": "",
+     "median": 190.65,
+     "q1": 190.62,
+     "q3": 190.78,
+     "min": 190.6,
+     "max": 190.9,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27454",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27456",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113737"
+     ]
+    },
+    {
+     "formula": "NaPO3",
+     "kind": "other",
+     "name": "",
+     "median": 191.7,
+     "q1": 191.65,
+     "q3": 191.77,
+     "min": 191.6,
+     "max": 191.85,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27429",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/27431",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/113731"
+     ]
+    },
+    {
+     "formula": "Zr(HPO4)2.H2O",
+     "kind": "other",
+     "name": "",
+     "median": 191.8,
+     "q1": 191.35,
+     "q3": 191.8,
+     "min": 190.9,
+     "max": 191.8,
+     "n": 3,
+     "refs": [
+      "https://srdata.nist.gov/xps/XPSSummaryPage/213",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/218",
+      "https://srdata.nist.gov/xps/XPSSummaryPage/92727"
+     ]
+    }
+   ],
+   "satellites": [],
+   "n_records": 102
+  },
+  "P3s": {
+   "line": "3s",
+   "l": "s",
+   "ratio": null,
+   "split": null,
+   "states": [],
+   "satellites": [],
+   "n_records": 3
+  }
+ },
+ "auger": {
+  "line": "KL23L23(1D)",
+  "rows": [
+   {
+    "formula": "P",
+    "ke": 1857.05,
+    "n": 3,
+    "alpha": 1987.05,
+    "alpha_line": "2p3/2（含未分辨的 2p）"
+   }
+  ]
+ }
+}
