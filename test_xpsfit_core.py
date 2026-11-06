@@ -129,7 +129,7 @@ class Core(unittest.TestCase):
         sh = core.background(x, y, "Shirley")
         sm = core.background(x, y, "Smart")
         self.assertGreater(np.max(sh - y), 1000)
-        self.assertLessEqual(np.max(sm - core.smooth(y)), 1e-6)
+        self.assertLessEqual(np.max(sm - core._smart_ceiling(x, y)), 1e-6)     # 不高于（约 0.8 eV 平滑后的）数据
         m = core.background(x, y, "Shirley", ylo=120000, yhi=125000)
         self.assertAlmostEqual(m[0], 120000); self.assertAlmostEqual(m[-1], 125000)
 
@@ -536,6 +536,98 @@ class Assessment(unittest.TestCase):
         self.assertAlmostEqual(q["elements"]["Co2p"], 100.0)
         self.assertIn("Ni2p", q["nd"])
         self.assertTrue(0 < q["nd"]["Ni2p"] < 5)
+
+
+class DepthProfileAndSalts(unittest.TestCase):
+    """v1.2：深度剖析分层、碱土金属盐、噪声峰、堆叠导出选项。"""
+    @classmethod
+    def setUpClass(cls):
+        global autofit, reference, server, conv
+        from xpsfit import autofit, reference, server
+        import avantage_to_xpspeak as conv
+
+    def _ca(self, centers, areas, seed=0):
+        x = np.arange(340, 360.01, 0.1)
+        pk = []
+        for c, a in zip(centers, areas):
+            pk += core.doublet("Ca%.1f" % c, c, 3.55, 0.5, 1.5, a, 30)
+        y = 6000 + core.model(x, pk)[1]
+        return core.Spectrum("Ca2p Scan", x, np.random.default_rng(seed).poisson(y).astype(float))
+
+    def test_salt_kinds_and_candidates(self):
+        self.assertEqual(reference.state_kind("Ca", "CaCO3"), "salt")
+        self.assertEqual(reference.state_kind("Ca", "CaCl2"), "salt")
+        self.assertEqual(reference.state_kind("K", "KCl"), "salt")
+        self.assertEqual(reference.state_kind("Ca", "Bi2Sr2CaCu2Ox"), "other")
+        s = self._ca([347.3], [8000])
+        s._sample_elements = ["Ca", "C", "Cl"]
+        c = autofit.nist_candidates(s)
+        names = [k["name"] for k in c]
+        self.assertTrue(any("CaCO3" in n for n in names), names)
+        self.assertTrue(any("CaCl2" in n for n in names), names)
+        for a, b in zip(c, c[1:]):                        # 相邻候选范围不重叠
+            self.assertLessEqual(a["hi"], b["lo"] + 1e-9)
+        s._sample_elements = ["Ca", "C"]                  # 没有 Cl → 没有 CaCl2
+        self.assertFalse(any("CaCl2" in k["name"] for k in autofit.nist_candidates(s)))
+
+    def test_ca2plus_not_metal(self):
+        """单一 Ca²⁺ 双峰：不能出现 Ca 金属组分，主峰也不能是“未知峰”。"""
+        s = self._ca([347.3], [8000], seed=3)
+        autofit.run(s, ["Ca", "C", "Cl", "K", "Mg"])
+        mains = [p["name"] for p in s.peaks if not p.get("pair")]
+        self.assertFalse(any(n.startswith("Ca0") for n in mains), mains)
+        self.assertFalse(any(p.get("role") == "unknown" for p in s.peaks), mains)
+
+    def test_noise_peaks_dropped_and_smart_ceiling(self):
+        x = np.arange(194, 206.01, 0.1)
+        pk = core.doublet("Cl", 198.9, 1.6, 0.5, 1.3, 1500, 30)
+        y = np.random.default_rng(5).poisson(3200 + core.model(x, pk)[1]).astype(float)
+        s = core.Spectrum("Cl2p Scan", x, y)
+        autofit.run(s, ["Cl", "K", "C"])
+        mains = [p for p in s.peaks if not p.get("pair") and p.get("role", "main") == "main"]
+        self.assertEqual(len(mains), 1, [p["name"] for p in s.peaks])
+        sm = core.background(x, y, "Smart")
+        self.assertLessEqual(float(np.max(sm - core._smart_ceiling(x, y))), 1e-6)
+        self.assertLess(float(np.std(np.diff(core._smart_ceiling(x, y)))), float(np.std(np.diff(core.smooth(y)))))
+
+    def test_quantify_per_level_and_missing_sf(self):
+        specs = []
+        for lv, et in enumerate((0.0, 135.19)):
+            for orb, c in (("C1s", 284.8), ("Mg1s", 1304.3)):
+                x = np.arange(c - 6, c + 6.01, 0.1)
+                t = core.Spectrum("%s Scan [%g s]" % (orb, et), x, 1000 + 5000 * np.exp(-((x - c) / 0.7) ** 2))
+                t.sample, t.level, t.etch_s = "S1", lv, et
+                specs.append(t)
+        q = core.quantify_samples(specs, {"C1s": 1.0}, use_fit=False)
+        self.assertEqual([g["sample"] for g in q], ["S1 · 0 s", "S1 · 135 s"])
+        self.assertTrue(all(g["no_sf"] == ["Mg1s"] and g["duplicates"] == [] for g in q))
+
+    def test_etch_axis(self):
+        import struct
+        ax = struct.pack("<Idd", 191, 1188.68, 0.1) + b"\0" * 9 + struct.pack("<Idd", 3, 0.0, 135.1905) + struct.pack("<Idd", 3, 0.0, 1.0)
+        et = conv._etch_axis(ax, 20, 3)
+        self.assertEqual(len(et), 3)
+        self.assertAlmostEqual(et[2], 270.381, places=3)
+        self.assertIsNone(conv._etch_axis(struct.pack("<Idd", 191, 1188.68, 0.1) + struct.pack("<Idd", 3, 0.0, 1.0), 20, 3))
+
+    def test_stack_export_options(self):
+        server.ST.specs = []
+        server.ST.stack_names, server.ST.stack_labels = {}, {}
+        for lv, et in enumerate((0.0, 135.0, 270.0)):
+            x = np.arange(190, 210.01, 0.1)
+            t = core.Spectrum("Cl2p Scan [%g s]" % et, x, 3000 + (lv + 1) * 800 * np.exp(-((x - 199) / 0.8) ** 2))
+            t.sample, t.level, t.etch_s = "S1", lv, et
+            server.ST.specs.append(t)
+        d = server.stack_data(0, {})
+        self.assertEqual([it["key"] for it in d["items"]], ["S1 · 0 s", "S1 · 135 s", "S1 · 270 s"])
+        self.assertAlmostEqual(min(d["items"][0]["x"]), 190.0, places=3)      # 默认画整段数据，不只背景区间
+        self.assertGreater(min(server.stack_data(0, {"range": "bg"})["items"][0]["x"]), 193.9)
+        server.api("set_stack_name", {"i": 0, "key": "S1 · 135 s", "text": "135 s etched"})
+        import io
+        geo = server.export_stack(0, {"ymin": -0.5, "ymax": 4.0, "raw": "markers", "ynumbers": True, "dpi": 80}, out=io.BytesIO())
+        self.assertEqual(geo["ylim"], [-0.5, 4.0])
+        self.assertIn("135 s etched", [g["text"] for g in geo["labels"]])
+        server.ST.specs = []
 
 
 if __name__ == "__main__":

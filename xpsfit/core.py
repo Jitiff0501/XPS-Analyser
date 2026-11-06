@@ -96,6 +96,23 @@ def gl_peak(x, center, fwhm, area, lor):
 
 
 # ------------------------------------------------------------------ 背景
+def _smart_ceiling(x, y):
+    """Smart 背景的上限：约 0.8 eV 宽平滑后的数据（至少 5 点）。窗口按能量而非点数取，
+    步长小或噪声大的谱上背景不会贴着单个噪声低谷走。"""
+    step = float(np.median(np.abs(np.diff(x)))) if len(x) > 1 else 0.1
+    n = int(round(0.8 / step)) if step > 0 else 5
+    n = max(5, min(n + (n % 2 == 0), 31))
+    # 对称窗口、两端逐渐缩小（端点不做外推，斜坡上不会低估端点）
+    y = np.asarray(y, float)
+    m = len(y)
+    if m < 3:
+        return y.copy()
+    c = np.concatenate([[0.0], np.cumsum(y)])
+    i = np.arange(m)
+    h = np.minimum(np.minimum(i, m - 1 - i), n // 2)
+    return (c[i + h + 1] - c[i - h]) / (2 * h + 1)
+
+
 def _ends(x, y, navg):
     """区间内 (x 升序) 两端的平均强度。"""
     n = max(1, min(navg, len(x) // 4 or 1))
@@ -211,7 +228,7 @@ def background(x, y, kind="Shirley", navg=3, tougaard_B=2866.0, tougaard_C=1643.
     if kind in ("Linear", "线性"):
         return yl + (yh - yl) * (x - x[0]) / (x[-1] - x[0] or 1)
     if kind in ("Shirley", "Smart"):
-        ys = smooth(y) if kind == "Smart" else None
+        ys = _smart_ceiling(x, y) if kind == "Smart" else None
         bg = np.full_like(y, yl)
         for _ in range(200):
             # 只累积高于背景的部分：数据低于背景时（端点落在别的峰上等）不会出现负面积导致背景失控
@@ -509,6 +526,7 @@ class Spectrum:
         self.element = guess_orbital(name)
         self.sample = os.path.basename(os.path.dirname(os.path.abspath(source))) if source else ""
         self.window = default_window(self.element, self.be_raw)      # 显示/分析窗口（未校正坐标）
+        self.level = self.etch_s = None                 # 深度剖析：第几层、刻蚀时间（s）
         if self.window != [float(self.be_raw.min()), float(self.be_raw.max())]:
             self.bg["lo"], self.bg["hi"] = self.window
 
@@ -572,7 +590,8 @@ class Spectrum:
         return {"name": self.name, "source": self.source, "hv": self.hv,
                 "be": self.be_raw.tolist(), "y": self.y.tolist(), "shift": self.shift,
                 "bg": self.bg, "peaks": self.peaks, "element": self.element, "sample": self.sample,
-                "window": self.window, "kind": getattr(self, "kind", "region"), "annots": getattr(self, "annots", [])}
+                "window": self.window, "kind": getattr(self, "kind", "region"), "annots": getattr(self, "annots", []),
+                "level": getattr(self, "level", None), "etch_s": getattr(self, "etch_s", None)}
 
     @classmethod
     def from_dict(cls, d):
@@ -583,6 +602,7 @@ class Spectrum:
         s.kind = d.get("kind", "region")
         s.window = d.get("window") or [float(s.be_raw.min()), float(s.be_raw.max())]
         s.annots = d.get("annots") or []
+        s.level, s.etch_s = d.get("level"), d.get("etch_s")
         return s
 
 
@@ -754,7 +774,12 @@ def quantify_samples(specs, sf_table, use_fit=True, ecf_exp=0.6, include=None):
     for k, s in enumerate(specs):
         if include is not None and not include[k]:
             continue
-        groups.setdefault(s.sample or "(未分组)", []).append(s)
+        key = s.sample or "(未分组)"
+        lv = getattr(s, "level", None)
+        if lv is not None:                         # 深度剖析：每一层单独定量
+            et = getattr(s, "etch_s", None)
+            key = "%s · %s" % (key, ("%g s" % round(et)) if et is not None else "level %d" % (lv + 1))
+        groups.setdefault(key, []).append(s)
     out = []
     for sample, ss in groups.items():
         seen, use, dup = set(), [], []
@@ -775,7 +800,8 @@ def quantify_samples(specs, sf_table, use_fit=True, ecf_exp=0.6, include=None):
             for nm, a in st:
                 states["%s: %s" % (s.element or s.name, nm)] = at * a / tot
         out.append({"sample": sample, "elements": elements, "states": states, "rows": rows, "nd": nd,
-                    "duplicates": [s.name for s in dup]})
+                    "duplicates": [s.name for s in dup],
+                    "no_sf": [s.element or s.name for s, r in zip(use, rows) if not r.get("SF")]})
     return out
 
 

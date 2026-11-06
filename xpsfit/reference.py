@@ -85,6 +85,13 @@ def state_kind(el, formula):
         return "carbide"
     if re.fullmatch(r"%s%s(O%sN%s|N%sO%s)" % (el, n, n, n, n, n), f):
         return "oxynitride"
+    # 简单无机盐：碳酸盐、卤化物、磷酸盐、硫酸盐、硝酸盐（可含 H、OH、结晶水）——只用于碱金属 / 碱土金属（见 autofit.SALT_ELEMENTS）
+    g = re.sub(r"·?n?\d*H2O$", "", f)
+    rest = set(re.findall(r"[A-Z][a-z]?", g)) - {el, "H", "O"}
+    if el in g and rest and len(rest) == 1 and rest <= {"C", "F", "Cl", "Br", "I", "P", "S", "N"} \
+            and re.fullmatch(r"[A-Za-z0-9().·]+", g) and not re.search(r"[a-z]{2,}|\(-|-\)", g):
+        if rest <= {"F", "Cl", "Br", "I"} or "O" in g:
+            return "salt"
     return "other"
 
 
@@ -273,6 +280,8 @@ def for_orbital(orbital, user_dir=None):
     o = ref["orbitals"].get(orbital)
     if not o:
         return {"element": m.group(1), "orbital": orbital, "missing": True, "have": sorted(ref["orbitals"])}
+    # 化学态类别按当前规则重算（数据文件里存的是生成时的类别，规则更新后旧文件也能用）
+    o = dict(o, states=[dict(t, kind=state_kind(m.group(1), t.get("formula"))) for t in o.get("states", [])])
     return dict(o, element=m.group(1), orbital=orbital, auger=ref.get("auger"),
                 source=o.get("curated_source") or ref["source"], curated=bool(o.get("curated") or ref.get("curated")))
 

@@ -1,7 +1,7 @@
 <p align="center"><img src="assets/icon.png" width="160" alt="XPS Analyser"></p>
 
 <h1 align="center">XPS Analyser</h1>
-<p align="center">v1.1 · <a href="CHANGELOG.md">更新记录</a> · <a href="../../releases">全部版本</a></p>
+<p align="center">v1.2 · <a href="CHANGELOG.md">更新记录</a> · <a href="../../releases">全部版本</a></p>
 
 XPS 峰拟合桌面程序，用来替代 XPSPEAK 4.1。读入 Thermo Avantage 的 `.VGD`（也支持导出的 Excel / CSV、XPSPEAK txt），一键拟合（按元素使用文献约束），自动判断检出限和拟合是否可靠，定量，并导出带标注的论文图。界面中文 / English 可切换。
 
@@ -26,6 +26,7 @@ XPS 峰拟合桌面程序，用来替代 XPSPEAK 4.1。读入 Thermo Avantage �
 - **打开整个样品文件夹**：所有元素的谱按样品分组；文件名没有轨道信息时根据谱图识别轨道；全谱（survey）自动识别元素。
 - **⚡ 一键拟合**：自动选背景（Shirley / Smart / 自定义点；Fe2p 用主动 Shirley），任何情况下背景不高于数据；按元素建模（Al2p、Co2p、Cr2p、Cu2p、Fe2p、O1s、C1s 等），每个候选化学态、残差里的每个峰都用 BIC 判断是否保留，并区分重叠峰 / 卫星峰 / 新化学态。
   - 自旋轨道双峰（2p1/2 与 2p3/2）的分裂、面积比、FWHM 倍率限制在文献范围内（金属与化合物分别给出）。
+  - **碱金属 / 碱土金属的盐与深度剖析（v1.2）**：Ca、K、Mg 等按碳酸盐、氯化物等建模，金属态只在数据确有峰时才加；`.VGD` 深度剖析读出刻蚀时间，定量每层单独一行。
   - **没有内置模型的轨道按 NIST 数据库建模（v1.1）**：Ti2p、Zr3d、Nb3d、Ta4f、Hf4f、Mo3d、Mn2p、Ni2p、Si2p 等——NIST 中的单质 / 氧化物 / 氮化物 / 碳化物作为候选，自旋轨道双峰按文献范围，拟合后逐步剔除数据不需要的化学态。
   - **Fe2p 物相**：FeO / Fe₃O₄ / Fe₂O₃（及与金属 Fe 的组合），给出 Fe²⁺:Fe³⁺ 和范围。
   - **氧化态选择**：自动 / 金属+氧化 / 仅金属 / 仅氧化；选择与数据矛盾时会提醒。

@@ -77,7 +77,7 @@ def eval_bg(s, true_bg):
     x, y, bg, _, env = s.compute()
     tb = np.interp(x, s.be_raw + s.shift, true_bg)
     peak_h = float(np.max(env)) or 1.0
-    over = float(np.max(bg - core.smooth(y, 5)))
+    over = float(np.max(bg - np.maximum(core.smooth(y, 5), core._smart_ceiling(x, y))))   # 高于两种平滑数据才算“高于数据”
     err = float(np.sqrt(np.mean((bg - tb) ** 2)) / peak_h)
     return over, err
 

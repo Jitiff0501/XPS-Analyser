@@ -255,6 +255,19 @@ PHRASES = {
     "Al2p: Al 金属 + Al2O3": "Al2p: Al metal + Al2O3", "Al2p: 单一 Al2O3": "Al2p: Al2O3 only",
     "C1s: 碳化物 + C-C / C-O / C=O / O-C=O": "C1s: carbide + C-C / C-O / C=O / O-C=O",
     "O1s: 晶格 / 缺陷·OH / 吸附": "O1s: lattice / defect·OH / adsorbed",
+    # v1.2：堆叠导出的坐标范围、原始数据样式、名称；定量缺灵敏度因子
+    "绘图范围": "Plotted range", "整段数据": "All acquired data", "只画背景区间内": "Background window only",
+    "Y 轴（先定总范围，再调间距）": "Y axis (set the overall range, then the spacing)", "范围": "Range",
+    "自动（原始计数时显示）": "Auto (shown for raw counts)", "显示": "Show", "不显示": "Hide",
+    "自动（轨道名）": "Auto (orbital)", "各条谱的名称（留空 = 默认名）": "Name of each spectrum (empty = default)",
+    "图名（默认用谱名）": "Title (default: spectrum name)",
+    "纵轴方式（原始 / 归一化 / 扣背景）、包络、分峰、参与的样品在堆叠工具条里设置。":
+        "Y mode (raw / normalized / bkg-subtracted), envelope, components and the samples included are set in the stack toolbar.",
+    "纵轴为计数；间距 = 相邻两条谱基线的距离（以最大谱高计）": "Y axis in counts; spacing = distance between neighbouring baselines (in units of the largest spectrum height)",
+    "纵轴已归一化：每条谱高 = 1；间距 = 相邻两条谱基线的距离（以谱高计）": "Y axis normalized: each spectrum is 1 high; spacing = distance between neighbouring baselines (in spectrum heights)",
+    "缺灵敏度因子": "Missing sensitivity factor",
+    "灵敏度因子表里没有这些轨道，未计入原子百分比；请在上方“灵敏度因子”里填写":
+        "These orbitals are not in the sensitivity-factor table and are left out of the atomic %; enter them under Sensitivity factors above",
 }
 
 # ------------------------------------------------------------------ 含变量的句子：中文 printf 模板 → 英文（{0}{1}… 为各变量，变量本身也会递归翻译）
@@ -431,6 +444,16 @@ TEMPLATES = [
      "Energy: the {0} apex is at {1} eV, {2} eV from the reference; the model was shifted — energy calibration recommended (metal peak or C1s)"),
     ("轨道：文件名中没有轨道信息，根据谱图识别为 %s（%s）", "Orbital: none in the file name — identified from the spectrum as {0} ({1})"),
     ("通用模型：在数据中找到 %d 个主峰（%s）", "Generic model: {0} main peaks found in the data ({1})"),
+    ("%s：%s %.1f eV 附近没有可分辨的峰 → 不加金属态（碱金属 / 碱土金属的金属态只在数据中确有峰时才考虑）",
+     "{0}: no resolved peak near {1} {2} eV → no metallic state (for alkali / alkaline-earth metals the metal is only used when the data show a peak there)"),
+    ("能量：%s 的峰顶在 %.2f eV，与单质参考值相差 %+.2f eV；同一样品的 C1s 在 284.8 eV 附近（能量标尺正确）→ 不平移模型，这个峰按化合物处理",
+     "Energy: the {0} apex is at {1} eV, {2} eV from the element reference; C1s of the same sample sits near 284.8 eV (energy scale OK) → model not shifted, the peak is treated as a compound"),
+    ("去掉 %s：拟合后单峰 S/N < %.0f（检出限），只是计数波动，不是峰",
+     "Removed {0}: S/N of the fitted peak < {1} (detection limit) — counting fluctuation, not a peak"),
+    ("C1s：282–283.7 eV 有明显信号（%.0f%%），但样品里没有形成碳化物的元素 → 作为低结合能碳（Ar⁺ 溅射造成的无序 / sp² 碳等），不叫碳化物",
+     "C1s: clear signal at 282–283.7 eV ({0}%) but no carbide-forming element in the sample → low-BE carbon (disordered / sp² carbon from Ar⁺ sputtering, etc.), not called a carbide"),
+    ("文件含 %d 条谱（如深度剖析各层），这是第 %d 条%s", "The file holds {0} spectra (e.g. depth-profile levels); this is no. {1}{2}"),
+    ("（刻蚀 %s s）", " (etched {0} s)"),
     ("预置重叠峰 %s 拟合后面积 <1%%，去掉", "Prior overlap {0} has <1% area after fitting — removed"),
     ("预置重叠峰：样品含 %s，%s（%s eV）落在窗口内 → 预先加入为重叠峰（不计入定量）",
      "Prior overlap: the sample contains {0}; {1} ({2} eV) is in the window → added as an overlap (not quantified)"),

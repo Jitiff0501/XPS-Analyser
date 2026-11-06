@@ -288,7 +288,7 @@ input[type=checkbox]{accent-color:var(--accent)}
 <header>
   <div class="brand">
     <img class="mark" src="icon.png" alt="">
-    <h1>XPS Analyser</h1><small>v1.1</small>
+    <h1>XPS Analyser</h1><small>v1.2</small>
   </div>
   <button class="btn primary" onclick="openFolder()">＋ 打开文件夹</button>
   <button class="btn" onclick="openFiles()">打开文件</button>
@@ -526,11 +526,25 @@ input[type=checkbox]{accent-color:var(--accent)}
     <div id="exo_stack" hidden>
       <div class="egrp">X 轴（结合能）</div>
       <div class="opt"><span>范围 (eV)</span><input class="in num" id="x_xmax" placeholder="高"><span style="min-width:0;color:var(--ink3)">→</span><input class="in num" id="x_xmin" placeholder="低"></div>
+      <div class="opt"><span>主刻度间距</span><input class="in num" id="x_xstep" placeholder="自动"><span style="min-width:0;color:var(--ink3)">eV</span></div>
+      <div class="opt"><span>次刻度</span><select class="in num" id="x_xminor" style="width:120px"><option value="0">无</option><option value="1" selected>每格 1 条</option><option value="4">每格 4 条</option></select></div>
+      <div class="opt"><span>绘图范围</span><select class="in" id="x_range" style="width:170px"><option value="all" selected>整段数据</option><option value="bg">只画背景区间内</option></select></div>
+      <div class="egrp">Y 轴（先定总范围，再调间距）</div>
+      <div class="opt"><span>范围</span><input class="in num" id="x_ymin" placeholder="自动"><span style="min-width:0;color:var(--ink3)">→</span><input class="in num" id="x_ymax" placeholder="自动"></div>
+      <div class="opt"><span>间距</span><input class="in num" id="x_offset" style="width:66px"><input type="range" id="x_offset_r" min="0.1" max="3" step="0.05" style="flex:1;min-width:60px"></div>
+      <p class="note" id="x_yunit" style="margin:0 0 4px"></p>
+      <div class="opt"><span>数字与刻度</span><select class="in" id="x_ynumbers" style="width:150px"><option value="">自动（原始计数时显示）</option><option value="1">显示</option><option value="0">不显示</option></select></div>
+      <div class="opt"><span>标题</span><input class="in" id="x_ylabel" placeholder="自动"></div>
+      <div class="egrp">内容</div>
+      <div class="opt"><span>原始数据</span><select class="in" id="x_raw" style="width:120px"><option value="line" selected>线</option><option value="markers">空心点</option></select></div>
+      <div class="opt"><span>图名</span><input class="in" id="x_title_text" placeholder="自动（轨道名）"></div>
+      <div class="egrp">各条谱的名称（留空 = 默认名）</div>
+      <div id="x_names" style="display:flex;flex-direction:column;gap:4px"></div>
       <div class="egrp">尺寸与格式</div>
       <div class="opt"><span>宽 × 高 (cm)</span><input class="in num" id="x_width_cm" value="8.5"><span style="min-width:0">×</span><input class="in num" id="x_height_cm" placeholder="自动"></div>
       <div class="opt"><span>字号 / DPI</span><input class="in num" id="x_font" value="9"><input class="in num" id="x_dpi" value="600"></div>
       <div class="opt"><span>格式</span><select class="in" id="x_fmt" style="width:120px"><option value="png">PNG</option><option value="tif">TIFF</option><option value="svg">SVG（矢量）</option><option value="pdf">PDF（矢量）</option></select></div>
-      <p class="note">纵轴方式、间距、包络、分峰、样品名、参与的样品在堆叠工具条里设置。</p>
+      <p class="note">纵轴方式（原始 / 归一化 / 扣背景）、包络、分峰、参与的样品在堆叠工具条里设置。</p>
     </div>
     <div id="exo_spec">
       <div class="egrp">X 轴（结合能）</div>
@@ -546,6 +560,7 @@ input[type=checkbox]{accent-color:var(--accent)}
         <label class="switch"><input type="checkbox" id="e_legend"> 图例</label>
         <select class="in" id="e_legend_loc" style="width:96px;padding:3px 4px"><option value="best">自动位置</option><option value="upper left">左上</option><option value="upper right">右上</option><option value="outside">图外右侧</option></select>
         <label class="switch"><input type="checkbox" id="e_title" checked> 图名</label>
+        <input class="in" id="e_title_text" placeholder="图名（默认用谱名）" style="width:160px">
         <label class="switch"><input type="checkbox" id="e_background" checked> 背景</label>
         <label class="switch"><input type="checkbox" id="e_envelope" checked> 包络</label>
         <label class="switch"><input type="checkbox" id="e_fill" checked> 峰填充</label>
@@ -755,9 +770,9 @@ async function loadStack(){if(!S.stack)return;const d=await call("stack",Object.
   const box=$("stk_members");box.innerHTML="";
   d.all.forEach(m=>{const l=document.createElement("label");const c=document.createElement("input");c.type="checkbox";
     c.checked=!S.stack.members||S.stack.members.includes(m.i);c.onchange=()=>{const on=[...box.querySelectorAll("input")].map((x,k)=>x.checked?d.all[k].i:null).filter(v=>v!==null);
-      S.stack.members=on;loadStack()};l.append(c,document.createTextNode(m.sample||m.name));box.append(l)});
+      S.stack.members=on;loadStack()};l.append(c,document.createTextNode(m.key||m.sample||m.name));box.append(l)});
   drawStack()}
-function stackLabel(it){let t=it.sample||it.name;if($("stk_states").checked&&it.states.length)
+function stackLabel(it){let t=it.label||it.sample||it.name;if($("stk_states").checked&&it.states.length)
   t+="  "+it.states.filter(s=>s[1]>=0.005).map(s=>`${s[0].replace(/\s*\d[spdf]$/,"")} ${(100*s[1]).toFixed(0)}%`).join(" · ");return t}
 function drawStack(){
   const d=S.stackData;if(!d)return;S.handles=[];
@@ -1108,11 +1123,21 @@ async function addPeak(){
     parent:$("a_parent").value,dE:$("s_dE").value,lock_split:$("d_lock_split").checked,lock_ratio:$("d_lock_ratio").checked,bind_dE:$("s_bind_dE").checked,bind_area:$("s_bind_area").checked};
   closeM("addm");await act("add_peak",a);S.sel=S.v.peaks.length-(AK==="doublet"?2:1);renderPeaks();draw()}
 /* ---------- export ---------- */
-const EOPTS=["xmin","xmax","xstep","xminor","xlabel","ynumbers","ylabel","legend","legend_loc","labels","title","background","envelope","fill","raw","width_cm","height_cm","font","dpi","fmt"];
-const XOPTS=["xmin","xmax","width_cm","height_cm","font","dpi","fmt"],EXKEY="xpsfit_export3";
+const EOPTS=["xmin","xmax","xstep","xminor","xlabel","ynumbers","ylabel","legend","legend_loc","labels","title","title_text","background","envelope","fill","raw","width_cm","height_cm","font","dpi","fmt"];
+const XOPTS=["xmin","xmax","xstep","xminor","range","ymin","ymax","ynumbers","ylabel","raw","title_text","width_cm","height_cm","font","dpi","fmt"],EXKEY="xpsfit_export3";
+const XSTR=["fmt","range","ylabel","raw","title_text"];
 S.ex={ctx:"spec",mode:"select",sel:null,geo:null};
-function eopts(){const o={};for(const k of EOPTS){const e=$("e_"+k);o[k]=e.type==="checkbox"?e.checked:(e.value.trim()===""?null:(isNaN(+e.value)||["fmt","raw","xlabel","ylabel","legend_loc","labels"].includes(k)?e.value:+e.value))}return o}
-function xopts(){const o={};for(const k of XOPTS){const v=$("x_"+k).value.trim();o[k]=v===""?null:(k==="fmt"?v:+v)}return o}
+function eopts(){const o={};for(const k of EOPTS){const e=$("e_"+k);o[k]=e.type==="checkbox"?e.checked:(e.value.trim()===""?null:(isNaN(+e.value)||["fmt","raw","xlabel","ylabel","legend_loc","labels","title_text"].includes(k)?e.value:+e.value))}return o}
+function xopts(){const o={};for(const k of XOPTS){const v=$("x_"+k).value.trim();o[k]=v===""?null:(XSTR.includes(k)?v:k==="ynumbers"?v==="1":+v)}return o}
+// 间距：导出对话框与堆叠工具条的滑块同步（同一个值）
+function setOffset(v,from){v=Math.min(Math.max(+v||1.15,0.05),5);$("stk_off").value=v;if(from!=="num")$("x_offset").value=(+v).toFixed(2);if(from!=="range")$("x_offset_r").value=v;
+  if(S.stack)drawStack();clearTimeout(prevT);prevT=setTimeout(preview,250)}
+$("x_offset").addEventListener("input",e=>setOffset(e.target.value,"num"));$("x_offset_r").addEventListener("input",e=>setOffset(e.target.value,"range"));
+function renderXNames(){const box=$("x_names"),d=S.stackData;box.innerHTML="";if(!d)return;
+  d.items.forEach(it=>{const w=document.createElement("div");w.className="opt";
+    w.innerHTML=`<span title="${esc(it.name)}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(it.key)}</span><input class="in" value="${esc(it.custom?it.label:"")}" placeholder="${esc(it.key)}">`;
+    w.querySelector("input").onchange=e=>setStackName(it.key,e.target.value);box.append(w)})}
+async function setStackName(key,text){await call("set_stack_name",{i:S.cur,key,text});await loadStack();renderXNames();preview()}
 function yLabelAuto(){const y=$("e_ylabel");if(!$("e_ynumbers").checked&&y.value==="Intensity (CPS)")y.value="Intensity (a.u.)";
   else if($("e_ynumbers").checked&&y.value==="Intensity (a.u.)")y.value="Intensity (CPS)"}
 let prevT,prevN=0;
@@ -1126,8 +1151,10 @@ function openExport(ctx){if(!S.v){toast("请先打开数据");return}
       if(!o){o=JSON.parse(localStorage.getItem("xpsfit_export2")||"{}");delete o.legend}     // 旧设置沿用，但图例默认关闭
       for(const k in o){const e=$("e_"+k);if(e&&!["xmin","xmax"].includes(k)){e.type==="checkbox"?e.checked=o[k]:e.value=o[k]??""}}}catch(e){}
     const W=S.v.window||[Math.min(...S.v.be),Math.max(...S.v.be)];$("e_xmax").value=(+W[1]).toFixed(1);$("e_xmin").value=(+W[0]).toFixed(1)}
-  else{try{const o=JSON.parse(localStorage.getItem("xpsfit_export_stack")||"{}");for(const k in o){const e=$("x_"+k);if(e&&!["xmin","xmax"].includes(k))e.value=o[k]??""}}catch(e){}
-    $("x_xmax").value=$("x_xmin").value=""}
+  else{try{const o=JSON.parse(localStorage.getItem("xpsfit_export_stack")||"{}");for(const k in o){const e=$("x_"+k);
+      if(e&&!["xmin","xmax","ymin","ymax","title_text"].includes(k))e.value=k==="ynumbers"?(o[k]===null?"":o[k]?"1":"0"):(o[k]??"")}}catch(e){}
+    $("x_xmax").value=$("x_xmin").value=$("x_ymin").value=$("x_ymax").value=$("x_title_text").value="";
+    setOffset($("stk_off").value,"open");renderXNames()}
   $("exstage").hidden=true;$("exwait").hidden=false;$("exsvg").innerHTML="";
   $("exm").classList.add("open");exMode("select");renderAnn();renderExColors();preview()}
 document.querySelectorAll("#exo_spec input,#exo_spec select,#exo_stack input,#exo_stack select").forEach(e=>e.addEventListener(e.type==="checkbox"||e.tagName==="SELECT"?"change":"input",()=>{clearTimeout(prevT);prevT=setTimeout(preview,350)}));
@@ -1138,6 +1165,9 @@ async function preview(){if(!$("exm").classList.contains("open"))return;const n=
     else{const o=eopts();try{localStorage.setItem(EXKEY,JSON.stringify(o))}catch(e){}
       r=await call("preview_figure",{i:S.cur,opts:o,px})}}catch(e){return}
   if(n!==prevN)return;S.ex.geo=r.geo;const img=$("eximg");img.src="data:image/png;base64,"+r.png;
+  if(S.ex.ctx==="stack"&&r.geo.auto_ylim){const a=r.geo.auto_ylim,raw=S.stackData&&S.stackData.mode==="raw";
+    $("x_ymin").placeholder=a[0].toPrecision(3);$("x_ymax").placeholder=a[1].toPrecision(3);
+    $("x_yunit").textContent=raw?TR("纵轴为计数；间距 = 相邻两条谱基线的距离（以最大谱高计）"):TR("纵轴已归一化：每条谱高 = 1；间距 = 相邻两条谱基线的距离（以谱高计）")}
   $("exwait").hidden=true;$("exstage").hidden=false;fitStage();drawOverlay()}
 function fitStage(){const g=S.ex.geo;if(!g)return;const box=$("exprev"),W=box.clientWidth-28,H=box.clientHeight-28,k=Math.min(W/g.w,H/g.h);
   const st=$("exstage");st.style.width=Math.floor(g.w*k)+"px";st.style.height=Math.floor(g.h*k)+"px";$("exsvg").setAttribute("viewBox",`0 0 ${g.w} ${g.h}`)}
@@ -1440,7 +1470,7 @@ function lbl(k){return k.slice(2)}
 function table(id,cols,get){
   const t=$(id);if(!cols.length){t.innerHTML='<tr><td class="note">（无）</td></tr>';return}
   t.innerHTML=`<thead><tr><th>样品</th>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>`+
-    Q.samples.map(r=>`<tr><td>${esc(r.sample)}${r.duplicates.length?` <span class="tag" title="${esc(r.duplicates.join(", "))}">（有重复轨道，已用第一条）</span>`:""}</td>${cols.map(c=>`<td>${get(r)[c]!=null?get(r)[c].toFixed(2):r.nd&&c in r.nd&&get(r)===r.elements?`<span title="${esc(TR("未检出：S/N 低于检出限，按检出限给出上限"))}">&lt; ${r.nd[c]!=null?r.nd[c].toFixed(2):"?"} ${esc(TR("（未检出）"))}</span>`:"—"}</td>`).join("")}</tr>`).join("")+"</tbody>";
+    Q.samples.map(r=>`<tr><td>${esc(r.sample)}${r.duplicates.length?` <span class="tag" title="${esc(r.duplicates.join(", "))}">（有重复轨道，已用第一条）</span>`:""}${(r.no_sf||[]).length?` <span class="tag" style="color:#C0392B" title="${esc(TR("灵敏度因子表里没有这些轨道，未计入原子百分比；请在上方“灵敏度因子”里填写"))}">${esc(TR("缺灵敏度因子"))}: ${esc(r.no_sf.join(", "))}</span>`:""}</td>${cols.map(c=>`<td>${get(r)[c]!=null?get(r)[c].toFixed(2):r.nd&&c in r.nd&&get(r)===r.elements?`<span title="${esc(TR("未检出：S/N 低于检出限，按检出限给出上限"))}">&lt; ${r.nd[c]!=null?r.nd[c].toFixed(2):"?"} ${esc(TR("（未检出）"))}</span>`:"—"}</td>`).join("")}</tr>`).join("")+"</tbody>";
 }
 function ratioCols(){const a=$("q_a").value,b=$("q_b").value;const cur=a&&b?[[a,b]]:[];return [...RATIOS,...cur.filter(([x,y])=>!RATIOS.some(([p,q])=>p===x&&q===y))]}
 function ratio(){

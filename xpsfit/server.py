@@ -54,6 +54,7 @@ class State:
         self.specs = []
         self.stack_annots = {}                    # 堆叠对比图的标注：{轨道: [标注…]}
         self.stack_labels = {}                    # 堆叠对比图样品名的上下位置：{轨道: {样品名: dy}}（相对该谱的基线，单位为谱高）
+        self.stack_names = {}                     # 堆叠对比图里每条谱显示的名称（用户改过的）：{轨道: {key: 文字}}
         self.lock = threading.Lock()
         self.sf = core.load_sf(os.path.join(user_dir(), "sensitivity_factors.json")) or core.load_sf()
         self.templates = core.builtin_templates()
@@ -83,6 +84,7 @@ class State:
                 d = json.load(f)
             self.stack_annots.update(d.get("stack_annots") or {})
             self.stack_labels.update(d.get("stack_labels") or {})
+            self.stack_names.update(d.get("stack_names") or {})
             return [core.Spectrum.from_dict(s) for s in d.get("spectra", [])]
         folder = os.path.basename(os.path.dirname(os.path.abspath(path)))
         out = []
@@ -94,7 +96,9 @@ class State:
                     if "BE =" in w:
                         try: hv = float(w.split("BE =")[1].split("-")[0])
                         except ValueError: pass
-                out.append(core.Spectrum(b["region"], b["energy"], b["intensity"], path, hv))
+                t = core.Spectrum(b["region"], b["energy"], b["intensity"], path, hv)
+                t.level, t.etch_s = b.get("level"), b.get("etch_s")
+                out.append(t)
             return out
         base = os.path.splitext(name)[0]
         for tname, grid in conv.read_tables(path):
@@ -406,6 +410,7 @@ def api(method, a):
                 reports.append({"spectrum": t.name, "sample": t.sample, "elements": [e["el"] for e in el_], "steps": steps})
                 continue
             els = sample_elements(t, a.get("extra"))
+            t._energy_ok = _c1s_calibrated(t)
             try:
                 rep_ = autofit.run(t, els, reference.for_orbital(t.element, user_dir()), oxide=a.get("oxide", "auto"))
                 _post_fit(t)
@@ -478,6 +483,15 @@ def api(method, a):
         else:
             lab[str(a["key"])] = min(max(float(a["dy"]), -2.0), 5.0)
         return {"ok": True, "label_dy": lab}
+    elif method == "set_stack_name":
+        # 堆叠对比图里某条谱显示的名称（源文件可能没有样品名，如深度剖析各层）；空 = 恢复默认
+        nm = st.stack_names.setdefault(s.element, {})
+        txt = str(a.get("text") or "").strip()
+        if txt:
+            nm[str(a["key"])] = txt[:120]
+        else:
+            nm.pop(str(a["key"]), None)
+        return {"ok": True, "names": nm}
     elif method == "stack":
         return stack_data(a["i"], a)
     elif method == "export_stack":
@@ -489,7 +503,8 @@ def api(method, a):
         p = os.path.join(st.out_dir(st.specs[0]), a.get("name") or "project.xpsfit.json")
         with open(p, "w", encoding="utf-8") as f:
             json.dump({"app": APP, "version": 1, "spectra": [t.to_dict() for t in st.specs],
-                       "stack_annots": st.stack_annots, "stack_labels": st.stack_labels}, f, ensure_ascii=False)
+                       "stack_annots": st.stack_annots, "stack_labels": st.stack_labels,
+                       "stack_names": st.stack_names}, f, ensure_ascii=False)
         return {"path": p, "msg": "项目已保存"}
     elif method == "open_folder":
         p = a["path"]
@@ -629,6 +644,21 @@ def open_paths(paths):
     return {"specs": ST.summary(), "added": added, "errors": errors}
 
 
+def _c1s_calibrated(s):
+    """同一样品（深度剖析时同一层）有 C1s 谱、且其 C–C 主峰在 284.8 ± 0.5 eV：能量标尺可信，autofit 不再按单质峰平移模型。"""
+    lv = getattr(s, "level", None)
+    for t in ST.specs:
+        if t is s or t.element != "C1s" or t.sample != s.sample or getattr(t, "level", None) != lv:
+            continue
+        be, y = t.be, t.y
+        m = (be > 283.0) & (be < 287.0)
+        if m.sum() < 5:
+            continue
+        c = float(be[m][int(np.argmax(y[m]))])
+        return abs(c - REF_C1S) <= 0.5
+    return False
+
+
 def shift_spec(s, d):
     s.shift += d
     for k in ("lo", "hi"):
@@ -714,7 +744,7 @@ FIG_DEFAULTS = {"fmt": "png", "width_cm": 8.5, "height_cm": 7.0, "dpi": 600, "fo
                 "xmin": None, "xmax": None, "xstep": None, "xminor": 1,
                 "ynumbers": True, "ylabel": "Intensity (CPS)", "xlabel": "Binding Energy (eV)",
                 "legend": False, "legend_loc": "best", "title": True, "labels": "legend", "background": True, "envelope": True, "raw": "line",
-                "fill": True}
+                "fill": True, "title_text": None}
 
 
 def _preview_dpi(width_cm, px):
@@ -916,7 +946,7 @@ def figure(s, path, opts=None, dpi=None, annots=True):
     ax.tick_params(axis="both", which="both", top=False, right=False)
     ax.set_xlabel(o["xlabel"]); ax.set_ylabel(o["ylabel"])
     if o["title"]:
-        _inner_title(ax, s.name, float(o["font"]))
+        _inner_title(ax, o["title_text"] or s.name, float(o["font"]))
     if o["legend"]:
         fs = float(o["font"]) * 0.75
         if o["legend_loc"] == "outside":
@@ -1083,7 +1113,21 @@ def draw_annots(ax, items):
 
 # ------------------------------------------------------------------ 多样品同一轨道堆叠对比
 STACK_DEFAULTS = {"mode": "bgsub", "offset": 1.15, "fit": True, "comps": False, "members": None, "states": False, "names": True,
-                  "fmt": "png", "width_cm": 8.5, "height_cm": None, "dpi": 600, "font": 9, "xmin": None, "xmax": None}
+                  "fmt": "png", "width_cm": 8.5, "height_cm": None, "dpi": 600, "font": 9, "xmin": None, "xmax": None,
+                  "ymin": None, "ymax": None, "xstep": None, "xminor": 1, "ynumbers": None, "ylabel": None,
+                  "xlabel": "Binding Energy (eV)", "raw": "line", "range": "all", "title_text": None}
+# range：all = 画出整段采集数据（背景按端点值向两侧延伸）；bg = 只画背景区间内（各谱的背景区间可能不同）
+# ynumbers：None = 按纵轴方式（原始计数显示数字，归一化不显示）；ymin / ymax 用图中纵轴的单位（归一化时每条谱高 1）
+
+
+def _stack_key(t):
+    """堆叠图里一条谱的标识：样品名；深度剖析各层同属一个样品时加上刻蚀时间。"""
+    k = t.sample or t.name
+    lv = getattr(t, "level", None)
+    if lv is not None:
+        et = getattr(t, "etch_s", None)
+        k += " · " + (("%g s" % round(et)) if et is not None else "level %d" % (lv + 1))
+    return k
 
 
 def stack_data(i, a):
@@ -1098,6 +1142,11 @@ def stack_data(i, a):
             continue
         t = ST.specs[k]
         x, y, bg, comps, env = t.compute()
+        if o["range"] == "all" and len(t.be) > len(x):    # 整段数据：背景在背景区间外按端点值延伸，峰按模型计算
+            xa = np.asarray(t.be, float)
+            bg = np.interp(xa, x, bg)
+            comps, env = core.model(xa, t.peaks)
+            x, y = xa, np.asarray(t.y, float)
         if o["mode"] == "raw":
             off, sc, yy, base = 0.0, 1.0, y, bg
         elif o["mode"] == "norm":
@@ -1108,18 +1157,20 @@ def stack_data(i, a):
             yy, base = y - bg, np.zeros_like(bg)
         f = lambda v: _f((np.asarray(v, float) - off) / sc)
         fitted = bool(t.peaks)
-        items.append({"i": k, "sample": t.sample or "", "name": t.name, "key": t.sample or t.name, "x": _f(x), "y": f(yy),
+        key = _stack_key(t)
+        items.append({"i": k, "sample": t.sample or "", "name": t.name, "key": key, "x": _f(x), "y": f(yy),
+                      "label": ST.stack_names.get(el, {}).get(key) or key, "custom": key in ST.stack_names.get(el, {}),
                       "bg": f(base) if o["mode"] != "bgsub" else None,
                       "env": f(base + env) if fitted else None,
                       "comps": [f(base + c) for c in comps] if fitted and o["comps"] else [],
                       "colors": core.peak_colors(t.peaks), "roles": [p.get("role", "main") for p in t.peaks],
                       "states": _states(t) if fitted else []})
     return {"element": el, "mode": o["mode"], "items": items, "label_dy": ST.stack_labels.get(el, {}),
-            "all": [{"i": k, "sample": ST.specs[k].sample or "", "name": ST.specs[k].name} for k in allk]}
+            "all": [{"i": k, "sample": ST.specs[k].sample or "", "name": ST.specs[k].name, "key": _stack_key(ST.specs[k])} for k in allk]}
 
 
 def _stack_label(it, with_states=True):
-    lab = it["sample"] or it["name"]
+    lab = it.get("label") or it["sample"] or it["name"]
     if with_states and it["states"]:
         lab += "  " + " · ".join("%s %.0f%%" % (re.sub(r"\s*\d[spdf]$", "", core.state_name(n)), 100 * f)
                                  for n, f, *_ in it["states"] if f >= 0.005)
@@ -1132,6 +1183,7 @@ def export_stack(i, a, out=None, annots=True):
     matplotlib.use("Agg")
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_agg import FigureCanvasAgg
+    from matplotlib.ticker import MultipleLocator, AutoMinorLocator, NullLocator
     o = dict(STACK_DEFAULTS); o.update({k: v for k, v in (a or {}).items() if k in STACK_DEFAULTS and v is not None and v != ""})
     d = stack_data(i, o)
     items = d["items"]
@@ -1157,18 +1209,36 @@ def export_stack(i, a, out=None, annots=True):
             for c, col, role in zip(it["comps"], it["colors"], it["roles"]):
                 ax.fill_between(x, base + sh, np.asarray(c) + sh, color=col, alpha=0.25 if role == "main" else 0.15, lw=0)
                 ax.plot(x, np.asarray(c) + sh, color=col, lw=0.6, ls=":" if role == "satellite" else "-")
-        ax.plot(x, np.asarray(it["y"]) + sh, "-", color="#222", lw=0.8)
+        if o["raw"] == "markers":
+            ax.plot(x, np.asarray(it["y"]) + sh, "o", ms=2.0, mfc="none", mec="#333", mew=0.45)
+        else:
+            ax.plot(x, np.asarray(it["y"]) + sh, "-", color="#222", lw=0.8)
         if o["fit"] and it["env"] is not None:
             ax.plot(x, np.asarray(it["env"]) + sh, "-", color="#C00000", lw=0.9)
         labels.append((j, sh, x, np.maximum(np.asarray(it["y"]), np.asarray(it["env"]) if it["env"] is not None else -np.inf)))
-    ax.set_xlim(xmax, xmin)
-    ax.set_xlabel("Binding Energy (eV)")
-    ax.set_ylabel("Intensity (a.u.)" if d["mode"] != "raw" else "Intensity (CPS)")
-    if d["mode"] != "raw":
-        ax.set_yticks([])
-    _inner_title(ax, d["element"], float(o["font"]))
+    ax.set_xlim(max(xmin, xmax), min(xmin, xmax))
+    ax.set_xlabel(o["xlabel"] or "Binding Energy (eV)")
+    ax.set_ylabel(o["ylabel"] or ("Intensity (a.u.)" if d["mode"] != "raw" else "Intensity (CPS)"))
+    if o["xstep"]:
+        ax.xaxis.set_major_locator(MultipleLocator(float(o["xstep"])))
+    nm_ = int(o["xminor"] or 0)
+    ax.xaxis.set_minor_locator(AutoMinorLocator(nm_ + 1) if nm_ > 0 else NullLocator())
+    ynum = o["ynumbers"] if o["ynumbers"] is not None else d["mode"] == "raw"
+    if isinstance(ynum, str):
+        ynum = ynum.lower() in ("1", "true", "yes", "on")
+    if not ynum:
+        ax.set_yticks([]); ax.yaxis.set_minor_locator(NullLocator())
+        ax.tick_params(axis="y", which="both", left=False, right=False, labelleft=False)
+    ax.tick_params(axis="both", which="both", top=False, right=False)
+    _inner_title(ax, o.get("title_text") or d["element"], float(o["font"]))
     top = (n - 1) * step + 1.25 * span
-    ax.set_ylim(ax.get_ylim()[0], max(ax.get_ylim()[1], top))
+    ylo, yhi = ax.get_ylim()[0], max(ax.get_ylim()[1], top)
+    auto_ylim = [float(ylo), float(yhi)]
+    if o["ymin"] is not None:
+        ylo = float(o["ymin"])
+    if o["ymax"] is not None:
+        yhi = float(o["ymax"])
+    ax.set_ylim(min(ylo, yhi - 1e-9), yhi)
     fig.tight_layout()
     # 样品名：与框内左上角的图名左对齐（离左框 6 pt）；默认放在这段曲线最高点之上，可在导出预览里上下拖动（stack_labels）
     from matplotlib.transforms import blended_transform_factory
@@ -1197,7 +1267,8 @@ def export_stack(i, a, out=None, annots=True):
     fmt = o["fmt"] if o["fmt"] != "tif" else "tiff"
     if out is not None:
         fig.savefig(out, dpi=float(o["dpi"]), format=fmt)
-        return dict(_geo(fig, ax), ylim=[float(v) for v in ax.get_ylim()], labels=lab_geo)
+        return dict(_geo(fig, ax), ylim=[float(v) for v in ax.get_ylim()], auto_ylim=auto_ylim, labels=lab_geo,
+                    xlim=[float(v) for v in ax.get_xlim()], step=step, span=span)
     s0 = ST.S(i)
     p = os.path.join(ST.out_dir(s0), conv.safe_name("stack_%s_%d-samples" % (d["element"], n)) + "." + o["fmt"])
     fig.savefig(p, dpi=float(o["dpi"]), format=fmt)

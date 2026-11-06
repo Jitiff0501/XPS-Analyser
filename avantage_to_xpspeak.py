@@ -198,12 +198,13 @@ def read_vgd(path, hv_override):
     ny = len(data) // 8
     # VGSpaceAxes 中找 (uint32 点数, double 起点, double 步长)
     npts = start = step = None
+    i_axis = 0
     for i in range(0, len(axes) - 19):
         n = struct.unpack_from("<I", axes, i)[0]
         if n >= MIN_POINTS and ny % n == 0:
             a, b = struct.unpack_from("<dd", axes, i + 4)
             if -1e5 < a < 1e5 and 0 < abs(b) < 100:
-                npts, start, step = n, a, b
+                npts, start, step, i_axis = n, a, b, i
                 break
     if npts is None:
         raise RuntimeError("无法解析能量轴 (VGSpaceAxes)")
@@ -232,17 +233,37 @@ def read_vgd(path, hv_override):
     warns.append("VGD 能量轴为动能，已按 BE = %s - KE 换算（hν 来自%s）" % (fmt(hv, 4), src))
 
     nspec = ny // npts
+    etch = _etch_axis(axes, i_axis + 20, nspec) if nspec > 1 else None
     blocks = []
     for k in range(nspec):
         E = [hv - (start + j * step) for j in range(npts)]
         I = list(vals[k * npts:(k + 1) * npts])
         w = list(warns)
         if nspec > 1:
-            w.append("文件含 %d 条谱（如深度剖析各层），这是第 %d 条" % (nspec, k + 1))
-        blocks.append({"energy": E, "intensity": I, "warnings": w,
-                       "region": region if nspec == 1 else "%s_%d" % (region, k + 1),
+            w.append("文件含 %d 条谱（如深度剖析各层），这是第 %d 条%s"
+                     % (nspec, k + 1, "（刻蚀 %s s）" % fmt(etch[k], 1) if etch else ""))
+        if nspec == 1:
+            reg = region
+        elif etch:
+            reg = "%s [%s s]" % (region, fmt(round(etch[k]), 0))
+        else:
+            reg = "%s_%d" % (region, k + 1)
+        blocks.append({"energy": E, "intensity": I, "warnings": w, "region": reg,
+                       "level": k if nspec > 1 else None, "etch_s": etch[k] if etch else None,
                        "source_cols": "VGSpaceAxes(KE %s+%s*i) | VGData" % (fmt(start, 4), fmt(step, 4))})
     return region, blocks
+
+
+def _etch_axis(axes, i0, nspec):
+    """能量轴之后的第二个轴（点数 = 谱数、起点 ≥ 0、步长 > 0 且不是 1 的序号轴）：深度剖析的刻蚀时间（s）。找不到返回 None。"""
+    for i in range(i0, len(axes) - 19):
+        n = struct.unpack_from("<I", axes, i)[0]
+        if n != nspec:
+            continue
+        a, b = struct.unpack_from("<dd", axes, i + 4)
+        if 0 <= a < 1e6 and 0 < b < 1e6 and not (a == 0 and b == 1.0) and abs(a * 1e4 - round(a * 1e4)) < 1e-3:
+            return [a + k * b for k in range(nspec)]
+    return None
 
 
 # ---------------------------------------------------------------- 在网格中找谱区

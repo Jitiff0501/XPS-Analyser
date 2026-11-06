@@ -319,6 +319,9 @@ def _kind(peaks, k):
     return peaks
 
 
+CARBIDE_FORMERS = {"B", "Si", "Ti", "Zr", "Hf", "V", "Nb", "Ta", "Cr", "Mo", "W", "Mn", "Fe", "Co", "Ni", "Al"}
+
+
 def recipe(s, log, oxide="auto"):
     """按元素的起始模型。oxide：auto（金属态、氧化态都作为候选，由 BIC 判断）/ both / metal / oxide。"""
     el = s.element
@@ -398,15 +401,25 @@ def recipe(s, log, oxide="auto"):
         m = []
         f = _signal(s, 282.0, 283.7)
         if f > 0.08:
-            log("C1s：282–283.7 eV 有明显信号（%.0f%%）→ 加入金属碳化物" % (100 * f))
-            m.append(_P("M-C carbide", 283.0, 1.1, lo=282.3, hi=283.6))
+            formers = set(getattr(s, "_sample_elements", None) or ()) & CARBIDE_FORMERS
+            if formers or not getattr(s, "_sample_elements", None):
+                log("C1s：282–283.7 eV 有明显信号（%.0f%%）→ 加入金属碳化物" % (100 * f))
+                m.append(_P("M-C carbide", 283.0, 1.1, lo=282.3, hi=283.6))
+            else:
+                log("C1s：282–283.7 eV 有明显信号（%.0f%%），但样品里没有形成碳化物的元素 → 作为低结合能碳"
+                    "（Ar⁺ 溅射造成的无序 / sp² 碳等），不叫碳化物" % (100 * f))
+                m.append(_P("C low-BE (sp2/sputter)", 283.8, 1.3, lo=283.0, hi=284.3, wmax=2.0))
         return m + [_P("C-C/C-H", 284.8, 1.3, lo=284.3, hi=285.3), _P("C-O", 286.3, 1.4, lo=285.8, hi=287.0),
                     _P("C=O / O-C=O", 288.6, 1.6, lo=287.6, hi=289.6)]
     return nist_model(s, log, oxide)
 
 
 # ------------------------------------------------------------------ 没有内置模型的轨道：按 NIST 数据库建模
-NIST_KINDS = ("metal", "oxide", "hydroxide", "nitride", "carbide", "oxynitride")
+NIST_KINDS = ("metal", "oxide", "hydroxide", "nitride", "carbide", "oxynitride", "salt")
+# 碱金属 / 碱土金属：在腐蚀、沉积、生物矿化表面上通常以盐（碳酸盐、氯化物、磷酸盐…）的形式出现，这些盐也作为候选
+# （需样品含对应的阴离子元素）；金属态只在数据在金属位置确有峰时才作为候选——这些元素的金属态在空气中几乎不存在，
+# 只在溅射后的合金等少数情况出现，不能让金属峰去“补”化合物峰的展宽
+SALT_ELEMENTS = ("Li", "Na", "K", "Rb", "Cs", "Be", "Mg", "Ca", "Sr", "Ba")
 NIST_MIN_N = 3          # 至少几条 NIST 记录的化学态才作为候选
 NIST_MERGE = 0.8        # 中位数相差小于此值（eV）的化学态在常规分辨率下分不开，合并为一个候选
 
@@ -449,8 +462,11 @@ def nist_candidates(s, ref=None):
         return []
     el = re.match(r"^[A-Z][a-z]?", s.element or "").group(0) if re.match(r"^[A-Z][a-z]?", s.element or "") else ""
     xlo, xhi = float(np.min(s.be)) + 0.5, float(np.max(s.be)) - 0.5
-    pool = plausible_states(ref, s) if getattr(s, "_sample_elements", None) else ref["states"]
-    st = [t for t in pool if t.get("kind") in NIST_KINDS and t["n"] >= NIST_MIN_N and xlo <= t["median"] <= xhi]
+    known = bool(getattr(s, "_sample_elements", None))
+    pool = plausible_states(ref, s) if known else ref["states"]
+    salty = el in SALT_ELEMENTS
+    st = [t for t in pool if t.get("kind") in NIST_KINDS and t["n"] >= NIST_MIN_N and xlo <= t["median"] <= xhi
+          and (t.get("kind") != "salt" or (salty and known))]
     st.sort(key=lambda t: t["median"])
     groups = []
     for t in st:
@@ -460,8 +476,10 @@ def nist_candidates(s, ref=None):
             groups.append([t])
     # 与单质相差 < NIST_MERGE 的化合物（如 MoN 228.4 与 Mo 228.0）按结合能分不开：样品里有对应元素（氮化物 N、
     # 碳化物 C）时与单质合并为一个候选并写明（如 Mo0/MoN），否则不列为候选
-    sample = set(getattr(s, "_sample_elements", None) or ())
+    sample = set(getattr(s, "_sample_elements", None) or ()) | {"O"}       # O 在任何暴露过空气的表面都有
     partner = {"nitride": "N", "carbide": "C", "oxynitride": "N"}
+    if salty:                                    # 碱金属 / 碱土金属的氧化物离单质很近（CaO 与 Ca 差 0.75 eV）：合并而不是丢掉
+        partner.update(oxide="O", hydroxide="O")
     metal_g = next((g for g in groups if g[0]["kind"] == "metal"), None)
     if metal_g:
         mm = metal_g[0]["median"]
@@ -485,9 +503,18 @@ def nist_candidates(s, ref=None):
         med = sum(t["median"] * t["n"] for t in g) / sum(t["n"] for t in g)
         lo = min(min(t["q1"] for t in g), med - 0.3) - 0.3
         hi = max(max(t["q3"] for t in g), med + 0.3) + 0.3
+        if salty and top["kind"] != "metal":       # 碱金属 / 碱土金属的盐：化学位移小、文献值分散主要来自荷电参考 → 范围 ±1.2 eV
+            lo, hi = min(lo, med - 1.2), max(hi, med + 1.2)
         out.append({"name": name, "kind": "metal" if top["kind"] == "metal" else "oxide", "median": round(med, 2),
-                    "lo": round(max(lo, med - 0.9), 2), "hi": round(min(hi, med + 0.9), 2), "n": sum(t["n"] for t in g),
+                    "lo": round(max(lo, med - (1.2 if salty else 0.9)), 2), "hi": round(min(hi, med + (1.2 if salty else 0.9)), 2),
+                    "n": sum(t["n"] for t in g),
                     "formulas": [t["formula"] for t in g]})
+    if salty:                                    # 范围放宽后不让相邻候选重叠：各自只到两者中点（至少 ±0.35 eV），名称才不会随拟合乱跳
+        out.sort(key=lambda c: c["median"])
+        for a, b in zip(out, out[1:]):
+            mid = 0.5 * (a["median"] + b["median"])
+            a["hi"] = round(max(min(a["hi"], mid), a["median"] + 0.35), 2)
+            b["lo"] = round(min(max(b["lo"], mid), b["median"] - 0.35), 2)
     return out
 
 
@@ -505,6 +532,7 @@ def nist_model(s, log, oxide="auto"):
     l_ = s.element[-1]
     split = (ref.get("split") or {}).get("median") or SPLIT.get(s.element)
     narrow = l_ in "df"
+    salty_el = _el(s) in SALT_ELEMENTS
     peaks, used = [], []
     for c in C:
         if oxide == "metal" and c["kind"] != "metal" or oxide == "oxide" and c["kind"] == "metal":
@@ -513,7 +541,13 @@ def nist_model(s, log, oxide="auto"):
         if m.any() and float(np.max(sig[m])) < 0.03 * top:
             continue                               # 该位置几乎没有信号：不作为候选
         metal = c["kind"] == "metal"
+        if metal and _el(s) in SALT_ELEMENTS and not _has_peak_near(x, sig, c["median"], 0.6, noise_sigma(y) / math.sqrt(7)):
+            log("%s：%s %.1f eV 附近没有可分辨的峰 → 不加金属态（碱金属 / 碱土金属的金属态只在数据中确有峰时才考虑）"
+                % (s.element, c["name"], c["median"]))
+            continue
         w0, wmin, wmax = ((0.8, 0.4, 1.4) if metal else (1.4, 0.7, 2.4)) if narrow else ((1.0, 0.6, 1.8) if metal else (2.0, 1.0, 3.0))
+        if salty_el and not metal and l_ == "p":    # 碱金属 / 碱土金属盐的 2p：单一化学态通常 1.0–2.0 eV，宽于此多半是背景没扣好
+            w0, wmax = 1.5, 2.2
         shape = "Asym" if metal else "GL"
         if l_ == "s":
             pk = [_P(c["name"], c["median"], w0, shape=shape, lo=c["lo"], hi=c["hi"], wmin=wmin, wmax=wmax)]
@@ -541,6 +575,15 @@ def nist_model(s, log, oxide="auto"):
     return peaks
 
 
+def _has_peak_near(x, sig, c, tol, noise=0.0):
+    """平滑后的信号在 c ± tol 内有局部极大（可分辨的峰），且高于 3σ 噪声、不低于最高峰的 25%（不是噪声起伏）。
+    噪声数据上的“肩峰”（二阶导）不可靠，不用。"""
+    from scipy.signal import find_peaks
+    floor = max(3.0 * noise, 0.25 * float(np.max(sig)))
+    k, _ = find_peaks(sig, prominence=max(0.04 * float(np.ptp(sig) or 1), 2.0 * noise))
+    return any(abs(float(x[j]) - c) <= tol and sig[j] >= floor for j in k)
+
+
 def oxide_capable(s):
     """能选“仅金属 / 仅氧化”的轨道：内置模型的，以及 NIST 数据库里同时有单质和化合物候选的。"""
     if s.element in OXIDE_ELEMENTS:
@@ -560,23 +603,37 @@ def generic_model(s, log, ref=None):
     pos = sorted((float(x[j]) for j in k), key=lambda v: -sig[np.argmin(abs(x - v))])
     l_ = (s.element or "x")[-1]
     split = SPLIT.get(s.element)
-    used, peaks = [], []
+    step = float(np.median(np.diff(x))) if len(x) > 1 else 0.1
+    pos = [c for c in pos if peak_snr(sig[np.argmin(abs(x - c))], 1.5, y, step) >= LOD_SNR]   # 达不到检出限的起伏是噪声，不当作峰
+    used = []
     for c in pos:
         if split and any(abs(c - (u + split)) < 0.8 for u in used):
             continue                       # 已被某双峰的 1/2 分量覆盖
+        if split and l_ in RATIO:
+            hit = [u for u in used if abs(u - (c + split)) < 0.8]
+            if hit:                        # 先找到的其实是 c 的 1/2 分量（背景扣歪时 1/2 可能更高）：换成 c
+                used[used.index(hit[0])] = c
+                continue
+        used.append(c)
+        if len(used) >= 4:
+            break
+    cand = plausible_states(ref, s)
+    metal_ref = [t["median"] for t in (ref or {}).get("states", []) if t.get("kind") == "metal" and t.get("n", 0) >= NIST_MIN_N]
+    peaks = []
+    for c in used:
         name = "P%.1f" % c
-        cand = plausible_states(ref, s)
         if cand:
             st = min(cand, key=lambda t: abs(t["median"] - c))
-            if abs(st["median"] - c) < 1.0:
+            if abs(st["median"] - c) < (0.5 if st.get("kind") == "metal" else 1.0):     # 单质的峰窄、位置确定
                 name = st["formula"]
+        if name.startswith("P") and metal_ref and c > max(metal_ref) + 0.6:
+            name = "%s(ox)" % _el(s)        # 比单质高 0.6 eV 以上、参考库里又没有对应化合物：至少标明是氧化态
         if split and l_ in RATIO:
             peaks += _D(name, c, split, RATIO[l_], 1.5, sub=s.element[-2:], lo=c - 0.8, hi=c + 0.8, orb=s.element)
         else:
             peaks.append(_P(name, c, 1.5, lo=c - 0.8, hi=c + 0.8))
-        used.append(c)
-        if len(used) >= 4:
-            break
+    for p in peaks:
+        p["generic"] = True
     log("通用模型：在数据中找到 %d 个主峰（%s）" % (len(used), ", ".join("%.1f" % u for u in used)))
     return peaks
 
@@ -926,6 +983,12 @@ def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
                 log("⚠ 文件名为 %s，但谱图更像 %s（%s）；如果文件名有误，请重命名后再拟合" % (s.element, cands[0][0], cands[0][2]))
     except Exception:
         pass
+    if ref is None:
+        try:
+            from . import reference
+            ref = reference.for_orbital(s.element)
+        except Exception:
+            ref = None
     s._ref = ref if ref and not ref.get("missing") else None
     s._sample_elements = list(sample_elements or ())
     noise = choose_background(s, log)
@@ -960,7 +1023,10 @@ def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
                 j = max(near, key=lambda j: sig[j])
                 if best is None or sig[j] > best[1]:
                     best = (float(x[j]) - c0, float(sig[j]), float(x[j]), p["name"])
-        if best and 0.15 < abs(best[0]) <= 1.0:
+        if best and 0.15 < abs(best[0]) <= 1.0 and getattr(s, "_energy_ok", False):
+            log("能量：%s 的峰顶在 %.2f eV，与单质参考值相差 %+.2f eV；同一样品的 C1s 在 284.8 eV 附近（能量标尺正确）"
+                "→ 不平移模型，这个峰按化合物处理" % (re.sub(r"\s*\d[spdf]\d/2$", "", best[3]), best[2], best[0]))
+        elif best and 0.15 < abs(best[0]) <= 1.0:
             d = best[0]
             s.model_shift = d
             for p in peaks:
@@ -1082,6 +1148,8 @@ def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
                 p = _P(name, c, wv, lo=c - 0.6, hi=c + 0.6)
         if p is not None:
             s.peaks = s.peaks + [p]
+        for q_ in (s.peaks[-2:] if p is None else [p]):
+            q_["added"] = True
         r2 = staged_fit(s)
         b2 = bic(s, r2)
         if b2 < b0 - 6:                     # BIC 显著下降才保留
@@ -1102,6 +1170,7 @@ def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
     if r_ms["rchi2"] < r["rchi2"] * 0.999:
         log("多起点拟合：约化 χ² %.3g → %.3g" % (r["rchi2"], r_ms["rchi2"]))
     r = r_ms
+    r = _drop_noise_peaks(s, r, log)
     q = quality(s)
     it = interpret(s)
     if it:
@@ -1110,6 +1179,51 @@ def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
         log("⚠ " + w_)
     log("完成：约化 χ² %.3g，残差 RMS / 峰高 %.1f%%" % (r["rchi2"], 100 * q["rel_rms"]))
     return report
+
+
+def _drop_noise_peaks(s, r, log):
+    """数据驱动加入的峰（通用模型、NIST 候选、残差峰）拟合后单峰 S/N 达不到检出限（含面积为 0 的）→ 是噪声起伏，去掉后重拟合。
+    内置模型的标准组分不在此列；至少保留一个主峰。"""
+    if not s.peaks:
+        return r
+    x, y, bg, comps, env = s.compute()
+    sig = noise_sigma(y)
+    if not sig:
+        return r
+    roots = [j for j, p in enumerate(s.peaks) if not p.get("pair") and (p.get("generic") or p.get("nist") or p.get("added"))
+             and p.get("role", "main") in ("main", "unknown")]
+    if not roots:
+        return r
+    hgt = {}
+    for j in roots:
+        nm = s.peaks[j]["name"]
+        h = float(np.max(comps[j])) if len(comps[j]) else 0.0
+        for k, q in enumerate(s.peaks):           # 双峰：主峰或副峰任一够高即算
+            if (q.get("link") or {}).get("ref") == nm:
+                h = max(h, float(np.max(comps[k])) if len(comps[k]) else 0.0)
+        hgt[nm] = h
+    step = float(np.median(np.diff(x))) if len(x) > 1 else 0.1
+    wid = {s.peaks[j]["name"]: float(s.peaks[j]["fwhm"]["value"]) for j in roots}
+    snr = {nm: peak_snr(h, wid[nm], y, step) for nm, h in hgt.items()}
+    drop = {nm for nm in hgt if snr[nm] < LOD_SNR}
+    mains = [p["name"] for p in s.peaks if not p.get("pair") and p.get("role", "main") == "main"]
+    if drop and set(mains) <= drop:
+        drop.discard(max((m for m in mains), key=lambda m: hgt.get(m, 0.0)))
+    if not drop:
+        return r
+    s.peaks = [p for p in s.peaks if p["name"] not in drop and (p.get("link") or {}).get("ref") not in drop]
+    r = s.do_fit()
+    log("去掉 %s：拟合后单峰 S/N < %.0f（检出限），只是计数波动，不是峰" % ("、".join(sorted(drop)), LOD_SNR))
+    return r
+
+
+def peak_snr(height, fwhm, y, step):
+    """单个高斯峰的匹配滤波信噪比：峰高 / σ × √(0.75 × FWHM/步长)——宽峰虽矮，积分后同样可以显著；
+    与 detection() 的检出限（S/N ≥ 4）同一口径。"""
+    sig = noise_sigma(y)
+    if not sig or step <= 0:
+        return float("inf")
+    return float(height) / sig * math.sqrt(max(0.753 * max(fwhm, step) / step, 1.0))
 
 
 def _shifted(peaks, d):
@@ -1443,7 +1557,7 @@ def quality(s):
     x, y, bg, comps, env = s.compute()
     ys = core.smooth(y, 5)
     noise = float(np.std(y - ys)) or 1.0
-    over = float(np.max(bg - ys))
+    over = float(np.max(bg - np.maximum(ys, core._smart_ceiling(x, y))))   # 5 点或约 0.8 eV 平滑后的数据，高于两者才算
     warns = []
     by = {p["name"]: p for p in s.peaks}
     idx = {p["name"]: k for k, p in enumerate(s.peaks)}
