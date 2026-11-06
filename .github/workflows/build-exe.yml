@@ -44,7 +44,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: macos-14          # Apple Silicon (M1–M4)
+          - runner: macos-15          # Apple Silicon (M1–M4)；macos-14 镜像已停用
             arch: arm64
             experimental: false
     runs-on: ${{ matrix.runner }}
