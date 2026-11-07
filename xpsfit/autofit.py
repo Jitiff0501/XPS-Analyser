@@ -423,6 +423,7 @@ NIST_KINDS = ("metal", "oxide", "hydroxide", "nitride", "carbide", "oxynitride",
 # （需样品含对应的阴离子元素）；金属态只在数据在金属位置确有峰时才作为候选——这些元素的金属态在空气中几乎不存在，
 # 只在溅射后的合金等少数情况出现，不能让金属峰去“补”化合物峰的展宽
 SALT_ELEMENTS = ("Li", "Na", "K", "Rb", "Cs", "Be", "Mg", "Ca", "Sr", "Ba")
+LOR_FREE = True          # NIST 模型的 Lorentz 比例在 0–30% 内拟合（分裂分不开的轨道除外）
 NIST_MIN_N = 3          # 至少几条 NIST 记录的化学态才作为候选
 NIST_MERGE = 0.8        # 中位数相差小于此值（eV）的化学态在常规分辨率下分不开，合并为一个候选
 
@@ -567,7 +568,9 @@ def nist_model(s, log, oxide="auto"):
             p["nist"] = True
             # Lorentz 比例在 0–30% 内拟合（1/2 分量跟随 3/2）：固定 30% 时，尖锐的金属峰的 Lorentz 翼会伸出窗口两端，
             # 高于数据，拟合只好压低 1/2 面积比、把分裂推到下限（Ti2p 刻蚀后约化 χ² 15–27 → 拟合 L% 后 5–8）
-            p["lor"].update(value=20.0, fixed=False, min=0.0, max=30.0)
+            if LOR_FREE and not (core.so_rule(s.element) or {}).get("lock"):
+                # 分裂分不开的轨道（Si2p、Al2p）不放开：Lorentz 翼与相邻化学态的面积会互相替代（Si2p 模拟误差 2.6 → 9.5）
+                p["lor"].update(value=20.0, fixed=False, min=0.0, max=30.0)
         peaks += pk
         used.append(c)
     if not peaks:
