@@ -630,5 +630,50 @@ class DepthProfileAndSalts(unittest.TestCase):
         server.ST.specs = []
 
 
+class TiCarbonThreshold(unittest.TestCase):
+    """v1.2：C1s sp² 组分与命名、强度门槛、化合物附近不平移模型。"""
+    @classmethod
+    def setUpClass(cls):
+        global autofit
+        from xpsfit import autofit
+
+    def test_c1s_sp2_component_not_molecule_name(self):
+        x = np.arange(279, 298.01, 0.1)
+        pk = [core.new_peak("sp2", 284.3, 1.0, 40000, 30), core.new_peak("sp3", 285.0, 1.3, 40000, 30),
+              core.new_peak("C-O", 286.5, 1.4, 4000, 30), core.new_peak("OCO", 288.8, 1.4, 3000, 30)]
+        y = np.random.default_rng(4).poisson(3000 + core.model(x, pk)[1]).astype(float)
+        s = core.Spectrum("C1s Scan", x, y)
+        autofit.run(s, ["C", "O", "Ti"])
+        names = [p["name"] for p in s.peaks]
+        self.assertIn("C=C sp2", names, names)
+        self.assertFalse(any("C2H4" in n or "carbide" in n for n in names), names)
+
+    def test_intensity_threshold(self):
+        x = np.arange(342, 356.01, 0.1)
+        pk = core.doublet("Ca", 347.3, 3.55, 0.5, 1.5, 6000, 30)
+        y = np.random.default_rng(6).poisson(6000 + core.model(x, pk)[1]).astype(float)
+        s = core.Spectrum("Ca2p Scan", x, y)
+        try:
+            autofit.MIN_NET = 0.0
+            self.assertNotEqual(autofit.detection(s)["status"], "nd")
+            autofit.MIN_NET = 10000.0
+            d = autofit.detection(s)
+            self.assertEqual(d["status"], "nd")
+            self.assertTrue(d["below_min_net"])
+            autofit.run(s, ["Ca", "C", "O"])
+            self.assertEqual(s.peaks, [])
+            self.assertEqual(autofit.assess(s)["grade"], "nd")
+        finally:
+            autofit.MIN_NET = 0.0
+
+    def test_no_model_shift_when_compound_is_closer(self):
+        x = np.arange(450, 468.01, 0.1)
+        pk = core.doublet("TiO", 455.1, 5.8, 0.5, 1.6, 30000, 30) + core.doublet("TiO2", 458.8, 5.7, 0.5, 1.2, 20000, 30)
+        y = np.random.default_rng(8).poisson(8000 + core.model(x, pk)[1]).astype(float)
+        s = core.Spectrum("Ti2p Scan", x, y)
+        rep = autofit.run(s, ["Ti", "O", "C"])
+        self.assertAlmostEqual(getattr(s, "model_shift", 0.0), 0.0, places=6, msg="\n".join(rep))
+
+
 if __name__ == "__main__":
     unittest.main()

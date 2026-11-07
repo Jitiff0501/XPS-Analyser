@@ -565,6 +565,9 @@ def nist_model(s, log, oxide="auto"):
         for p in pk:
             p["optional"] = c["name"]
             p["nist"] = True
+            # Lorentz 比例在 0–30% 内拟合（1/2 分量跟随 3/2）：固定 30% 时，尖锐的金属峰的 Lorentz 翼会伸出窗口两端，
+            # 高于数据，拟合只好压低 1/2 面积比、把分裂推到下限（Ti2p 刻蚀后约化 χ² 15–27 → 拟合 L% 后 5–8）
+            p["lor"].update(value=20.0, fixed=False, min=0.0, max=30.0)
         peaks += pk
         used.append(c)
     if not peaks:
@@ -1012,12 +1015,13 @@ def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
     noise = choose_background(s, log, sample_elements)
     det = detection(s)
     if det:
-        if det["status"] == "nd" and det.get("below_min_net"):
-            log("未检出：%s 净峰高 %.0f counts/s < 设定的强度门槛 %.0f counts/s → 按未检出处理，不拟合峰；定量时给出上限"
-                % (s.element or "", det["net"], det["min_net"]))
-        elif det["status"] == "nd":
-            log("未检出：%s 主线区间 %.1f–%.1f eV 内 S/N %.1f < %.0f（检出限）→ 没有可靠的信号，不拟合峰；定量时按检出限给出上限"
-                % (s.element or "", det["range"][0], det["range"][1], det["snr"], LOD_SNR))
+        if det["status"] == "nd":
+            if det.get("below_min_net"):
+                log("未检出：%s 净峰高 %.0f counts/s < 设定的强度门槛 %.0f counts/s → 按未检出处理，不拟合峰；定量时给出上限"
+                    % (s.element or "", det["net"], det["min_net"]))
+            else:
+                log("未检出：%s 主线区间 %.1f–%.1f eV 内 S/N %.1f < %.0f（检出限）→ 没有可靠的信号，不拟合峰；定量时按检出限给出上限"
+                    % (s.element or "", det["range"][0], det["range"][1], det["snr"], LOD_SNR))
             s.peaks, s.last_fit = [], None
             return report
         log("信号：S/N %.0f%s" % (det["snr"], "（≥ %.0f 已检出，但 < %.0f 定量限：照常拟合，比例的不确定性大）" % (LOD_SNR, LOQ_SNR)
@@ -1044,6 +1048,13 @@ def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
                 j = max(near, key=lambda j: sig[j])
                 if best is None or sig[j] > best[1]:
                     best = (float(x[j]) - c0, float(sig[j]), float(x[j]), p["name"])
+        if best:                                  # 峰顶离某个化合物参考位置比离单质更近：这个峰是化合物，不是平移了的单质
+            comp_c = [p["center"]["value"] for p in peaks if not p.get("pair") and p.get("state_kind") != "metal"
+                      and not re.match(r"^[A-Z][a-z]?0\b", p["name"])]
+            if any(abs(c - best[2]) < abs(best[0]) for c in comp_c):
+                log("能量：%s 附近的峰顶在 %.2f eV，离化合物的参考位置比离单质更近 → 按化合物处理，不平移模型"
+                    % (re.sub(r"\s*\d[spdf]\d/2$", "", best[3]), best[2]))
+                best = None
         if best and 0.15 < abs(best[0]) <= 1.0 and getattr(s, "_energy_ok", False):
             log("能量：%s 的峰顶在 %.2f eV，与单质参考值相差 %+.2f eV；同一样品的 C1s 在 284.8 eV 附近（能量标尺正确）"
                 "→ 不平移模型，这个峰按化合物处理" % (re.sub(r"\s*\d[spdf]\d/2$", "", best[3]), best[2], best[0]))

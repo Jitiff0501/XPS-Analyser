@@ -448,6 +448,8 @@ TEMPLATES = [
      "Energy: the {0} apex is at {1} eV, {2} eV from the reference; the model was shifted — energy calibration recommended (metal peak or C1s)"),
     ("轨道：文件名中没有轨道信息，根据谱图识别为 %s（%s）", "Orbital: none in the file name — identified from the spectrum as {0} ({1})"),
     ("通用模型：在数据中找到 %d 个主峰（%s）", "Generic model: {0} main peaks found in the data ({1})"),
+    ("能量：%s 附近的峰顶在 %.2f eV，离化合物的参考位置比离单质更近 → 按化合物处理，不平移模型",
+     "Energy: the apex near {0} is at {1} eV, closer to a compound reference than to the element → treated as a compound, model not shifted"),
     ("未检出：%s 净峰高 %.0f counts/s < 设定的强度门槛 %.0f counts/s → 按未检出处理，不拟合峰；定量时给出上限",
      "Not detected: {0} net peak height {1} counts/s < the set intensity threshold {2} counts/s → treated as not detected, no peaks fitted; quantification gives an upper limit"),
     ("背景：Shirley 会高于数据 %.0f（%.0fσ），窗口内没有其他元素的谱线 → 本底有斜坡，用主动 Shirley（Shirley 台阶 + 线性斜坡，斜坡随峰一起拟合，背景不高于数据）",
