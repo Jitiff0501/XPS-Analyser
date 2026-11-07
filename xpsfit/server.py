@@ -398,6 +398,7 @@ def api(method, a):
     elif method == "fit":
         s.do_fit(); _post_fit(s)
     elif method == "autofit":
+        _set_min_net(a)
         targets = [s] if not a.get("all") else [t for t in st.specs if t.sample == s.sample]
         reports = []
         for t in targets:
@@ -443,6 +444,7 @@ def api(method, a):
                 bad.append("%s: %s" % (t.name, e))
         return dict(st.view(a["i"]), specs=st.summary(), msg="已拟合 %d 条同类谱" % n + ("；失败 %d" % len(bad) if bad else ""))
     elif method == "quant":
+        _set_min_net(a)
         for k, v in (a.get("sf") or {}).items():
             st.sf[k] = float(v)
         if a.get("sf"):
@@ -642,6 +644,15 @@ def open_paths(paths):
         except Exception as e:
             errors.append("%s：%s" % (os.path.basename(p), e))
     return {"specs": ST.summary(), "added": added, "errors": errors}
+
+
+def _set_min_net(a):
+    """界面上的强度门槛（counts/s，空 = 不用）：净峰高低于它的谱按未检出处理。"""
+    if "min_net" in a:
+        try:
+            autofit.MIN_NET = max(float(a.get("min_net") or 0.0), 0.0)
+        except (TypeError, ValueError):
+            autofit.MIN_NET = 0.0
 
 
 def _c1s_calibrated(s):

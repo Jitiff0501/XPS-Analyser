@@ -379,6 +379,8 @@ input[type=checkbox]{accent-color:var(--accent)}
           <button data-o="metal" title="只用金属态（不加氧化峰）；数据明显显示氧化时会提醒">仅金属</button>
           <button data-o="oxide" title="只用氧化态（不加金属峰），适合完全氧化的样品；数据明显显示金属时会提醒">仅氧化</button>
         </div></div>
+      <div class="oxrow"><span class="oxl" title="扣背景后的净峰高低于这个值（counts/s）的谱按“未检出”处理：不拟合峰，定量给上限。留空 = 只按信噪比（S/N ≥ 4）判断">强度门槛</span>
+        <input class="in num" id="min_net" placeholder="不设" style="width:84px;text-align:right" title="例如 10000：净峰高低于 10000 counts/s 视为没有该元素"><span class="note" style="margin:0 0 0 6px">counts/s</span></div>
       <button class="btn primary fitbtn" onclick="autoFit(false)" title="自动选背景、按元素建模、检查残差并区分重叠峰/卫星峰">⚡ 一键拟合</button>
       <button class="btn wide" onclick="autoFit(true)">⚡ 一键拟合本样品全部谱</button>
       <div id="summary" class="summary"><div class="note" style="margin:0">暂无拟合结果</div></div>
@@ -1072,7 +1074,7 @@ async function saveEq(){const m=[...$("eq_list").querySelectorAll("input:checked
 async function autoFit(all,again){
   if(S.cur===null){toast("请先打开数据");return}
   S.lastAll=!!all;toast(all?"正在一键拟合本样品全部谱…":"正在一键拟合…");
-  const v=await act("autofit",{all:!!all,extra:$("ar_extra").value,oxide:S.oxide||"auto"});if(!v)return;S.sel=null;renderPeaks();
+  const v=await act("autofit",{all:!!all,extra:$("ar_extra").value,oxide:S.oxide||"auto",min_net:minNet()});if(!v)return;S.sel=null;renderPeaks();
   const b=$("ar_body");b.innerHTML="";
   (v.report||[]).forEach(r=>{const h=document.createElement("h5");h.textContent=`${r.sample} · ${r.spectrum}　`+TR(`（样品元素：${r.elements.join("、")}）`);b.append(h);
     const ol=document.createElement("ol");r.steps.forEach(t=>{const li=document.createElement("li");li.textContent=t;
@@ -1336,6 +1338,10 @@ function renderExColors(){const box=$("excols"),G=exGroups();
     r.onclick=e=>openColorPop(e,g.j,async()=>{renderExColors();if(S.ex.ctx==="stack")await loadStack();preview()});box.append(r)})}
 /* ---------- 氧化态选择（一键拟合） ---------- */
 S.oxide=(()=>{try{return localStorage.getItem("xpsfit_oxide")||"auto"}catch(e){return "auto"}})();
+// 强度门槛（counts/s）：记住上次的值
+function minNet(){const v=+$("min_net").value;return v>0?v:0}
+try{$("min_net").value=localStorage.getItem("xpsfit_min_net")||""}catch(e){}
+$("min_net").addEventListener("change",()=>{try{localStorage.setItem("xpsfit_min_net",$("min_net").value.trim())}catch(e){}});
 function setOxide(o){S.oxide=o;document.querySelectorAll("#oxseg button").forEach(b=>b.classList.toggle("on",b.dataset.o===o));
   try{localStorage.setItem("xpsfit_oxide",o)}catch(e){}}
 document.querySelectorAll("#oxseg button").forEach(b=>b.onclick=()=>setOxide(b.dataset.o));setOxide(S.oxide);
@@ -1453,7 +1459,7 @@ function afterRef(r){if(r.errors&&r.errors.length)toast("导入失败："+r.erro
 let Q=null,RATIOS=[];
 async function openQuant(){if(!S.specs.length)return;await quant();$("qm").classList.add("open")}
 async function quant(sf){
-  Q=await call("quant",{use_fit:$("q_fit").checked,ecf:$("q_ecf").checked,sf});
+  Q=await call("quant",{use_fit:$("q_fit").checked,ecf:$("q_ecf").checked,sf,min_net:minNet()});
   $("qsf").innerHTML="";
   Q.orbitals.forEach(o=>{const w=document.createElement("label");w.className="switch";w.innerHTML=`<span style="min-width:0;color:var(--ink2)">${o}</span><input class="in num" style="width:66px;text-align:right" value="${Q.sf[o]??""}">`;
     w.querySelector("input").onchange=e=>quant({[o]:e.target.value});$("qsf").append(w)});

@@ -60,7 +60,7 @@ KNOWN_STATES = {
     "Ti2p": [("Ti4+", 458.4, 459.2), ("Ti3+", 456.7, 457.7), ("Ti2+", 455.0, 455.9), ("TiN", 454.8, 455.3)],
     "Ni2p": [("NiO", 853.5, 854.3), ("Ni(OH)2", 855.2, 856.2)],
     "Mn2p": [("Mn2+", 640.6, 641.4), ("Mn4+", 642.0, 642.6)],
-    "C1s": [("CO3", 289.5, 290.5)],
+    "C1s": [("C=C sp2", 283.6, 284.5), ("CO3", 289.5, 290.5), ("pi-pi* shake-up", 290.6, 292.0)],
     "N1s": [("nitride", 396.4, 397.4), ("C-N", 399.0, 400.5)],
     "O1s": [("O lattice", 529.3, 530.6), ("OH / defect", 531.0, 532.0)],
 }
@@ -399,17 +399,20 @@ def recipe(s, log, oxide="auto"):
                 _P("C-O / H2O ads.", 532.8, 1.8, lo=532.1, hi=533.8)]
     if el == "C1s":
         m = []
-        f = _signal(s, 282.0, 283.7)
-        if f > 0.08:
-            formers = set(getattr(s, "_sample_elements", None) or ()) & CARBIDE_FORMERS
-            if formers or not getattr(s, "_sample_elements", None):
-                log("C1s：282–283.7 eV 有明显信号（%.0f%%）→ 加入金属碳化物" % (100 * f))
-                m.append(_P("M-C carbide", 283.0, 1.1, lo=282.3, hi=283.6))
-            else:
-                log("C1s：282–283.7 eV 有明显信号（%.0f%%），但样品里没有形成碳化物的元素 → 作为低结合能碳"
-                    "（Ar⁺ 溅射造成的无序 / sp² 碳等），不叫碳化物" % (100 * f))
-                m.append(_P("C low-BE (sp2/sputter)", 283.8, 1.3, lo=283.0, hi=284.3, wmax=2.0))
-        return m + [_P("C-C/C-H", 284.8, 1.3, lo=284.3, hi=285.3), _P("C-O", 286.3, 1.4, lo=285.8, hi=287.0),
+        known = bool(getattr(s, "_sample_elements", None))
+        formers = set(getattr(s, "_sample_elements", None) or ()) & CARBIDE_FORMERS
+        f = _signal(s, 281.3, 283.2)
+        if f > 0.04 and (formers or not known):
+            log("C1s：281.3–283.2 eV 有明显信号（%.0f%%）→ 碳化物作为候选（281.3–283.4 eV，由 BIC 判断）" % (100 * f))
+            carb = _P("M-C carbide", 282.6, 1.1, lo=281.3, hi=283.4)
+            carb["optional"] = "M-C carbide"
+            m.append(carb)
+        # 主线常由两部分组成：sp³ C–C/C–H 与低 0.4–1.2 eV 的 sp² / 溅射损伤碳（Ar⁺ 刻蚀后、碳膜、石墨化表面）。
+        # 单一对称峰拟合这类主线时残差很大，旧版会把缺的部分当残差峰补上并按 NIST 化学式命名（如 C2H4）。
+        sp2 = _P("C=C sp2", 284.2, 1.1, wmin=0.7, wmax=1.8)
+        sp2["link"] = {"ref": "C-C/C-H", "dE": -0.7, "dE_fit": True, "dE_min": -1.2, "dE_max": -0.4}
+        sp2["optional"] = "C=C sp2"
+        return m + [_P("C-C/C-H", 284.8, 1.3, lo=284.3, hi=285.4), sp2, _P("C-O", 286.3, 1.4, lo=285.8, hi=287.0),
                     _P("C=O / O-C=O", 288.6, 1.6, lo=287.6, hi=289.6)]
     return nist_model(s, log, oxide)
 
@@ -677,7 +680,7 @@ def _el(s):
     return m.group(0) if m else ""
 
 
-def choose_background(s, log):
+def choose_background(s, log, sample_elements=()):
     x0 = s.be[s.region()]
     s.bg.update({"type": "Shirley", "navg": 5})
     x, y, bg, _, _ = s.compute()
@@ -697,6 +700,12 @@ def choose_background(s, log):
         s.bg.update({"type": "SlopeShirley", "tilt": 0.0})
         log("背景：%sFe2p 主峰之间是卫星结构 → 主动 Shirley（Shirley 台阶 + 线性斜坡，斜坡随峰一起拟合，背景不高于数据）"
             % ("Shirley 会高于数据 %.0f（%.0fσ）；" % (over, over / noise) if over > noise else ""))
+    elif over > 5 * noise and _sloped_baseline(s, x, sample_elements):
+        # 窗口内没有同样品其他元素的谱线：Shirley 高于数据是本底斜坡（损失背景、厚碳层等）造成的。
+        # 点背景会落在相邻化学态之间的凹处（如 Ti⁰ 与 Ti³⁺ 之间），把小峰扣掉 → 主动 Shirley：斜坡随峰一起拟合
+        s.bg.update({"type": "SlopeShirley", "tilt": 0.0})
+        log("背景：Shirley 会高于数据 %.0f（%.0fσ），窗口内没有其他元素的谱线 → 本底有斜坡，用主动 Shirley"
+            "（Shirley 台阶 + 线性斜坡，斜坡随峰一起拟合，背景不高于数据）" % (over, over / noise))
     elif over > 5 * noise:
         pts = auto_anchors(s, x, y)
         s.bg.update({"type": "Points", "points": pts, "interp": "smooth"})
@@ -707,6 +716,14 @@ def choose_background(s, log):
     else:
         log("背景：Shirley（未高于数据，噪声 σ≈%.0f）" % noise)
     return noise
+
+
+def _sloped_baseline(s, x, sample_elements):
+    """有多个化学态的双峰轨道（Ti2p、Cr2p…），且样品其他元素的谱线 / 俄歇都不落在窗口内。"""
+    if not sample_elements or not core.so_rule(s.element) or s.element in ("Al2p", "Si2p"):
+        return False
+    lo, hi = float(np.min(x)), float(np.max(x))
+    return not any(lo - 1.0 <= be <= hi + 1.0 for be, *_ in other_lines(sample_elements, s.element, s.hv))
 
 
 # ------------------------------------------------------------------ 残差检查：重叠 / 卫星 / 新组分
@@ -766,8 +783,9 @@ def classify(c, width, s, sample_elements, ref, log_ctx):
             continue
         if a - 0.2 <= c <= b + 0.2 and not any(p["name"].startswith(name) for p in s.peaks):
             return ("main", name, None, "%.2f eV 落在 %s 的常见范围（%.1f–%.1f eV）→ 新化学态" % (c, name, a, b))
-    # 4) 参考库里的化学态（只用与样品元素相符的，见 plausible_states）
-    cand = plausible_states(ref, s, sample_elements)
+    # 4) 参考库里的化学态（只用与样品元素相符的，见 plausible_states）。C1s 的 NIST 记录多为有机分子（C2H4、聚合物…），
+    #    拿来给残差峰命名会误导（v1.2 曾把 sp² 碳叫成 C2H4），C1s 只用上面的常见态
+    cand = plausible_states(ref, s, sample_elements) if s.element != "C1s" else []
     if cand:
         st = min(cand, key=lambda t: abs(t["median"] - c))
         if abs(st["median"] - c) <= max(0.6, st["q3"] - st["q1"]):
@@ -991,10 +1009,13 @@ def run(s, sample_elements=(), ref=None, max_add=4, oxide="auto", _alt=True):
             ref = None
     s._ref = ref if ref and not ref.get("missing") else None
     s._sample_elements = list(sample_elements or ())
-    noise = choose_background(s, log)
+    noise = choose_background(s, log, sample_elements)
     det = detection(s)
     if det:
-        if det["status"] == "nd":
+        if det["status"] == "nd" and det.get("below_min_net"):
+            log("未检出：%s 净峰高 %.0f counts/s < 设定的强度门槛 %.0f counts/s → 按未检出处理，不拟合峰；定量时给出上限"
+                % (s.element or "", det["net"], det["min_net"]))
+        elif det["status"] == "nd":
             log("未检出：%s 主线区间 %.1f–%.1f eV 内 S/N %.1f < %.0f（检出限）→ 没有可靠的信号，不拟合峰；定量时按检出限给出上限"
                 % (s.element or "", det["range"][0], det["range"][1], det["snr"], LOD_SNR))
             s.peaks, s.last_fit = [], None
@@ -1751,11 +1772,25 @@ def _det_scan(x, y, lo, hi, sig, widths=DET_WIDTHS):
     return best
 
 
+MIN_NET = 0.0       # 用户设定的强度门槛（counts/s）：扣背景后的净峰高低于此值按未检出处理；0 = 不用（只按 S/N）
+
+
+def net_height(s):
+    """分析窗口内扣 Shirley 背景后的净峰高（7 点平滑后的最大值），单位与数据相同（Avantage 为 counts/s）。"""
+    m = s.region() if s.window else np.ones(len(s.y), bool)
+    x, y = s.be[m], s.y[m]
+    if len(x) < 12:
+        return 0.0
+    bg = core.background(x, y, "Shirley", 5)
+    return float(np.max(core.smooth(y, 7) - bg))
+
+
 def detection(s):
-    """返回 {status: ok / weak / nd, snr, center, range, noise, upper}。upper：未检出时面积上限（S/N = 4 的 1.6 eV 峰）。"""
+    """返回 {status: ok / weak / nd, snr, center, range, noise, upper}。upper：未检出时面积上限（S/N = 4 的 1.6 eV 峰）。
+    设了强度门槛（MIN_NET）时，净峰高低于门槛也按未检出（below_min_net）。"""
     if getattr(s, "kind", "region") == "survey" or s.y is None or len(s.y) < 12:
         return None
-    key = (s.element, round(float(s.shift), 4), len(s.y), round(float(np.sum(s.y)), 3))
+    key = (s.element, round(float(s.shift), 4), len(s.y), round(float(np.sum(s.y)), 3), float(MIN_NET))
     c = getattr(s, "_det", None)
     if c and c[0] == key:
         return c[1]
@@ -1772,6 +1807,11 @@ def detection(s):
     b = _det_scan(x, y, lo, hi, sig)
     snr = b["snr"]
     status = "nd" if snr < LOD_SNR else "weak" if snr < LOQ_SNR else "ok"
+    net = None
+    if MIN_NET and MIN_NET > 0:
+        net = net_height(s)
+        if net < MIN_NET:
+            status = "nd"
     up = None
     if status == "nd":                          # 上限：区间中点一个 FWHM 1.6 eV 的峰，幅度 = 检出限 × 幅度标准误差
         mid, w = 0.5 * (lo + hi), 1.6
@@ -1782,7 +1822,9 @@ def detection(s):
             sa = sig * float(np.sqrt(np.linalg.pinv(A.T @ A)[0, 0]))
             up = LOD_SNR * sa * w * 1.0645          # 高斯面积 = 幅度 × FWHM × 1.0645
     d = {"status": status, "snr": snr, "center": b["center"], "width": b["width"], "range": [float(lo), float(hi)],
-         "noise": float(sig), "upper": up, "lod": LOD_SNR, "loq": LOQ_SNR, "whole_window": whole}
+         "noise": float(sig), "upper": up, "lod": LOD_SNR, "loq": LOQ_SNR, "whole_window": whole,
+         "net": net, "min_net": float(MIN_NET) if MIN_NET else None,
+         "below_min_net": bool(net is not None and net < MIN_NET and snr >= LOD_SNR)}
     s._det = (key, d)
     return d
 
@@ -1866,6 +1908,11 @@ def assess(s, lang="zh"):
         return None
     det = detection(s)
     lab = lambda g: GRADE_TEXT[g][1 if en else 0]
+    if det and det["status"] == "nd" and det.get("below_min_net"):
+        add("bad", L("未检出：净峰高 %.0f counts/s 低于设定的强度门槛 %.0f counts/s（S/N %.0f）。按未检出处理，不拟合峰；定量给上限",
+                     "Not detected: net peak height %.0f counts/s is below the set intensity threshold %.0f counts/s (S/N %.0f). "
+                     "Treated as not detected; quantification reports an upper limit") % (det["net"], det["min_net"], det["snr"]))
+        return {"grade": "nd", "label": lab("nd"), "snr": det["snr"], "items": items}
     if det and det["status"] == "nd":
         add("bad", L("未检出：主线区间 %.1f–%.1f eV 内 S/N %.1f < %.0f（检出限）。没有可靠的信号，不拟合峰；定量按检出限给上限",
                      "Not detected: S/N %.1f < %.0f (detection limit) in the main-line range. No reliable signal, so no peaks are "

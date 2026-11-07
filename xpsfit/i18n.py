@@ -266,6 +266,10 @@ PHRASES = {
     "纵轴为计数；间距 = 相邻两条谱基线的距离（以最大谱高计）": "Y axis in counts; spacing = distance between neighbouring baselines (in units of the largest spectrum height)",
     "纵轴已归一化：每条谱高 = 1；间距 = 相邻两条谱基线的距离（以谱高计）": "Y axis normalized: each spectrum is 1 high; spacing = distance between neighbouring baselines (in spectrum heights)",
     "缺灵敏度因子": "Missing sensitivity factor",
+    "强度门槛": "Intensity threshold", "不设": "none",
+    "扣背景后的净峰高低于这个值（counts/s）的谱按“未检出”处理：不拟合峰，定量给上限。留空 = 只按信噪比（S/N ≥ 4）判断":
+        "Spectra whose background-subtracted net peak height is below this value (counts/s) are treated as not detected: no peaks are fitted and quantification gives an upper limit. Empty = decide by signal-to-noise only (S/N ≥ 4)",
+    "例如 10000：净峰高低于 10000 counts/s 视为没有该元素": "e.g. 10000: a net peak height below 10,000 counts/s means the element is absent",
     "灵敏度因子表里没有这些轨道，未计入原子百分比；请在上方“灵敏度因子”里填写":
         "These orbitals are not in the sensitivity-factor table and are left out of the atomic %; enter them under Sensitivity factors above",
 }
@@ -444,6 +448,12 @@ TEMPLATES = [
      "Energy: the {0} apex is at {1} eV, {2} eV from the reference; the model was shifted — energy calibration recommended (metal peak or C1s)"),
     ("轨道：文件名中没有轨道信息，根据谱图识别为 %s（%s）", "Orbital: none in the file name — identified from the spectrum as {0} ({1})"),
     ("通用模型：在数据中找到 %d 个主峰（%s）", "Generic model: {0} main peaks found in the data ({1})"),
+    ("未检出：%s 净峰高 %.0f counts/s < 设定的强度门槛 %.0f counts/s → 按未检出处理，不拟合峰；定量时给出上限",
+     "Not detected: {0} net peak height {1} counts/s < the set intensity threshold {2} counts/s → treated as not detected, no peaks fitted; quantification gives an upper limit"),
+    ("背景：Shirley 会高于数据 %.0f（%.0fσ），窗口内没有其他元素的谱线 → 本底有斜坡，用主动 Shirley（Shirley 台阶 + 线性斜坡，斜坡随峰一起拟合，背景不高于数据）",
+     "Background: Shirley would exceed the data by {0} ({1}σ) and no other element has a line in the window → sloped baseline, active Shirley (step + linear slope fitted with the peaks, never above the data)"),
+    ("C1s：281.3–283.2 eV 有明显信号（%.0f%%）→ 碳化物作为候选（281.3–283.4 eV，由 BIC 判断）",
+     "C1s: clear signal at 281.3–283.2 eV ({0}%) → carbide as a candidate (281.3–283.4 eV, kept only if BIC says so)"),
     ("%s：%s %.1f eV 附近没有可分辨的峰 → 不加金属态（碱金属 / 碱土金属的金属态只在数据中确有峰时才考虑）",
      "{0}: no resolved peak near {1} {2} eV → no metallic state (for alkali / alkaline-earth metals the metal is only used when the data show a peak there)"),
     ("能量：%s 的峰顶在 %.2f eV，与单质参考值相差 %+.2f eV；同一样品的 C1s 在 284.8 eV 附近（能量标尺正确）→ 不平移模型，这个峰按化合物处理",
