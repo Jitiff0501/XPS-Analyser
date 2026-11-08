@@ -660,6 +660,7 @@ class TiCarbonThreshold(unittest.TestCase):
             d = autofit.detection(s)
             self.assertEqual(d["status"], "nd")
             self.assertTrue(d["below_min_net"])
+            self.assertAlmostEqual(d["upper"], 10000 * 1.6 * 1.0645 * 1.5, places=3)    # 上限按门槛（2p 含 1/2 分量）
             autofit.run(s, ["Ca", "C", "O"])
             self.assertEqual(s.peaks, [])
             self.assertEqual(autofit.assess(s)["grade"], "nd")

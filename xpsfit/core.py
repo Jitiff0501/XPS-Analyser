@@ -775,6 +775,8 @@ def quantify_samples(specs, sf_table, use_fit=True, ecf_exp=0.6, include=None):
     for k, s in enumerate(specs):
         if include is not None and not include[k]:
             continue
+        if getattr(s, "kind", "region") == "survey":   # 全谱只用于识别元素，不参与定量
+            continue
         key = s.sample or "(未分组)"
         lv = getattr(s, "level", None)
         if lv is not None:                         # 深度剖析：每一层单独定量

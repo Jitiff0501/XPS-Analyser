@@ -1835,10 +1835,14 @@ def detection(s):
             A = np.column_stack([np.exp(-0.5 * (xs / (w / 2.3548)) ** 2), np.ones_like(xs), xs])
             sa = sig * float(np.sqrt(np.linalg.pinv(A.T @ A)[0, 0]))
             up = LOD_SNR * sa * w * 1.0645          # 高斯面积 = 幅度 × FWHM × 1.0645
+    below = bool(net is not None and net < MIN_NET and snr >= LOD_SNR)
+    if below:                                   # 只因强度门槛判为未检出：上限按门槛算（峰高 = 门槛、FWHM 1.6 eV，双峰含另一分量），
+        l_ = (s.element or "x")[-1]             # 否则按 S/N 算的上限会小于实际测到的信号
+        up = MIN_NET * 1.6 * 1.0645 * (1.0 + RATIO.get(l_, 0.0))
     d = {"status": status, "snr": snr, "center": b["center"], "width": b["width"], "range": [float(lo), float(hi)],
          "noise": float(sig), "upper": up, "lod": LOD_SNR, "loq": LOQ_SNR, "whole_window": whole,
          "net": net, "min_net": float(MIN_NET) if MIN_NET else None,
-         "below_min_net": bool(net is not None and net < MIN_NET and snr >= LOD_SNR)}
+         "below_min_net": below}
     s._det = (key, d)
     return d
 
