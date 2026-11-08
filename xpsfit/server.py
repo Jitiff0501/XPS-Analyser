@@ -56,7 +56,11 @@ class State:
         self.stack_labels = {}                    # 堆叠对比图样品名的上下位置：{轨道: {样品名: dy}}（相对该谱的基线，单位为谱高）
         self.stack_names = {}                     # 堆叠对比图里每条谱显示的名称（用户改过的）：{轨道: {key: 文字}}
         self.lock = threading.Lock()
-        self.sf = core.load_sf(os.path.join(user_dir(), "sensitivity_factors.json")) or core.load_sf()
+        self.sf_default = core.load_sf()          # 随程序发布的表；用户改过的值叠在上面
+        self.sf = dict(self.sf_default)
+        user_sf = os.path.join(user_dir(), "sensitivity_factors.json")
+        if os.path.exists(user_sf):              # 新版本表里新增的轨道（如 Mg1s）对改过因子的用户也可用
+            self.sf.update(core.load_sf(user_sf))
         self.templates = core.builtin_templates()
         self.templates.update(self._user_templates())
 
@@ -449,7 +453,8 @@ def api(method, a):
             st.sf[k] = float(v)
         if a.get("sf"):
             with open(os.path.join(user_dir(), "sensitivity_factors.json"), "w", encoding="utf-8") as f:
-                json.dump({"factors": st.sf}, f, ensure_ascii=False, indent=1)
+                json.dump({"factors": {k: v for k, v in st.sf.items()   # 只存与内置表不同的值
+                                       if st.sf_default.get(k) != v}}, f, ensure_ascii=False, indent=1)
         inc = a.get("include")
         for t in st.specs:                        # 检出限：未检出的轨道按上限给出，不用噪声的面积
             t.det = autofit.detection(t)

@@ -676,5 +676,32 @@ class TiCarbonThreshold(unittest.TestCase):
         self.assertAlmostEqual(getattr(s, "model_shift", 0.0), 0.0, places=6, msg="\n".join(rep))
 
 
+class SensitivityFactors(unittest.TestCase):
+    """v1.2.1：内置 Mg1s；用户改过的因子叠在内置表上，只保存与内置表不同的值。"""
+    def test_builtin_mg1s(self):
+        self.assertAlmostEqual(core.load_sf()["Mg1s"], 11.18)
+
+    def test_user_overrides_merge_and_save_diff(self):
+        import json, tempfile
+        from unittest import mock
+        from xpsfit import server
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(server, "user_dir", lambda: d):
+            path = os.path.join(d, "sensitivity_factors.json")
+            with open(path, "w", encoding="utf-8") as f:   # 旧版本保存的表里没有 Mg1s
+                json.dump({"factors": {"C1s": 1.0, "Ti2p": 6.5}}, f)
+            st = server.State()
+            self.assertAlmostEqual(st.sf["Mg1s"], 11.18)
+            self.assertAlmostEqual(st.sf["Ti2p"], 6.5)
+            old = server.ST
+            server.ST = st
+            try:
+                server.api("quant", {"sf": {"K2p": 4.85}})
+            finally:
+                server.ST = old
+            with open(path, encoding="utf-8") as f:
+                saved = json.load(f)["factors"]
+            self.assertEqual(saved, {"Ti2p": 6.5, "K2p": 4.85})
+
+
 if __name__ == "__main__":
     unittest.main()
